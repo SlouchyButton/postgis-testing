@@ -1,6 +1,7 @@
 Name: proj
 Version: 4.4.8
-Release: 4
+Release: 5
+
 Summary: Cartographic projection software (PROJ.4)
 
 Group: Applications/Engineering
@@ -88,6 +89,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}
 
 %changelog
+* Fri Apr  7 2005 Michael Schwendt <mschwendt[AT]users.sf.net>
+- rebuilt
+
 * Wed Dec 29 2004 David Kaplan <dmk@erizo.ucdavis.edu> - 0:4.4.8-4
 - Added testvarious to nad distribution
 
