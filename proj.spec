@@ -1,7 +1,6 @@
 Name: proj
 Version: 4.4.8
 Release: 4
-Epoch: 0
 Summary: Cartographic projection software (PROJ.4)
 
 Group: Applications/Engineering
@@ -15,18 +14,18 @@ Patch1: proj.test_scripts.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %package devel
-Summary:	Development files for PROJ.4
-Group:		Development/Libraries
-Requires:	%{name} = %{epoch}:%{version}-%{release}
+Summary: Development files for PROJ.4
+Group: Development/Libraries
+Requires: %{name} = %{version}-%{release}
 
 %package nad
-Summary:	US and Canadian datum shift grids for PROJ.4
-Group:		Applications/Engineering
-Requires:	%{name} = %{epoch}:%{version}-%{release}
+Summary: US and Canadian datum shift grids for PROJ.4
+Group: Applications/Engineering
+Requires: %{name} = %{version}-%{release}
 
 %description
-Proj and invproj perform respective forward and inverse transformation of 
-cartographic data to or from cartesian data with a wide range of selectable 
+Proj and invproj perform respective forward and inverse transformation of
+cartographic data to or from cartesian data with a wide range of selectable
 projection functions. Proj docs: http://www.remotesensing.org/dl/new_docs/
 
 %description devel
