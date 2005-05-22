@@ -1,7 +1,6 @@
 Name: proj
 Version: 4.4.8
-Release: 5
-
+Release: 6
 Summary: Cartographic projection software (PROJ.4)
 
 Group: Applications/Engineering
@@ -89,7 +88,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}
 
 %changelog
-* Fri Apr  7 2005 Michael Schwendt <mschwendt[AT]users.sf.net>
+* Sun May 22 2005 Michael Schwendt <mschwendt[AT]users.sf.net> - 4.4.8-6
+- rebuilt
+
+* Thu Apr  7 2005 Michael Schwendt <mschwendt[AT]users.sf.net> - 4.4.8-5
 - rebuilt
 
 * Wed Dec 29 2004 David Kaplan <dmk@erizo.ucdavis.edu> - 0:4.4.8-4
