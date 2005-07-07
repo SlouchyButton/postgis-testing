@@ -1,16 +1,17 @@
 Name: proj
-Version: 4.4.8
-Release: 6
+Version: 4.4.9
+Release: 0
 Summary: Cartographic projection software (PROJ.4)
 
 Group: Applications/Engineering
 License: MIT
 URL: http://www.remotesensing.org/proj/
-Source0: ftp://ftp.remotesensing.org/pub/proj/proj-4.4.8.tar.gz
+Source0: ftp://ftp.remotesensing.org/pub/proj/proj-%{version}.tar.gz
 Source1: ftp://ftp.remotesensing.org/pub/proj/proj-nad27-1.1.tar.gz
 Source2: http://packages.debian.org/changelogs/pool/main/p/proj/proj_4.4.8-3/proj.copyright
 Patch0: proj.copyright.patch
 Patch1: proj.test_scripts.patch
+Patch2: pj_gridinfo.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %package devel
@@ -48,6 +49,10 @@ cd nad
 gzip -dc %{SOURCE1} | tar -xvvf -
 cd ..
 
+# Patch for Bug 150013
+cp %{PATCH2} ./
+patch src/pj_gridinfo.c pj_gridinfo.patch
+
 %build
 %configure
 make OPTIMIZE="$RPM_OPT_FLAGS" %{?_smp_mflags}
@@ -59,7 +64,7 @@ install -p -m 0644 nad/pj_out27.dist nad/pj_out83.dist nad/td_out.dist $RPM_BUIL
 install -p -m 0755 nad/test27 nad/test83 nad/testvarious $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+#rm -rf $RPM_BUILD_ROOT
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
