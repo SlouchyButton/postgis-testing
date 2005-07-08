@@ -1,4 +1,19 @@
-493c493
-<                              "failed to find parent %8.8s for %.\n", 
----
->                              "failed to find parent %8.8s for %s\n", 
+*** src/pj_gridinfo.c	2004-10-29 21:03:03.000000000 -0700
+--- src/pj_gridinfo.c.new	2005-07-07 21:48:25.000000000 -0700
+***************
+*** 490,496 ****
+              {
+                  if( getenv("PROJ_DEBUG") != NULL )
+                      fprintf( stderr, "pj_gridinfo_init_ntv2(): "
+!                              "failed to find parent %8.8s for %.\n", 
+                               (const char *) header+24, gi->ct->id );
+  
+                  for( lnk = gp; lnk->next != NULL; lnk = lnk->next ) {}
+--- 490,496 ----
+              {
+                  if( getenv("PROJ_DEBUG") != NULL )
+                      fprintf( stderr, "pj_gridinfo_init_ntv2(): "
+!                              "failed to find parent %8.8s for %s\n", 
+                               (const char *) header+24, gi->ct->id );
+  
+                  for( lnk = gp; lnk->next != NULL; lnk = lnk->next ) {}

@@ -1,6 +1,6 @@
 Name: proj
 Version: 4.4.9
-Release: 0
+Release: 1%{?dist}
 Summary: Cartographic projection software (PROJ.4)
 
 Group: Applications/Engineering
@@ -51,7 +51,7 @@ cd ..
 
 # Patch for Bug 150013
 cp %{PATCH2} ./
-patch src/pj_gridinfo.c pj_gridinfo.patch
+%patch2 -p0 -b .buildroot
 
 %build
 %configure
@@ -64,7 +64,7 @@ install -p -m 0644 nad/pj_out27.dist nad/pj_out83.dist nad/td_out.dist $RPM_BUIL
 install -p -m 0755 nad/test27 nad/test83 nad/testvarious $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 %clean
-#rm -rf $RPM_BUILD_ROOT
+rm -rf $RPM_BUILD_ROOT
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
@@ -93,6 +93,9 @@ install -p -m 0755 nad/test27 nad/test83 nad/testvarious $RPM_BUILD_ROOT%{_datad
 %{_datadir}/%{name}
 
 %changelog
+* Thu Jul  7 2005 Shawn McCann <mccann0011@hotmail.com> - 4.4.9-1
+- Updated to proj-4.4.9 and to fix bugzilla reports 150013 and 161726. Patch2 can be removed once this package is upgraded to the next release of the source.
+
 * Sun May 22 2005 Michael Schwendt <mschwendt[AT]users.sf.net> - 4.4.8-6
 - rebuilt
 
@@ -125,4 +128,3 @@ install -p -m 0755 nad/test27 nad/test83 nad/testvarious $RPM_BUILD_ROOT%{_datad
 - to comply with both Fedora and RedHat 9 packaging guidelines.
 - Split files into proj, proj-devel, and proj-nad (additional grids)
 - and adjusted the EXE path in the test scripts.
-
