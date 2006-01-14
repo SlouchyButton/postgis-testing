@@ -73,7 +73,7 @@ rm -rf $RPM_BUILD_ROOT
 %exclude %{_libdir}/*.la
 
 %changelog
-* Sat Jan 14 2005 Shawn McCann <smccann@canasoft.ca> - 2.2.1-3
+* Sat Jan 14 2006 Shawn McCann <smccann@canasoft.ca> - 2.2.1-3
 - Updated gcc4 patch
 
 * Wed Jan 11 2006 Ralf Corsépius <rc040203@freenet.de> - 2.2.1-2
