@@ -1,6 +1,6 @@
 Name: geos
 Version: 2.2.1
-Release: 1
+Release: 2%{?dist}
 Summary: GEOS is a C++ port of the Java Topology Suite
 
 Group: Applications/Engineering
@@ -8,6 +8,7 @@ License: LGPL
 URL: http://geos.refractions.net
 Source0: http://geos.refractions.net/%{name}-%{version}.tar.bz2
 Patch0: geos-config.in.patch
+Patch1: geos-2.2.1-gcc4.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: doxygen
 
@@ -36,6 +37,7 @@ use GEOS
 %prep
 %setup -q
 %patch0 -p0 -b .buildroot 
+%patch1 -p1
 
 %build
 %configure --disable-static --disable-dependency-tracking
@@ -71,6 +73,9 @@ rm -rf $RPM_BUILD_ROOT
 %exclude %{_libdir}/*.la
 
 %changelog
+* Wed Jan 11 2006 Ralf Corsépius <rc040203@freenet.de> - 2.2.1-2
+- Add gcc4 patch
+
 * Sat Dec 31 2005 Shawn McCann <smccann@canasoft.ca> - 2.2.1-1
 - Updated to address review comments in bug 17039
 
