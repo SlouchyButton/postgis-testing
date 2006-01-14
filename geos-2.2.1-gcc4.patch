@@ -1,5 +1,5 @@
---- source/headers/geos/geom.h~	2005-11-29 09:52:21.000000000 -0800
-+++ source/headers/geos/geom.h	2006-01-13 21:37:04.000000000 -0800
+--- geos-2.2.1.orig/source/headers/geos/geom.h	2006-01-14 14:40:33.000000000 -0800
++++ geos-2.2.1/source/headers/geos/geom.h	2006-01-14 14:41:12.000000000 -0800
 @@ -358,52 +358,52 @@
  	//double distance(Coordinate& p);
  	static Coordinate nullCoord;
