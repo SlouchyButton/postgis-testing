@@ -1,6 +1,6 @@
 Name: proj
 Version: 4.4.9
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Cartographic projection software (PROJ.4)
 
 Group: Applications/Engineering
@@ -93,6 +93,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}
 
 %changelog
+* Sat Mar  4 2006 Shawn McCann <mccann0011@hotmail.com> - 4.4.9-2
+- Rebuild for Fedora Extras 5
+
 * Thu Jul  7 2005 Shawn McCann <mccann0011@hotmail.com> - 4.4.9-1
 - Updated to proj-4.4.9 and to fix bugzilla reports 150013 and 161726. Patch2 can be removed once this package is upgraded to the next release of the source.
 
