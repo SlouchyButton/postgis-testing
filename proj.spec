@@ -1,6 +1,6 @@
 Name: proj
 Version: 4.4.9
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Cartographic projection software (PROJ.4)
 
 Group: Applications/Engineering
@@ -93,6 +93,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}
 
 %changelog
+* Sat Mar  4 2006 Shawn McCann <mccann0011@hotmail.com> - 4.4.9-3
+- Rebuild for Fedora Extras 5
+
 * Sat Mar  4 2006 Shawn McCann <mccann0011@hotmail.com> - 4.4.9-2
 - Rebuild for Fedora Extras 5
 
