@@ -1,6 +1,6 @@
 Name: proj
-Version: 4.4.9
-Release: 4%{?dist}
+Version: 4.5.0
+Release: 1%{?dist}
 Summary: Cartographic projection software (PROJ.4)
 
 Group: Applications/Engineering
@@ -10,8 +10,8 @@ Source0: ftp://ftp.remotesensing.org/pub/proj/proj-%{version}.tar.gz
 Source1: ftp://ftp.remotesensing.org/pub/proj/proj-nad27-1.1.tar.gz
 Source2: http://packages.debian.org/changelogs/pool/main/p/proj/proj_4.4.8-3/proj.copyright
 Patch0: proj.copyright.patch
-Patch1: proj.test_scripts.patch
-Patch2: pj_gridinfo.patch
+#Patch1: proj.test_scripts.patch
+#Patch2: pj_gridinfo.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %package devel
@@ -41,7 +41,7 @@ This package contains additional US and Canadian datum shift grids.
 # Prepare copyright
 cp %{SOURCE2} ./
 %patch0 -p0 -b .buildroot
-%patch1 -p1 -b .buildroot
+#%patch1 -p1 -b .buildroot
 cp proj.copyright COPYING
 
 # Prepare nad
@@ -50,8 +50,8 @@ gzip -dc %{SOURCE1} | tar -xvvf -
 cd ..
 
 # Patch for Bug 150013
-cp %{PATCH2} ./
-%patch2 -p0 -b .buildroot
+#cp %{PATCH2} ./
+#%patch2 -p0 -b .buildroot
 
 %build
 %configure
@@ -93,6 +93,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}
 
 %changelog
+* Tue Jan   2 2007 Shawn McCann <mccann0011@hotmail.com> - 4.5.0-1
+- Updated to proj-4.5.0
+
 * Sat Sep  16 2006 Shawn McCann <mccann0011@hotmail.com> - 4.4.9-4
 - Rebuild for Fedora Extras 6
 
