@@ -7,11 +7,9 @@ Group: Applications/Engineering
 License: MIT
 URL: http://www.remotesensing.org/proj/
 Source0: ftp://ftp.remotesensing.org/pub/proj/proj-%{version}.tar.gz
-Source1: ftp://ftp.remotesensing.org/pub/proj/proj-nad27-1.1.tar.gz
+Source1: ftp://ftp.remotesensing.org/pub/proj/proj-datumgrid-1.3.zip
 Source2: http://packages.debian.org/changelogs/pool/main/p/proj/proj_4.4.8-3/proj.copyright
 Patch0: proj.copyright.patch
-#Patch1: proj.test_scripts.patch
-#Patch2: pj_gridinfo.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %package devel
@@ -41,17 +39,12 @@ This package contains additional US and Canadian datum shift grids.
 # Prepare copyright
 cp %{SOURCE2} ./
 %patch0 -p0 -b .buildroot
-#%patch1 -p1 -b .buildroot
 cp proj.copyright COPYING
 
 # Prepare nad
 cd nad
-gzip -dc %{SOURCE1} | tar -xvvf -
+unzip %{SOURCE1}
 cd ..
-
-# Patch for Bug 150013
-#cp %{PATCH2} ./
-#%patch2 -p0 -b .buildroot
 
 %build
 %configure
@@ -94,7 +87,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %changelog
 * Tue Jan   2 2007 Shawn McCann <mccann0011@hotmail.com> - 4.5.0-1
-- Updated to proj-4.5.0
+- Updated to proj-4.5.0 and datumgrid-1.3
 
 * Sat Sep  16 2006 Shawn McCann <mccann0011@hotmail.com> - 4.4.9-4
 - Rebuild for Fedora Extras 6
