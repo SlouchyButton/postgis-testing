@@ -1,6 +1,6 @@
 Name: proj
 Version: 4.5.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Cartographic projection software (PROJ.4)
 
 Group: Applications/Engineering
@@ -86,6 +86,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}
 
 %changelog
+* Tue Feb 19 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 4.5.0-2
+- Autorebuild for GCC 4.3
+
 * Tue Jan   2 2007 Shawn McCann <mccann0011@hotmail.com> - 4.5.0-1
 - Updated to proj-4.5.0 and datumgrid-1.3
 
