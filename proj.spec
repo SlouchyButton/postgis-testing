@@ -1,6 +1,6 @@
 Name: proj
 Version: 4.5.0
-Release: 3%{?dist}
+Release: 4%{?dist}
 Summary: Cartographic projection software (PROJ.4)
 
 Group: Applications/Engineering
@@ -11,6 +11,8 @@ Source1: ftp://ftp.remotesensing.org/pub/proj/proj-datumgrid-1.3.zip
 Source2: http://packages.debian.org/changelogs/pool/main/p/proj/proj_4.4.8-3/proj.copyright
 Patch0: proj.copyright.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+BuildRequires: libtool
 
 %package devel
 Summary: Development files for PROJ.4
@@ -122,6 +124,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Thu Mar 27 2008 Balint Cristian <rezso@rdsor.ro> - 4.5.0-4
+- BuildRequire: libtool
+
 * Thu Mar 27 2008 Balint Cristian <rezso@rdsor.ro> - 4.5.0-3
 - enable EPSG dataset to be packed GRASS really needs it
 - no more license issue over epsg dataset, proj didnt altered
