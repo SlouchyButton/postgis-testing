@@ -1,6 +1,6 @@
 Name: proj
 Version: 4.5.0
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Cartographic projection software (PROJ.4)
 
 Group: Applications/Engineering
@@ -22,6 +22,11 @@ Summary: US and Canadian datum shift grids for PROJ.4
 Group: Applications/Engineering
 Requires: %{name} = %{version}-%{release}
 
+%package epsg
+Summary: EPSG dataset for PROJ.4
+Group: Applications/Engineering
+Requires: %{name} = %{version}-%{release}
+
 %description
 Proj and invproj perform respective forward and inverse transformation of
 cartographic data to or from cartesian data with a wide range of selectable
@@ -33,6 +38,9 @@ This package contains libproj and the appropriate header files and man pages.
 %description nad
 This package contains additional US and Canadian datum shift grids.
 
+%description epsg
+This package contains additional EPSG dataset.
+
 %prep
 %setup -q
 
@@ -41,10 +49,19 @@ cp %{SOURCE2} ./
 %patch0 -p0 -b .buildroot
 cp proj.copyright COPYING
 
+# disable internal libtool to avoid hardcoded r-path
+for makefile in `find . -type f -name 'Makefile.in'`; do
+sed -i 's|@LIBTOOL@|%{_bindir}/libtool|g' $makefile
+done
+
 # Prepare nad
 cd nad
 unzip %{SOURCE1}
 cd ..
+# fix shebag header of scripts
+for script in `find nad/ -type f -perm -a+x`; do
+sed -i -e '1,1s|:|#!/bin/bash|' $script
+done
 
 %build
 %configure
@@ -55,6 +72,19 @@ rm -rf $RPM_BUILD_ROOT
 %makeinstall
 install -p -m 0644 nad/pj_out27.dist nad/pj_out83.dist nad/td_out.dist $RPM_BUILD_ROOT%{_datadir}/%{name}
 install -p -m 0755 nad/test27 nad/test83 nad/testvarious $RPM_BUILD_ROOT%{_datadir}/%{name}
+install -p -m 0644 nad/epsg $RPM_BUILD_ROOT%{_datadir}/%{name}
+
+%check
+pushd nad
+# set test enviroment for porj
+export PROJ_LIB=$RPM_BUILD_ROOT%{_datadir}/%{name}
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH%{buildroot}%{_libdir}
+# run tests for proj
+./test27      $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
+./test83      $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
+./testntv2    $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
+./testvarious $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
+popd
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -83,9 +113,23 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0755,root,root) %{_datadir}/%{name}/test27
 %attr(0755,root,root) %{_datadir}/%{name}/test83
 %attr(0755,root,root) %{_datadir}/%{name}/testvarious
+%exclude %{_datadir}/%{name}/epsg
 %{_datadir}/%{name}
 
+%files epsg
+%doc nad/README
+%defattr(-,root,root,-)
+%attr(0644,root,root) %{_datadir}/%{name}/epsg
+
 %changelog
+* Thu Mar 27 2008 Balint Cristian <rezso@rdsor.ro> - 4.5.0-3
+- enable EPSG dataset to be packed GRASS really needs it
+- no more license issue over epsg dataset, proj didnt altered
+  EPSG dataset in any way, so its fully EPSG license compliant
+- add support for tests during buildtime
+- disable hardcoded r-path from libs
+- fix shebag for nad scripts
+
 * Tue Feb 19 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 4.5.0-2
 - Autorebuild for GCC 4.3
 
