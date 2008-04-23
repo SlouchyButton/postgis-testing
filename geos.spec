@@ -1,6 +1,6 @@
 Name: geos
 Version: 3.0.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: GEOS is a C++ port of the Java Topology Suite
 
 Group: Applications/Engineering
@@ -49,7 +49,6 @@ Python module to build applications using GEOS and python
 Summary: Ruby modules for GEOS
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
-Requires: ruby(abi) = 1.8
 
 %description ruby
 Ruby module to build applications using GEOS and ruby
@@ -131,6 +130,9 @@ rm -rf $RPM_BUILD_ROOT
 %{ruby_sitearch}/%{name}.so
 
 %changelog
+* Wed Apr 23 2008 Balint Cristian <rezso@rdsor.ro> - 3.0.0-2
+- remove python-abi request, koji fails
+
 * Sun Apr 20 2008 Balint Cristian <rezso@rdsor.ro> - 3.0.0-1
 - New branch upstream
 - Fix gcc43 build
