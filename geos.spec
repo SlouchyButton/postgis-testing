@@ -1,6 +1,6 @@
 Name: geos
 Version: 3.0.0
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: GEOS is a C++ port of the Java Topology Suite
 
 Group: Applications/Engineering
@@ -9,7 +9,7 @@ URL: http://geos.refractions.net
 Source0: http://geos.refractions.net/%{name}-%{version}.tar.bz2
 Patch0:  geos-gcc43.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: doxygen swig libtool
+BuildRequires: doxygen swig ruby libtool
 BuildRequires: python-devel ruby-devel
 
 %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
@@ -130,6 +130,9 @@ rm -rf $RPM_BUILD_ROOT
 %{ruby_sitearch}/%{name}.so
 
 %changelog
+* Wed Apr 23 2008 Balint Cristian <rezso@rdsor.ro> - 3.0.0-3
+- require ruby too
+
 * Wed Apr 23 2008 Balint Cristian <rezso@rdsor.ro> - 3.0.0-2
 - remove python-abi request, koji fails
 
