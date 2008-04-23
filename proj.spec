@@ -1,6 +1,6 @@
 Name: proj
-Version: 4.5.0
-Release: 4%{?dist}
+Version: 4.6.0
+Release: 1%{?dist}
 Summary: Cartographic projection software (PROJ.4)
 
 Group: Applications/Engineering
@@ -66,6 +66,10 @@ sed -i -e '1,1s|:|#!/bin/bash|' $script
 done
 
 %build
+
+# fix version info to respect new ABI
+sed -i -e 's|5\:4\:5|6\:4\:6|' src/Makefile*
+
 %configure
 make OPTIMIZE="$RPM_OPT_FLAGS" %{?_smp_mflags}
 
@@ -124,6 +128,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Sun Apr 20 2008 Balint Cristian <rezso@rdsor.ro> - 4.6.0-1
+- new branch
+
 * Thu Mar 27 2008 Balint Cristian <rezso@rdsor.ro> - 4.5.0-4
 - BuildRequire: libtool
 
