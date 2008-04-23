@@ -41,7 +41,6 @@ use GEOS
 Summary: Python modules for GEOS
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
-Requires: python-abi = %(%{__python} -c "import sys ; print sys.version[:3]")
 
 %description python
 Python module to build applications using GEOS and python
