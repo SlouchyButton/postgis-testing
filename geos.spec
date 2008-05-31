@@ -1,6 +1,6 @@
 Name: geos
 Version: 3.0.0
-Release: 3%{?dist}
+Release: 4%{?dist}
 Summary: GEOS is a C++ port of the Java Topology Suite
 
 Group: Applications/Engineering
@@ -9,8 +9,11 @@ URL: http://geos.refractions.net
 Source0: http://geos.refractions.net/%{name}-%{version}.tar.bz2
 Patch0:  geos-gcc43.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: doxygen swig ruby libtool
+BuildRequires: doxygen libtool
+%if "%{?dist}" != ".el4"
+BuildRequires: swig ruby
 BuildRequires: python-devel ruby-devel
+%endif
 
 %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 %{!?ruby_sitearch: %define ruby_sitearch %(ruby -rrbconfig -e 'puts Config::CONFIG["sitearchdir"]')}
@@ -37,6 +40,7 @@ functions such as IsValid()
 This package contains the development files to build applications that 
 use GEOS
 
+%if "%{?dist}" != ".el4"
 %package python
 Summary: Python modules for GEOS
 Group: Development/Libraries
@@ -52,7 +56,7 @@ Requires: %{name} = %{version}-%{release}
 
 %description ruby
 Ruby module to build applications using GEOS and ruby
-
+%endif
 
 %prep
 %setup -q
@@ -70,8 +74,10 @@ sed -i 's|@LIBTOOL@|%{_bindir}/libtool|g' $makefile
 done
 
 %configure --disable-static --disable-dependency-tracking \
+%if "%{?dist}" != ".el4"
            --enable-python \
            --enable-ruby
+%endif
 
 make %{?_smp_mflags}
 
@@ -113,6 +119,7 @@ rm -rf $RPM_BUILD_ROOT
 %exclude %{_libdir}/*.la
 %exclude %{_libdir}/*.a
 
+%if "%{?dist}" != ".el4"
 %files python
 %defattr(-,root,root,-)
 %dir %{python_sitearch}/%{name}
@@ -128,8 +135,12 @@ rm -rf $RPM_BUILD_ROOT
 %exclude %{ruby_sitearch}/%{name}.a
 %exclude %{ruby_sitearch}/%{name}.la
 %{ruby_sitearch}/%{name}.so
+%endif
 
 %changelog
+* Wed May 28 2008 Balint Cristian <rezso@rdsor.ro> - 3.0.0-4
+- disable bindings for REL4
+
 * Wed Apr 23 2008 Balint Cristian <rezso@rdsor.ro> - 3.0.0-3
 - require ruby too
 
