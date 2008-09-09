@@ -1,15 +1,13 @@
-Name: proj
-Version: 4.6.0
-Release: 1%{?dist}
-Summary: Cartographic projection software (PROJ.4)
+Name:      proj
+Version:   4.6.1
+Release:   1%{?dist}
+Summary:   Cartographic projection software (PROJ.4)
 
-Group: Applications/Engineering
-License: MIT
-URL: http://www.remotesensing.org/proj/
-Source0: ftp://ftp.remotesensing.org/pub/proj/proj-%{version}.tar.gz
-Source1: ftp://ftp.remotesensing.org/pub/proj/proj-datumgrid-1.3.zip
-Source2: http://packages.debian.org/changelogs/pool/main/p/proj/proj_4.4.8-3/proj.copyright
-Patch0: proj.copyright.patch
+Group:     Applications/Engineering
+License:   MIT
+URL:       http://proj.osgeo.org
+Source0:   http://download.osgeo.org/proj/proj-%{version}.tar.gz
+Source1:   http://download.osgeo.org/proj/proj-datumgrid-1.4.zip
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires: libtool
@@ -45,11 +43,6 @@ This package contains additional EPSG dataset.
 
 %prep
 %setup -q
-
-# Prepare copyright
-cp %{SOURCE2} ./
-%patch0 -p0 -b .buildroot
-cp proj.copyright COPYING
 
 # disable internal libtool to avoid hardcoded r-path
 for makefile in `find . -type f -name 'Makefile.in'`; do
@@ -88,6 +81,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH%{buildroot}%{_libdir}
 # run tests for proj
 ./test27      $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
 ./test83      $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
+./testIGNF    $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
 ./testntv2    $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
 ./testvarious $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
 popd
@@ -128,6 +122,12 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Fri Sep 05 2008 Balint Cristian <rezso@rdsor.ro> - 4.6.1-1
+- new stable upstream
+- new nad datumgrids
+- drop debian license patch
+- change homepage URLs
+
 * Sun Apr 20 2008 Balint Cristian <rezso@rdsor.ro> - 4.6.0-1
 - new branch
 
