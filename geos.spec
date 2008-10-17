@@ -1,6 +1,6 @@
 Name: geos
-Version: 3.0.0
-Release: 4%{?dist}
+Version: 3.0.1
+Release: 1%{?dist}
 Summary: GEOS is a C++ port of the Java Topology Suite
 
 Group: Applications/Engineering
@@ -138,6 +138,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Fri Oct 17 2008 Balint Cristian <rezso@rdsor.ro> - 3.0.1-1
+- new stable bugfix
+- fix another gcc43 header
+
 * Wed May 28 2008 Balint Cristian <rezso@rdsor.ro> - 3.0.0-4
 - disable bindings for REL4
 

@@ -175,3 +175,14 @@
  // TUT
  #include <tut.h>
  #include <tut_reporter.h>
+--- source/io/CLocalizer.cpp.orig	2008-10-17 10:45:38.000000000 +0300
++++ source/io/CLocalizer.cpp	2008-10-17 10:49:28.000000000 +0300
+@@ -1,6 +1,8 @@
+ #include <geos/io/CLocalizer.h>
+ 
+ #include <string>
++#include <cstring>
++#include <cstdlib>
+ 
+ using namespace std;
+ 
