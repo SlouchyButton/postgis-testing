@@ -1,6 +1,6 @@
 Name: geos
 Version: 3.0.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: GEOS is a C++ port of the Java Topology Suite
 
 Group: Applications/Engineering
@@ -138,6 +138,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sat Nov 29 2008 Ignacio Vazquez-Abrams <ivazqueznet+rpm@gmail.com> - 3.0.1-2
+- Rebuild for Python 2.6
+
 * Fri Oct 17 2008 Balint Cristian <rezso@rdsor.ro> - 3.0.1-1
 - new stable bugfix
 - fix another gcc43 header
