@@ -1,18 +1,18 @@
-Name: geos
-Version: 3.0.3
-Release: 2%{?dist}
-Summary: GEOS is a C++ port of the Java Topology Suite
+Name:		geos
+Version:	3.1.1
+Release:	1%{?dist}
+Summary:	GEOS is a C++ port of the Java Topology Suite
 
-Group: Applications/Engineering
-License: LGPLv2
-URL: http://geos.refractions.net
-Source0: http://geos.refractions.net/downloads/%{name}-%{version}.tar.bz2
-Patch0:  geos-gcc43.patch
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: doxygen libtool
+Group:		Applications/Engineering
+License:	LGPLv2
+URL:		http://trac.osgeo.org/geos/
+Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
+Patch0:		geos-gcc43.patch
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+BuildRequires:	doxygen libtool
 %if "%{?dist}" != ".el4"
-BuildRequires: swig ruby
-BuildRequires: python-devel ruby-devel
+BuildRequires:	swig ruby
+BuildRequires:	python-devel ruby-devel
 %endif
 
 %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
@@ -26,9 +26,9 @@ predicate functions and spatial operators, as well as specific JTS topology
 functions such as IsValid()
 
 %package devel
-Summary: Development files for GEOS
-Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
+Summary:	Development files for GEOS
+Group:		Development/Libraries
+Requires:	%{name} = %{version}-%{release}
 
 %description devel
 GEOS (Geometry Engine - Open Source) is a C++ port of the Java Topology 
@@ -42,17 +42,17 @@ use GEOS
 
 %if "%{?dist}" != ".el4"
 %package python
-Summary: Python modules for GEOS
-Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
+Summary:	Python modules for GEOS
+Group:		Development/Libraries
+Requires:	%{name} = %{version}-%{release}
 
 %description python
 Python module to build applications using GEOS and python
 
 %package ruby
-Summary: Ruby modules for GEOS
-Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
+Summary:	Ruby modules for GEOS
+Group:		Development/Libraries
+Requires:	%{name} = %{version}-%{release}
 
 %description ruby
 Ruby module to build applications using GEOS and ruby
@@ -86,8 +86,8 @@ cd doc
 make doxygen-html
 
 %install
-rm -rf $RPM_BUILD_ROOT
-make DESTDIR=$RPM_BUILD_ROOT install
+rm -rf %{buildroot}
+make DESTDIR=%{buildroot} install
 
 %check
 
@@ -95,7 +95,7 @@ make DESTDIR=$RPM_BUILD_ROOT install
 make %{?_smp_mflags} check || exit 0
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 %post -p /sbin/ldconfig
 
@@ -138,6 +138,14 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Jun 18 2009 Devrim GUNDUZ <devrim@gunduz.org> - 3.1.1-1
+- Update to 3.1.1
+- Update URL and download URL.
+- Apply cosmetic changes to spec file.
+
+* Sun Apr 26 2009 Devrim GUNDUZ <devrim@gunduz.org> - 3.1.0-1
+- Update to 3.1.0
+
 * Tue Feb 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.0.3-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
 
