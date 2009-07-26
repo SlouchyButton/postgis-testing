@@ -1,6 +1,6 @@
 Name:      proj
 Version:   4.6.1
-Release:   2%{?dist}
+Release:   3%{?dist}
 Summary:   Cartographic projection software (PROJ.4)
 
 Group:     Applications/Engineering
@@ -122,6 +122,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Sun Jul 26 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.6.1-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+
 * Thu Feb 26 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.6.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
 
