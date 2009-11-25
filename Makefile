@@ -1,10 +1,10 @@
 # Makefile for source rpm: geos
-# $Id$
+# $Id: Makefile,v 1.1 2006/01/07 17:59:29 smccann Exp $
 NAME := geos
 SPECFILE = $(firstword $(wildcard *.spec))
 
 define find-makefile-common
-for d in common ../common ../../common ; do if [ -f $$d/Makefile.common ] ; then if [ -f $$d/CVS/Root -a -w $$/Makefile.common ] ; then cd $$d ; cvs -Q update ; fi ; echo "$$d/Makefile.common" ; break ; fi ; done
+for d in common ../common ../../common ; do if [ -f $$d/Makefile.common ] ; then if [ -f $$d/CVS/Root -a -w $$d/Makefile.common ] ; then cd $$d ; cvs -Q update ; fi ; echo "$$d/Makefile.common" ; break ; fi ; done
 endef
 
 MAKEFILE_COMMON := $(shell $(find-makefile-common))
