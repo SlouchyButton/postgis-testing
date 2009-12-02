@@ -1,12 +1,12 @@
 Name:		geos
-Version:	3.1.1
-Release:	2%{?dist}
+Version:	3.2.0
+Release:	rc3_1%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
 License:	LGPLv2
 URL:		http://trac.osgeo.org/geos/
-Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
+Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}rc3.tar.bz2
 Patch0:		geos-gcc43.patch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	doxygen libtool
@@ -28,7 +28,7 @@ functions such as IsValid()
 %package devel
 Summary:	Development files for GEOS
 Group:		Development/Libraries
-Requires:	%{name} = %{version}-%{release}
+Requires:	%{name} = %{version}rc3-%{release}
 
 %description devel
 GEOS (Geometry Engine - Open Source) is a C++ port of the Java Topology 
@@ -44,7 +44,7 @@ use GEOS
 %package python
 Summary:	Python modules for GEOS
 Group:		Development/Libraries
-Requires:	%{name} = %{version}-%{release}
+Requires:	%{name} = %{version}rc3-%{release}
 
 %description python
 Python module to build applications using GEOS and python
@@ -52,14 +52,14 @@ Python module to build applications using GEOS and python
 %package ruby
 Summary:	Ruby modules for GEOS
 Group:		Development/Libraries
-Requires:	%{name} = %{version}-%{release}
+Requires:	%{name} = %{version}rc3-%{release}
 
 %description ruby
 Ruby module to build applications using GEOS and ruby
 %endif
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{version}rc3
 %patch0 -p0 -b .gcc43
 
 %build
@@ -104,7 +104,7 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %doc AUTHORS COPYING NEWS README TODO
-%{_libdir}/libgeos-%{version}.so
+%{_libdir}/libgeos-%{version}rc3.so
 %{_libdir}/libgeos_c.so.*
 %exclude %{_libdir}/*.a
 
@@ -137,6 +137,9 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Wed Dec 2 2009 Devrim GUNDUZ <devrim@gunduz.org> - 3.2.0rc3-1
+- Update to 3.2.0 rc3
+
 * Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
 
