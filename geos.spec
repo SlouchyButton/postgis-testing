@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.2.0
-Release:	rc3_1%{?dist}
+Release:	rc3_1%{?dist}.1
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -28,7 +28,7 @@ functions such as IsValid()
 %package devel
 Summary:	Development files for GEOS
 Group:		Development/Libraries
-Requires:	%{name} = %{version}rc3-%{release}
+Requires:	%{name} = %{version}-%{release}
 
 %description devel
 GEOS (Geometry Engine - Open Source) is a C++ port of the Java Topology 
@@ -44,7 +44,7 @@ use GEOS
 %package python
 Summary:	Python modules for GEOS
 Group:		Development/Libraries
-Requires:	%{name} = %{version}rc3-%{release}
+Requires:	%{name} = %{version}-%{release}
 
 %description python
 Python module to build applications using GEOS and python
@@ -52,7 +52,7 @@ Python module to build applications using GEOS and python
 %package ruby
 Summary:	Ruby modules for GEOS
 Group:		Development/Libraries
-Requires:	%{name} = %{version}rc3-%{release}
+Requires:	%{name} = %{version}-%{release}
 
 %description ruby
 Ruby module to build applications using GEOS and ruby
@@ -137,6 +137,9 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Thu Dec 03 2009 Devrim GÜNDÜZ <devrim@gunduz.org> - 3.2.0-rc3_1.1
+- Fix spec (dep error).
+
 * Wed Dec 2 2009 Devrim GUNDUZ <devrim@gunduz.org> - 3.2.0rc3-1
 - Update to 3.2.0 rc3
 
