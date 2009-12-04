@@ -1,31 +1,31 @@
-Name:      proj
-Version:   4.6.1
-Release:   3%{?dist}
-Summary:   Cartographic projection software (PROJ.4)
+Name:		proj
+Version:	4.7.0
+Release:	1%{?dist}
+Summary:	Cartographic projection software (PROJ.4)
 
-Group:     Applications/Engineering
-License:   MIT
-URL:       http://proj.osgeo.org
-Source0:   http://download.osgeo.org/proj/proj-%{version}.tar.gz
-Source1:   http://download.osgeo.org/proj/proj-datumgrid-1.4.zip
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Group:		Applications/Engineering
+License:	MIT
+URL:		http://proj.osgeo.org
+Source0:	http://download.osgeo.org/proj/proj-%{version}.tar.gz
+Source1:	http://download.osgeo.org/proj/proj-datumgrid-1.5.zip
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires: libtool
+BuildRequires:	libtool
 
 %package devel
-Summary: Development files for PROJ.4
-Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
+Summary:	Development files for PROJ.4
+Group:		Development/Libraries
+Requires:	%{name} = %{version}-%{release}
 
 %package nad
-Summary: US and Canadian datum shift grids for PROJ.4
-Group: Applications/Engineering
-Requires: %{name} = %{version}-%{release}
+Summary:	US and Canadian datum shift grids for PROJ.4
+Group:		Applications/Engineering
+Requires:	%{name} = %{version}-%{release}
 
 %package epsg
-Summary: EPSG dataset for PROJ.4
-Group: Applications/Engineering
-Requires: %{name} = %{version}-%{release}
+Summary:	EPSG dataset for PROJ.4
+Group:		Applications/Engineering
+Requires:	%{name} = %{version}-%{release}
 
 %description
 Proj and invproj perform respective forward and inverse transformation of
@@ -122,6 +122,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Fri Dec 4 2009 Devrim GÜNDÜZ <devrim@gunduz.org> 4.7.0-1
+- Update to 4.7.0
+- Update to new datumgrid (1.5)
+
 * Sun Jul 26 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.6.1-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
 
