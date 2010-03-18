@@ -1,6 +1,6 @@
 Name:           proj
 Version:        4.7.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Cartographic projection software (PROJ.4)
 
 Group:          Applications/Engineering
@@ -16,7 +16,7 @@ BuildRequires:  libtool
 %description
 Proj and invproj perform respective forward and inverse transformation of
 cartographic data to or from cartesian data with a wide range of selectable
-projection functions. Proj docs: http://www.remotesensing.org/dl/new_docs/
+projection functions.
 
 
 %package devel
@@ -140,6 +140,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Thu Mar 18 2010 Balint Cristian <cristian.balint@gmail.com> - 4.7.0-3
+- fix for bz#562671
+
 * Thu Mar 18 2010 Balint Cristian <cristian.balint@gmail.com> - 4.7.0-2
 - fix for bz#556091
 
