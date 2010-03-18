@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.2.0
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -67,6 +67,7 @@ Ruby module to build applications using GEOS and ruby
 # fix python path on 64bit
 sed -i -e 's|\/lib\/python|$libdir\/python|g' configure
 sed -i -e 's|.get_python_lib(0|.get_python_lib(1|g' configure
+sed -i -e 's|find \$i -name libpython|find \$i\/lib*\/ -name libpython|g' configure
 
 # disable internal libtool to avoid hardcoded r-path
 for makefile in `find . -type f -name 'Makefile.in'`; do
@@ -137,6 +138,9 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Thu Mar 18 2010 Balint Cristian <cristian.balint@gmail.com> - 3.2.0-2
+- fix bz#473975
+
 * Sun Dec 20 2009 Devrim GUNDUZ <devrim@gunduz.org> - 3.2.0-1
 - Update to 3.2.0
 
