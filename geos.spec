@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.2.1
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -8,6 +8,8 @@ License:	LGPLv2
 URL:		http://trac.osgeo.org/geos/
 Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
 Patch0:		geos-gcc43.patch
+# fixed in upstream revision 3000
+Patch1:		geos-3.2.1-swig.patch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	doxygen libtool
 %if "%{?dist}" != ".el4"
@@ -61,6 +63,7 @@ Ruby module to build applications using GEOS and ruby
 %prep
 %setup -q 
 %patch0 -p0 -b .gcc43
+%patch1 -p1 -b .swig
 
 %build
 
@@ -138,6 +141,9 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Wed Jul 21 2010 Dan Horák <dan[at]danny.cz> - 3.2.1-2
+- fix build with swig 2.0.0
+
 * Tue Mar 30 2010 Devrim GUNDUZ <devrim@gunduz.org> - 3.2.1-1
 - Update to 3.2.1
 
