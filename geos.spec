@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.2.1
-Release:	2%{?dist}
+Release:	3%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -141,6 +141,9 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Wed Jul 21 2010 David Malcolm <dmalcolm@redhat.com> - 3.2.1-3
+- Rebuilt for https://fedoraproject.org/wiki/Features/Python_2.7/MassRebuild
+
 * Wed Jul 21 2010 Dan Horák <dan[at]danny.cz> - 3.2.1-2
 - fix build with swig 2.0.0
 
