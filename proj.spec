@@ -1,6 +1,6 @@
 Name:           proj
 Version:        4.7.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Cartographic projection software (PROJ.4)
 
 Group:          Applications/Engineering
@@ -140,6 +140,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.7.0-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
 * Thu Mar 18 2010 Balint Cristian <cristian.balint@gmail.com> - 4.7.0-3
 - fix for bz#562671
 
