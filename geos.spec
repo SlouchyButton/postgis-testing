@@ -1,6 +1,6 @@
 Name:		geos
-Version:	3.2.1
-Release:	4%{?dist}
+Version:	3.2.2
+Release:	1%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -10,6 +10,7 @@ Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
 Patch0:		geos-gcc43.patch
 # fixed in upstream revision 3000
 Patch1:		geos-3.2.1-swig.patch
+Patch2:		geos-3.2.0-ARM.patch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	doxygen libtool
 %if "%{?dist}" != ".el4"
@@ -64,6 +65,7 @@ Ruby module to build applications using GEOS and ruby
 %setup -q 
 %patch0 -p0 -b .gcc43
 %patch1 -p1 -b .swig
+%patch2 -p0
 
 %build
 
@@ -141,6 +143,10 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Mon May 9 2011 Devrim GUNDUZ <devrim@gunduz.org> - 3.2.2-1
+- Update to 3.2.2
+- Add a patch to fix builds on ARM, per bz #682538
+
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
