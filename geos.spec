@@ -14,11 +14,12 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	doxygen libtool
 %if "%{?dist}" != ".el4"
 BuildRequires:	swig ruby
-BuildRequires:	python-devel ruby-devel
+BuildRequires:	python-devel ruby-devel php-devel
 %endif
 
 %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 %{!?ruby_sitearch: %define ruby_sitearch %(ruby -rrbconfig -e 'puts Config::CONFIG["sitearchdir"]')}
+%{!?php_sitearch: %define php_sitearch %{_libdir}/php/modules}
 
 %description
 GEOS (Geometry Engine - Open Source) is a C++ port of the Java Topology 
@@ -58,6 +59,14 @@ Requires:	%{name} = %{version}-%{release}
 
 %description ruby
 Ruby module to build applications using GEOS and ruby
+
+%package php
+Summary:	PHP modules for GEOS
+Group:		Development/Libraries
+Requires:	%{name} = %{version}-%{release}
+
+%description php
+PHP module to build applications using GEOS and PHP
 %endif
 
 %prep
@@ -79,7 +88,8 @@ done
 %configure --disable-static --disable-dependency-tracking \
 %if "%{?dist}" != ".el4"
            --enable-python \
-           --enable-ruby
+           --enable-ruby \
+           --enable-php
 %endif
 
 make %{?_smp_mflags}
@@ -91,6 +101,13 @@ make doxygen-html
 %install
 rm -rf %{buildroot}
 make DESTDIR=%{buildroot} install
+
+# install php config file
+mkdir -p %{buildroot}%{_sysconfdir}/php.d/
+cat > %{buildroot}%{_sysconfdir}/php.d/%{name}.ini <<EOF
+; Enable %{name} extension module
+extension=geos.so
+EOF
 
 %check
 
@@ -137,9 +154,17 @@ rm -rf %{buildroot}
 %exclude %{ruby_sitearch}/%{name}.a
 %exclude %{ruby_sitearch}/%{name}.la
 %{ruby_sitearch}/%{name}.so
+
+%files php
+%defattr(-,root,root,-)
+%{php_sitearch}/%{name}.so
+%config(noreplace) %{_sysconfdir}/php.d/%{name}.ini
 %endif
 
 %changelog
+* Tue Oct 18 2011 Devrim GUNDUZ <devrim@gunduz.org> - 3.3.1-2
+- Enable PHP bindings, per Peter Hopfgartner, bz #746574
+
 * Tue Oct 4 2011 Devrim GUNDUZ <devrim@gunduz.org> - 3.3.1-1
 - Update to 3.3.1
 
