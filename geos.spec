@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.3.1
-Release:	1%{?dist}
+Release:	3%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -125,7 +125,7 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %doc AUTHORS COPYING NEWS README TODO
 %{_libdir}/libgeos-%{version}.so
-%{_libdir}/libgeos_c.so.*
+%{_libdir}/libgeos_c.so.1*
 %exclude %{_libdir}/*.a
 
 %files devel
@@ -162,6 +162,9 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Tue Dec 27 2011 Rex Dieter <rdieter@fedoraproject.org> 3.3.1-3
+- track soname so abi bumps aren't a surprise
+
 * Tue Oct 18 2011 Devrim GUNDUZ <devrim@gunduz.org> - 3.3.1-2
 - Enable PHP bindings, per Peter Hopfgartner, bz #746574
 
