@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.3.2
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -10,6 +10,12 @@ Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
 Patch0:		geos-gcc43.patch
 # fixed in upstream revision 3000
 Patch1:		geos-3.2.1-swig.patch
+# Fixes SWIG interface for Ruby 1.9 compatibility.
+# http://trac.osgeo.org/geos/ticket/379
+Patch2:		geos-3.3.2-ruby-19.patch
+# Fixes PHP 5.4 build issues.
+# http://trac.osgeo.org/geos/ticket/513
+Patch3:		geos-3.3.2-php-5.4.patch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	doxygen libtool
 %if "%{?dist}" != ".el4"
@@ -18,7 +24,6 @@ BuildRequires:	python-devel ruby-devel php-devel
 %endif
 
 %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
-%{!?ruby_sitearch: %define ruby_sitearch %(ruby -rrbconfig -e 'puts Config::CONFIG["sitearchdir"]')}
 %{!?php_sitearch: %define php_sitearch %{_libdir}/php/modules}
 
 %description
@@ -72,6 +77,8 @@ PHP module to build applications using GEOS and PHP
 %prep
 %setup -q 
 %patch0 -p0 -b .gcc43
+%patch2 -p0 -b .ruby19
+%patch3 -p0 -b .php54
 
 %build
 
@@ -85,14 +92,16 @@ for makefile in `find . -type f -name 'Makefile.in'`; do
 sed -i 's|@LIBTOOL@|%{_bindir}/libtool|g' $makefile
 done
 
+# Use correct library placement for Ruby 1.9.
+sed -i 's|sitearchdir|vendorarchdir|' configure
+
 %configure --disable-static --disable-dependency-tracking \
 %if "%{?dist}" != ".el4"
            --enable-python \
            --enable-ruby \
            --enable-php
 %endif
-
-make %{?_smp_mflags}
+make %{?_smp_mflags} CPPFLAGS=-I`ruby -e 'puts File.join(RbConfig::CONFIG[%q(includedir)], RbConfig::CONFIG[%q(sitearch)])'`
 
 # Make doxygen documentation files
 cd doc
@@ -151,9 +160,9 @@ rm -rf %{buildroot}
 
 %files ruby
 %defattr(-,root,root,-)
-%exclude %{ruby_sitearch}/%{name}.a
-%exclude %{ruby_sitearch}/%{name}.la
-%{ruby_sitearch}/%{name}.so
+%exclude %{ruby_vendorarchdir}/%{name}.a
+%exclude %{ruby_vendorarchdir}/%{name}.la
+%{ruby_vendorarchdir}/%{name}.so
 
 %files php
 %defattr(-,root,root,-)
@@ -162,6 +171,10 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Mon Feb 27 2012 Vít Ondruch <vondruch@redhat.com> - 3.3.2-2
+- Rebuilt for Ruby 1.9.3.
+- Rebuilt for PHP 5.4.
+
 * Mon Jan 09 2012 Devrim GUNDUZ <devrim@gunduz.org> - 3.3.2-1
 - Update to 3.3.2
 
