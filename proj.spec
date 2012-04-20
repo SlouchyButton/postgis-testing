@@ -1,6 +1,6 @@
 Name:           proj
-Version:        4.7.0
-Release:        5%{?dist}
+Version:        4.8.0
+Release:        1%{?dist}
 Summary:        Cartographic projection software (PROJ.4)
 
 Group:          Applications/Engineering
@@ -8,6 +8,7 @@ License:        MIT
 URL:            http://proj.osgeo.org
 Source0:        http://download.osgeo.org/proj/proj-%{version}.tar.gz
 Source1:        http://download.osgeo.org/proj/proj-datumgrid-1.5.zip
+Patch0:		proj-4.8.0-removeinclude.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  libtool
@@ -55,6 +56,7 @@ This package contains additional EPSG dataset.
 
 %prep
 %setup -q
+%patch0 -p0
 
 # disable internal libtool to avoid hardcoded r-path
 for makefile in `find . -type f -name 'Makefile.in'`; do
@@ -131,6 +133,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0755,root,root) %{_datadir}/%{name}/test27
 %attr(0755,root,root) %{_datadir}/%{name}/test83
 %attr(0755,root,root) %{_datadir}/%{name}/testvarious
+%attr(0755,root,root) %{_libdir}/pkgconfig/%{name}.pc
 %exclude %{_datadir}/%{name}/epsg
 %{_datadir}/%{name}
 
@@ -140,6 +143,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Fri Apr 20 2012 Devrim GÜNDÜZ <devrim@gunduz.org> 4.8.0-1
+- Update to 4.8.0, per bz #814851
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.7.0-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
