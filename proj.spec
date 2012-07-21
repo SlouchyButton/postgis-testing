@@ -1,6 +1,6 @@
 Name:           proj
 Version:        4.8.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Cartographic projection software (PROJ.4)
 
 Group:          Applications/Engineering
@@ -143,6 +143,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.8.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
 * Fri Apr 20 2012 Devrim GÜNDÜZ <devrim@gunduz.org> 4.8.0-1
 - Update to 4.8.0, per bz #814851
 
