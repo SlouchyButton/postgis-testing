@@ -1,6 +1,6 @@
 Name:           proj
 Version:        4.8.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Cartographic projection software (PROJ.4)
 
 Group:          Applications/Engineering
@@ -87,6 +87,9 @@ install -p -m 0644 nad/pj_out27.dist nad/pj_out83.dist nad/td_out.dist $RPM_BUIL
 install -p -m 0755 nad/test27 nad/test83 nad/testvarious $RPM_BUILD_ROOT%{_datadir}/%{name}
 install -p -m 0644 nad/epsg $RPM_BUILD_ROOT%{_datadir}/%{name}
 
+# Install projects.h manually, per #830496:
+install -p -m 0644 src/projects.h $RPM_BUILD_ROOT%{_includedir}/
+
 %check
 pushd nad
 # set test enviroment for porj
@@ -143,6 +146,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Thu Aug 16 2012 Devrim GÜNDÜZ <devrim@gunduz.org> 4.8.0-3
+- Install projects.h manually, per #830496.
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.8.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
