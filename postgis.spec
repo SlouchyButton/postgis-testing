@@ -2,15 +2,15 @@
 %{!?utils:%define	utils 1}
 %{!?gcj_support:%define	gcj_support 1}
 
-%global majorversion 1.5
+%global majorversion 2.0
 
-%global pg_version_minimum 8.2
+%global pg_version_minimum 9.2
 %global pg_version_built  %(if [ -x %{_bindir}/pg_config ]; then %{_bindir}/pg_config --version | /bin/sed 's,^PostgreSQL *,,gi'; else echo %{pg_version_minimum}; fi)
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	1.5.3
-Release:	4%{?dist}
+Version:	2.0.1
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://postgis.refractions.net/download/%{name}-%{version}.tar.gz
@@ -20,9 +20,9 @@ Patch0:		postgis-1.5.1-pgsql9.patch
 URL:		http://postgis.refractions.net/
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.1.1, byacc, proj-devel, flex, sinjdoc, java, java-devel, ant
-BuildRequires:	gtk2-devel, libxml2-devel
-Requires:	postgresql >= %{pg_version_built}, geos >= 3.1.1, proj
+BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.1.1 byacc, proj-devel, flex, sinjdoc, java, java-devel, ant
+BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.9.0
+Requires:	postgresql >= %{pg_version_built}, geos >= 3.1.1, proj, gdal >= 1.9.0
 
 %description
 PostGIS adds support for geographic objects to the PostgreSQL object-relational
@@ -176,6 +176,12 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Tue Nov 13 2012 Devrim GÜNDÜZ <devrim@gunduz.org> - 2.0.1-1
+- Update to 2.0.1, so it works against PostgreSQL 9.2,
+  which also fixes #872710.
+- Add deps for gdal.
+- Remove patch3
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.5.3-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
