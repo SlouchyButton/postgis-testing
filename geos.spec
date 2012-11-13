@@ -1,6 +1,6 @@
 Name:		geos
-Version:	3.3.2
-Release:	3%{?dist}
+Version:	3.3.5
+Release:	1%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -13,9 +13,7 @@ Patch1:		geos-3.2.1-swig.patch
 # Fixes SWIG interface for Ruby 1.9 compatibility.
 # http://trac.osgeo.org/geos/ticket/379
 Patch2:		geos-3.3.2-ruby-19.patch
-# Fixes PHP 5.4 build issues.
-# http://trac.osgeo.org/geos/ticket/513
-Patch3:		geos-3.3.2-php-5.4.patch
+
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	doxygen libtool
 %if "%{?dist}" != ".el4"
@@ -78,7 +76,6 @@ PHP module to build applications using GEOS and PHP
 %setup -q 
 %patch0 -p0 -b .gcc43
 %patch2 -p0 -b .ruby19
-%patch3 -p0 -b .php54
 
 %build
 
@@ -171,6 +168,9 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Tue Nov 13 2012 Devrim GUNDUZ <devrim@gunduz.org> - 3.3.5-1
+- Update to 3.3.5
+
 * Thu Jul 19 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.3.2-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
