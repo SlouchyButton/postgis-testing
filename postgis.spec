@@ -1,6 +1,6 @@
-%{!?javabuild:%define	javabuild 1}
+%{!?javabuild:%define	javabuild 0}
 %{!?utils:%define	utils 1}
-%{!?gcj_support:%define	gcj_support 1}
+%{!?gcj_support:%define	gcj_support 0}
 
 %global majorversion 2.0
 
@@ -181,6 +181,8 @@ rm -rf %{buildroot}
   which also fixes #872710.
 - Add deps for gdal.
 - Remove patch3
+- Don't build JDBC portions. I have already disabled it in
+  upstream packaging 8 months ago.
 
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.5.3-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
