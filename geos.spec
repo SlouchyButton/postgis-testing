@@ -170,6 +170,7 @@ rm -rf %{buildroot}
 %changelog
 * Tue Nov 13 2012 Devrim GUNDUZ <devrim@gunduz.org> - 3.3.5-1
 - Update to 3.3.5
+- Remove patch3, already in upstream.
 
 * Thu Jul 19 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.3.2-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
