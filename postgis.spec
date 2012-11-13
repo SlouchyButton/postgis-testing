@@ -180,7 +180,6 @@ rm -rf %{buildroot}
 - Update to 2.0.1, so it works against PostgreSQL 9.2,
   which also fixes #872710.
 - Add deps for gdal.
-- Remove patch3
 - Don't build JDBC portions. I have already disabled it in
   upstream packaging 8 months ago.
 
