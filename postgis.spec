@@ -9,7 +9,7 @@
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	2.0.1
+Version:	2.0.2
 Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
@@ -176,6 +176,10 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Tue Jan 16 2013 Devrim GÜNDÜZ <devrim@gunduz.org> - 2.0.2-1
+- Update to 2.0.2, for various changes described at:
+  http://www.postgis.org/news/20121203/
+
 * Tue Nov 13 2012 Devrim GÜNDÜZ <devrim@gunduz.org> - 2.0.1-1
 - Update to 2.0.1, so it works against PostgreSQL 9.2,
   which also fixes #872710.
