@@ -139,6 +139,13 @@ rm -rf %{buildroot}
 %attr(755,root,root) %{_libdir}/pgsql/postgis-*.so
 %{_datadir}/pgsql/contrib/*.sql
 %{_datadir}/pgsql/contrib/%{name}-%{majorversion}/*.sql
+%{_datadir}/pgsql/extension/postgis-*.sql
+%{_datadir}/pgsql/extension/postgis_topology*.sql
+%{_datadir}/pgsql/extension/postgis.control
+%{_datadir}/postgis/svn_repo_revision.pl
+%{_includedir}/liblwgeom.h
+%{_libdir}/liblwgeom*
+%{_libdir}/pgsql/rtpostgis-%{majorversion}.so
 
 %if %javabuild
 %files jdbc
@@ -175,6 +182,7 @@ rm -rf %{buildroot}
 %changelog
 * Fri Jan 25 2013 Devrim GÜNDÜZ <devrim@gunduz.org> - 2.0.2-2
 - Rebuilt against geos 3.3.7.
+- Apply changes for PostgreSQL 9.2 and extensions.
 
 * Wed Jan 16 2013 Devrim GÜNDÜZ <devrim@gunduz.org> - 2.0.2-1
 - Update to 2.0.2, for various changes described at:
