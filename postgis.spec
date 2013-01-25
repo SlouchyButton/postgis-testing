@@ -106,8 +106,6 @@ rm -f  %{buildroot}%{_datadir}/*.sql
 
 if [ "%{_libdir}" = "/usr/lib64" ] ; then
 	mv %{buildroot}%{_datadir}/pgsql/contrib/%{name}-%{majorversion}/postgis.sql %{buildroot}%{_datadir}/pgsql/contrib/postgis-64.sql
-	mv %{buildroot}%{_datadir}/pgsql/contrib/%{name}-%{majorversion}/postgis_upgrade_13_to_15.sql %{buildroot}%{_datadir}/pgsql/contrib/%{name}-%{majorversion}/postgis_upgrade_13_to_15-64.sql
-	mv %{buildroot}%{_datadir}/pgsql/contrib/%{name}-%{majorversion}/postgis_upgrade_14_to_15.sql %{buildroot}%{_datadir}/pgsql/contrib/%{name}-%{majorversion}/postgis_upgrade_14_to_15-64.sql
 fi
 
 %if %javabuild
