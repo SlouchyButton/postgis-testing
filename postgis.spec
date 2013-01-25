@@ -139,9 +139,11 @@ rm -rf %{buildroot}
 %attr(755,root,root) %{_libdir}/pgsql/postgis-*.so
 %{_datadir}/pgsql/contrib/*.sql
 %{_datadir}/pgsql/contrib/%{name}-%{majorversion}/*.sql
+%{_datadir}/pgsql/contrib/%{name}-%{majorversion}/postgis_restore.pl
 %{_datadir}/pgsql/extension/postgis-*.sql
 %{_datadir}/pgsql/extension/postgis_topology*.sql
 %{_datadir}/pgsql/extension/postgis.control
+%{_datadir}/pgsql/extension/postgis_topology.control
 %{_datadir}/postgis/svn_repo_revision.pl
 %{_includedir}/liblwgeom.h
 %{_libdir}/liblwgeom*
