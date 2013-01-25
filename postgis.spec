@@ -10,7 +10,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	2.0.2
-Release:	1%{?dist}
+Release:	2%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://postgis.refractions.net/download/%{name}-%{version}.tar.gz
@@ -176,6 +176,9 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Fri Jan 25 2013 Devrim GÜNDÜZ <devrim@gunduz.org> - 2.0.2-2
+- Rebuilt against geos 3.3.7.
+
 * Tue Jan 16 2013 Devrim GÜNDÜZ <devrim@gunduz.org> - 2.0.2-1
 - Update to 2.0.2, for various changes described at:
   http://www.postgis.org/news/20121203/
