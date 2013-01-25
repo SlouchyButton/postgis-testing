@@ -163,7 +163,6 @@ rm -rf %{buildroot}
 %{_datadir}/%{name}/create_undef.pl
 %{_datadir}/%{name}/%{name}_proc_upgrade.pl
 %{_datadir}/%{name}/%{name}_restore.pl
-%{_datadir}/%{name}/new_postgis_restore.pl
 %{_datadir}/%{name}/read_scripts_version.pl
 %{_datadir}/%{name}/test_geography_estimation.pl
 %{_datadir}/%{name}/test_geography_joinestimation.pl
@@ -177,7 +176,7 @@ rm -rf %{buildroot}
 * Fri Jan 25 2013 Devrim GÜNDÜZ <devrim@gunduz.org> - 2.0.2-2
 - Rebuilt against geos 3.3.7.
 
-* Tue Jan 16 2013 Devrim GÜNDÜZ <devrim@gunduz.org> - 2.0.2-1
+* Wed Jan 16 2013 Devrim GÜNDÜZ <devrim@gunduz.org> - 2.0.2-1
 - Update to 2.0.2, for various changes described at:
   http://www.postgis.org/news/20121203/
 
