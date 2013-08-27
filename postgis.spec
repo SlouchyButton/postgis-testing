@@ -10,7 +10,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	2.0.3
-Release:	3%{?dist}
+Release:	4%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -182,6 +182,9 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Tue Aug 27 2013 Orion Poplawski <orion@cora.nwra.com> - 2.0.3-4
+- Rebuild for gdal 1.10.0
+
 * Sun Aug 04 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.0.3-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
