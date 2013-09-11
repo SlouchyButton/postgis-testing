@@ -12,8 +12,7 @@ Patch0:		geos-gcc43.patch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	doxygen libtool
 %if "%{?dist}" != ".el4"
-BuildRequires:	swig ruby
-BuildRequires:	python-devel ruby-devel php-devel
+BuildRequires:	python-devel php-devel
 %endif
 
 %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
@@ -50,14 +49,6 @@ Requires:	%{name} = %{version}-%{release}
 %description python
 Python module to build applications using GEOS and python
 
-%package ruby
-Summary:	Ruby modules for GEOS
-Group:		Development/Libraries
-Requires:	%{name} = %{version}-%{release}
-
-%description ruby
-Ruby module to build applications using GEOS and ruby
-
 %package php
 Summary:	PHP modules for GEOS
 Group:		Development/Libraries
@@ -83,16 +74,14 @@ for makefile in `find . -type f -name 'Makefile.in'`; do
 sed -i 's|@LIBTOOL@|%{_bindir}/libtool|g' $makefile
 done
 
-# Use correct library placement for Ruby 1.9.
-sed -i 's|sitearchdir|vendorarchdir|' configure
+%configure --disable-static --disable-dependency-tracking --enable-python --enable-php
 
-%configure --disable-static --disable-dependency-tracking \
-%if "%{?dist}" != ".el4"
-           --enable-python \
-           --enable-ruby \
-           --enable-php
+# Touch the file, since we are not using ruby bindings anymore:
+# Per http://lists.osgeo.org/pipermail/geos-devel/2009-May/004149.html
+touch swig/python/geos_wrap.cxx
+
 %endif
-make %{?_smp_mflags} CPPFLAGS=-I`ruby -e 'puts File.join(RbConfig::CONFIG[%q(includedir)], RbConfig::CONFIG[%q(sitearch)])'`
+make %{?_smp_mflags}
 
 # Make doxygen documentation files
 cd doc
@@ -149,12 +138,6 @@ rm -rf %{buildroot}
 %{python_sitearch}/%{name}/*.py?
 %{python_sitearch}/%{name}/_%{name}.so
 
-%files ruby
-%defattr(-,root,root,-)
-%exclude %{ruby_vendorarchdir}/%{name}.a
-%exclude %{ruby_vendorarchdir}/%{name}.la
-%{ruby_vendorarchdir}/%{name}.so
-
 %files php
 %defattr(-,root,root,-)
 %{php_sitearch}/%{name}.so
@@ -166,6 +149,7 @@ rm -rf %{buildroot}
 - Update to 3.4.2, per changes described in:
   http://trac.osgeo.org/geos/browser/tags/3.4.2/NEWS
 - Remove Patch2, it is now in upstream.
+- Disable ruby bindings
 
 * Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.3.8-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
