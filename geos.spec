@@ -8,11 +8,6 @@ License:	LGPLv2
 URL:		http://trac.osgeo.org/geos/
 Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
 Patch0:		geos-gcc43.patch
-# fixed in upstream revision 3000
-Patch1:		geos-3.2.1-swig.patch
-# Fixes SWIG interface for Ruby 1.9 compatibility.
-# http://trac.osgeo.org/geos/ticket/379
-Patch2:		geos-3.3.2-ruby-19.patch
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	doxygen libtool
@@ -75,7 +70,6 @@ PHP module to build applications using GEOS and PHP
 %prep
 %setup -q 
 %patch0 -p0 -b .gcc43
-%patch2 -p0 -b .ruby19
 
 %build
 
@@ -171,6 +165,7 @@ rm -rf %{buildroot}
 * Wed Sep 11 2013 Devrim GUNDUZ <devrim@gunduz.org> - 3.4.2-1
 - Update to 3.4.2, per changes described in:
   http://trac.osgeo.org/geos/browser/tags/3.4.2/NEWS
+- Remove Patch2, it is now in upstream.
 
 * Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.3.8-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
