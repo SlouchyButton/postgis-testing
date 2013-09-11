@@ -11,9 +11,7 @@ Patch0:		geos-gcc43.patch
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	doxygen libtool
-%if "%{?dist}" != ".el4"
 BuildRequires:	python-devel php-devel
-%endif
 
 %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 %{!?php_sitearch: %define php_sitearch %{_libdir}/php/modules}
@@ -40,7 +38,6 @@ functions such as IsValid()
 This package contains the development files to build applications that 
 use GEOS
 
-%if "%{?dist}" != ".el4"
 %package python
 Summary:	Python modules for GEOS
 Group:		Development/Libraries
@@ -56,7 +53,6 @@ Requires:	%{name} = %{version}-%{release}
 
 %description php
 PHP module to build applications using GEOS and PHP
-%endif
 
 %prep
 %setup -q 
@@ -80,7 +76,6 @@ done
 # Per http://lists.osgeo.org/pipermail/geos-devel/2009-May/004149.html
 touch swig/python/geos_wrap.cxx
 
-%endif
 make %{?_smp_mflags}
 
 # Make doxygen documentation files
@@ -127,7 +122,6 @@ rm -rf %{buildroot}
 %exclude %{_libdir}/*.la
 %exclude %{_libdir}/*.a
 
-%if "%{?dist}" != ".el4"
 %files python
 %defattr(-,root,root,-)
 %dir %{python_sitearch}/%{name}
@@ -142,7 +136,6 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %{php_sitearch}/%{name}.so
 %config(noreplace) %{_sysconfdir}/php.d/%{name}.ini
-%endif
 
 %changelog
 * Wed Sep 11 2013 Devrim GUNDUZ <devrim@gunduz.org> - 3.4.2-1
@@ -150,6 +143,7 @@ rm -rf %{buildroot}
   http://trac.osgeo.org/geos/browser/tags/3.4.2/NEWS
 - Remove Patch2, it is now in upstream.
 - Disable ruby bindings
+- Remove all conditionals -- no more RHEL 4!
 
 * Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.3.8-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
