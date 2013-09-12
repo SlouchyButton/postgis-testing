@@ -97,9 +97,8 @@ popd
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
-%{__mkdir} %{buildroot}/%{_datadir}/pgsql
-make -C utils install
-make -C extensions install
+make -C utils install DESTDIR=%{buildroot}
+make -C extensions install DESTDIR=%{buildroot}
 rm -f  %{buildroot}%{_datadir}/*.sql
 
 if [ "%{_libdir}" = "/usr/lib64" ] ; then
