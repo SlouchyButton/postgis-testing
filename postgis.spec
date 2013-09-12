@@ -21,8 +21,8 @@ URL:		http://www.postgis.org
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, sinjdoc, java, java-devel, ant
-BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.9
-Requires:	postgresql >= %{pg_version_built}, geos >= 3.4.2, proj, gdal >= 1.9
+BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0
+Requires:	postgresql >= %{pg_version_built}, geos >= 3.4.2, proj, gdal >= 1.10.0
 
 %description
 PostGIS adds support for geographic objects to the PostgreSQL object-relational
