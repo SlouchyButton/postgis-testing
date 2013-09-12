@@ -97,7 +97,7 @@ popd
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
-%{__mkdir} %{buildroot}/%{datadir}/pgsql
+%{__mkdir} %{buildroot}/%{_datadir}/pgsql
 make -C utils install
 make -C extensions install
 rm -f  %{buildroot}%{_datadir}/*.sql
