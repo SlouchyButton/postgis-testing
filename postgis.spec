@@ -97,11 +97,8 @@ popd
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
-#install -d %{buildroot}%{_libdir}/pgsql/
-#install -d %{buildroot}%{_bindir}/
-#install -d  %{buildroot}%{_datadir}/pgsql/contrib/
-#install -m 644 *.sql %{buildroot}%{_datadir}/pgsql/contrib/
-#install -m 755 loader/shp2pgsql loader/shp2pgsql-gui %{buildroot}%{_bindir}/
+make -C utils install
+make -C extensions install
 rm -f  %{buildroot}%{_datadir}/*.sql
 
 if [ "%{_libdir}" = "/usr/lib64" ] ; then
@@ -144,6 +141,8 @@ rm -rf %{buildroot}
 %{_datadir}/pgsql/extension/postgis_topology*.sql
 %{_datadir}/pgsql/extension/postgis.control
 %{_datadir}/pgsql/extension/postgis_topology.control
+%{_datadir}/pgsql/extension/postgis_tiger_geocoder*.sql
+%{_datadir}/pgsql/extension/postgis_tiger.control
 %{_datadir}/postgis/svn_repo_revision.pl
 %{_includedir}/liblwgeom.h
 %{_libdir}/liblwgeom*
