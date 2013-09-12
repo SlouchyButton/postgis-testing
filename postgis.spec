@@ -2,15 +2,15 @@
 %{!?utils:%define	utils 1}
 %{!?gcj_support:%define	gcj_support 0}
 
-%global majorversion 2.0
+%global majorversion 2.1
 
 %global pg_version_minimum 9.2
 %global pg_version_built  %(if [ -x %{_bindir}/pg_config ]; then %{_bindir}/pg_config --version | /bin/sed 's,^PostgreSQL *,,gi'; else echo %{pg_version_minimum}; fi)
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	2.0.3
-Release:	4%{?dist}
+Version:	2.1.0
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -20,9 +20,9 @@ Patch0:		postgis-1.5.1-pgsql9.patch
 URL:		http://www.postgis.org
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.1.1 byacc, proj-devel, flex, sinjdoc, java, java-devel, ant
-BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.9.0
-Requires:	postgresql >= %{pg_version_built}, geos >= 3.1.1, proj, gdal >= 1.9.0
+BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, sinjdoc, java, java-devel, ant
+BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.9
+Requires:	postgresql >= %{pg_version_built}, geos >= 3.4.2, proj, gdal >= 1.9
 
 %description
 PostGIS adds support for geographic objects to the PostgreSQL object-relational
@@ -76,7 +76,7 @@ The postgis-utils package provides the utilities for PostGIS.
 cp -p %{SOURCE2} .
 
 %build
-%configure --with-gui
+%configure --with-gui --enable-raster 
 #make %{?_smp_mflags} LPATH=`pg_config --pkglibdir` shlib="%{name}.so"
 make LPATH=`pg_config --pkglibdir` shlib="%{name}.so"
 
@@ -97,11 +97,11 @@ popd
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
-install -d %{buildroot}%{_libdir}/pgsql/
-install -d %{buildroot}%{_bindir}/
-install -d  %{buildroot}%{_datadir}/pgsql/contrib/
-install -m 644 *.sql %{buildroot}%{_datadir}/pgsql/contrib/
-install -m 755 loader/shp2pgsql loader/shp2pgsql-gui %{buildroot}%{_bindir}/
+#install -d %{buildroot}%{_libdir}/pgsql/
+#install -d %{buildroot}%{_bindir}/
+#install -d  %{buildroot}%{_datadir}/pgsql/contrib/
+#install -m 644 *.sql %{buildroot}%{_datadir}/pgsql/contrib/
+#install -m 755 loader/shp2pgsql loader/shp2pgsql-gui %{buildroot}%{_bindir}/
 rm -f  %{buildroot}%{_datadir}/*.sql
 
 if [ "%{_libdir}" = "/usr/lib64" ] ; then
@@ -182,6 +182,10 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Thu Sep 12 2013 Devrim Gündüz <devrim@gunduz.org> - 2.1.0-1
+- Update to 2.1.0, per changes described at:
+  http://svn.osgeo.org/postgis/tags/2.1.0/NEWS
+
 * Tue Aug 27 2013 Orion Poplawski <orion@cora.nwra.com> - 2.0.3-4
 - Rebuild for gdal 1.10.0
 
