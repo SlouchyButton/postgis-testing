@@ -142,7 +142,7 @@ rm -rf %{buildroot}
 %{_datadir}/pgsql/extension/postgis.control
 %{_datadir}/pgsql/extension/postgis_topology.control
 %{_datadir}/pgsql/extension/postgis_tiger_geocoder*.sql
-%{_datadir}/pgsql/extension/postgis_tiger.control
+%{_datadir}/pgsql/extension/postgis_tiger_geocoder.control
 %{_datadir}/postgis/svn_repo_revision.pl
 %{_includedir}/liblwgeom.h
 %{_libdir}/liblwgeom*
