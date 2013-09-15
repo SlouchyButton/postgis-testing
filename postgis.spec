@@ -134,9 +134,8 @@ rm -rf %{buildroot}
 %doc COPYING CREDITS NEWS TODO README.%{name} doc/html loader/README.* doc/%{name}.xml doc/ZMSgeoms.txt 
 %attr(755,root,root) %{_bindir}/*
 %attr(755,root,root) %{_libdir}/pgsql/postgis-*.so
-%{_datadir}/pgsql/contrib/*.sql
-%{_datadir}/pgsql/contrib/%{name}-%{majorversion}/*.sql
-%{_datadir}/pgsql/contrib/%{name}-%{majorversion}/postgis_restore.pl
+%{_datadir}/pgsql/contrib/postgis-%{majorversion}/*.sql
+%{_datadir}/pgsql/contrib/postgis*.sql
 %{_datadir}/pgsql/extension/postgis-*.sql
 %{_datadir}/pgsql/extension/postgis_topology*.sql
 %{_datadir}/pgsql/extension/postgis.control
@@ -171,6 +170,7 @@ rm -rf %{buildroot}
 %{_datadir}/%{name}/create_undef.pl
 %{_datadir}/%{name}/%{name}_proc_upgrade.pl
 %{_datadir}/%{name}/%{name}_restore.pl
+%{_datadir}/pgsql/contrib/postgis-%{majorversion}/postgis_restore.pl
 %{_datadir}/%{name}/read_scripts_version.pl
 %{_datadir}/%{name}/test_geography_estimation.pl
 %{_datadir}/%{name}/test_geography_joinestimation.pl
