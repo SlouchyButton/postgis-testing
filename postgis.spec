@@ -135,7 +135,9 @@ rm -rf %{buildroot}
 %attr(755,root,root) %{_bindir}/*
 %attr(755,root,root) %{_libdir}/pgsql/postgis-*.so
 %{_datadir}/pgsql/contrib/postgis-%{majorversion}/*.sql
+%ifarch x86_64
 %{_datadir}/pgsql/contrib/postgis*.sql
+%endif
 %{_datadir}/pgsql/extension/postgis-*.sql
 %{_datadir}/pgsql/extension/postgis_topology*.sql
 %{_datadir}/pgsql/extension/postgis.control
