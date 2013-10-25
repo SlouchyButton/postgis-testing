@@ -10,7 +10,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	2.1.0
-Release:	1%{?dist}
+Release:	2%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -101,7 +101,7 @@ make -C utils install DESTDIR=%{buildroot}
 make -C extensions install DESTDIR=%{buildroot}
 rm -f  %{buildroot}%{_datadir}/*.sql
 
-if [ "%{_libdir}" = "/usr/lib64" ] ; then
+if [ "%{_lib}" = "lib64" ] ; then
 	mv %{buildroot}%{_datadir}/pgsql/contrib/%{name}-%{majorversion}/postgis.sql %{buildroot}%{_datadir}/pgsql/contrib/postgis-64.sql
 fi
 
@@ -135,7 +135,7 @@ rm -rf %{buildroot}
 %attr(755,root,root) %{_bindir}/*
 %attr(755,root,root) %{_libdir}/pgsql/postgis-*.so
 %{_datadir}/pgsql/contrib/postgis-%{majorversion}/*.sql
-%ifarch x86_64
+%if %{_lib} == lib64
 %{_datadir}/pgsql/contrib/postgis*.sql
 %endif
 %{_datadir}/pgsql/extension/postgis-*.sql
@@ -183,6 +183,9 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Fri Oct 25 2013 Dan Horák <dan[at]danny.cz> - 2.1.0-2
+- fix build on non-x86 64-bit arches
+
 * Thu Sep 12 2013 Devrim Gündüz <devrim@gunduz.org> - 2.1.0-1
 - Update to 2.1.0, per changes described at:
   http://svn.osgeo.org/postgis/tags/2.1.0/NEWS
