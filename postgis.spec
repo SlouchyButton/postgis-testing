@@ -3,6 +3,8 @@
 %{!?gcj_support:%define	gcj_support 0}
 
 %global majorversion 2.1
+%global prevmajorversion 2.0
+%global prevversion %{prevmajorversion}.4
 
 %global pg_version_minimum 9.2
 %global pg_version_built  %(if [ -x %{_bindir}/pg_config ]; then %{_bindir}/pg_config --version | /bin/sed 's,^PostgreSQL *,,gi'; else echo %{pg_version_minimum}; fi)
@@ -10,11 +12,12 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	2.1.1
-Release:	1%{?dist}
+Release:	2%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
+Source3:        http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
 Source4:	filter-requires-perl-Pg.sh
 Patch0:		postgis-1.5.1-pgsql9.patch
 URL:		http://www.postgis.org
@@ -94,6 +97,18 @@ popd
  make -C utils
 %endif
 
+# PostGIS 2.1 breaks compatibility with 2.0, and we need to ship
+# postgis-2.0.so file along with 2.1 package, so that we can upgrade:
+tar zxf %{SOURCE3}
+cd %{name}-%{prevversion}
+%configure --without-raster --disable-rpath
+
+make %{?_smp_mflags} LPATH=`%[_bindir}/pg_config --pkglibdir` shlib="%{name}-%{prevmajorversion}.so"
+# Install postgis-2.0.so file manually:
+%{__mkdir} -p %{buildroot}/%{_libdir}
+%{__install} -m 644 postgis/postgis-%{prevmajorversion}.so %{buildroot}/%{_libdir}/postgis-%{prevmajorversion}.so
+
+
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
@@ -134,6 +149,8 @@ rm -rf %{buildroot}
 %doc COPYING CREDITS NEWS TODO README.%{name} doc/html loader/README.* doc/%{name}.xml doc/ZMSgeoms.txt 
 %attr(755,root,root) %{_bindir}/*
 %attr(755,root,root) %{_libdir}/pgsql/postgis-*.so
+%attr(755,root,root) %{_libdir}/pgsql/%{name}-%{prevmajorversion}.so
+%attr(755,root,root) %{_libdir}/pgsql/%{name}-%{majorversion}.so
 %{_datadir}/pgsql/contrib/postgis-%{majorversion}/*.sql
 %if %{_lib} == lib64
 %{_datadir}/pgsql/contrib/postgis*.sql
@@ -183,6 +200,10 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Thu Jan 23 2014 Devrim Gündüz <devrim@gunduz.org> - 2.1.1-2
+- Install postgis-2.0.so file, by compiling it from 2.0 sources
+  Fixes bz #1055293.
+
 * Thu Dec 12 2013 Devrim Gündüz <devrim@gunduz.org> - 2.1.1-1
 - Update to 2.1.1
 
