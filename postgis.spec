@@ -80,8 +80,7 @@ cp -p %{SOURCE2} .
 
 %build
 %configure --with-gui --enable-raster 
-#make %{?_smp_mflags} LPATH=`pg_config --pkglibdir` shlib="%{name}.so"
-make LPATH=`pg_config --pkglibdir` shlib="%{name}.so"
+make %{?_smp_mflags} LPATH=`pg_config --pkglibdir` shlib="%{name}.so"
 
 %if %javabuild
 export BUILDXML_DIR=%{_builddir}/%{name}-%{version}/java/jdbc
@@ -116,9 +115,9 @@ make -C utils install DESTDIR=%{buildroot}
 make -C extensions install DESTDIR=%{buildroot}
 rm -f  %{buildroot}%{_datadir}/*.sql
 
-if [ "%{_lib}" = "lib64" ] ; then
-	mv %{buildroot}%{_datadir}/pgsql/contrib/%{name}-%{majorversion}/postgis.sql %{buildroot}%{_datadir}/pgsql/contrib/postgis-64.sql
-fi
+#if [ "%{_lib}" = "lib64" ] ; then
+#	mv %{buildroot}%{_datadir}/pgsql/contrib/%{name}-%{majorversion}/postgis.sql %{buildroot}%{_datadir}/pgsql/contrib/postgis-64.sql
+#fi
 
 %if %javabuild
 install -d %{buildroot}%{_javadir}
