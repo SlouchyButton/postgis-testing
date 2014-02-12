@@ -104,8 +104,8 @@ cd %{name}-%{prevversion}
 
 make %{?_smp_mflags} LPATH=`%[_bindir}/pg_config --pkglibdir` shlib="%{name}-%{prevmajorversion}.so"
 # Install postgis-2.0.so file manually:
-%{__mkdir} -p %{buildroot}/%{_libdir}
-%{__install} -m 644 postgis/postgis-%{prevmajorversion}.so %{buildroot}/%{_libdir}/postgis-%{prevmajorversion}.so
+%{__mkdir} -p %{buildroot}/%{_libdir}/pgsql
+%{__install} -m 644 postgis/postgis-%{prevmajorversion}.so %{buildroot}/%{_libdir}/pgsql/postgis-%{prevmajorversion}.so
 
 %install
 rm -rf %{buildroot}
@@ -146,9 +146,8 @@ rm -rf %{buildroot}
 %defattr(-,root,root)
 %doc COPYING CREDITS NEWS TODO README.%{name} doc/html loader/README.* doc/%{name}.xml doc/ZMSgeoms.txt 
 %attr(755,root,root) %{_bindir}/*
-%attr(755,root,root) %{_libdir}/postgis-*.so
-%attr(755,root,root) %{_libdir}/%{name}-%{prevmajorversion}.so
-%attr(755,root,root) %{_libdir}/%{name}-%{majorversion}.so
+%attr(755,root,root) %{_libdir}/pgsql/%{name}-%{prevmajorversion}.so
+%attr(755,root,root) %{_libdir}/pgsql/%{name}-%{majorversion}.so
 %{_datadir}/pgsql/contrib/postgis-%{majorversion}/*.sql
 %if %{_lib} == lib64
 %{_datadir}/pgsql/contrib/postgis*.sql
