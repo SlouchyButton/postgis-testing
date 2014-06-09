@@ -12,7 +12,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	2.1.3
-Release:	1%{?dist}
+Release:	2%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -23,7 +23,7 @@ Patch0:		postgis-1.5.1-pgsql9.patch
 URL:		http://www.postgis.org
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, sinjdoc, java, java-devel, ant
+BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, java, java-devel, ant
 BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0, json-c-devel
 Requires:	postgresql >= %{pg_version_built}, geos >= 3.4.2, proj, gdal >= 1.10.0, json-c
 
@@ -200,6 +200,10 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Mon Jun 09 2014 Jozef Mlich <jmlich@redhat.com> - 2.1.3-1
+- removing sinjdoc from BuildRequires as it is not available
+  in rawhide anymore
+
 * Mon Jun 09 2014 Jozef Mlich <jmlich@redhat.com> - 2.1.3-1
 - Rebase to 2.1.3 and 2.0.6 (security bugfixes, feature bugfixes)
   see http://svn.osgeo.org/postgis/tags/2.1.3/NEWS
