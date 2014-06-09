@@ -4,15 +4,15 @@
 
 %global majorversion 2.1
 %global prevmajorversion 2.0
-%global prevversion %{prevmajorversion}.4
+%global prevversion %{prevmajorversion}.6
 
 %global pg_version_minimum 9.2
 %global pg_version_built  %(if [ -x %{_bindir}/pg_config ]; then %{_bindir}/pg_config --version | /bin/sed 's,^PostgreSQL *,,gi'; else echo %{pg_version_minimum}; fi)
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	2.1.1
-Release:	3%{?dist}
+Version:	2.1.3
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -24,8 +24,8 @@ URL:		http://www.postgis.org
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, sinjdoc, java, java-devel, ant
-BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0
-Requires:	postgresql >= %{pg_version_built}, geos >= 3.4.2, proj, gdal >= 1.10.0
+BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0, json-c-devel
+Requires:	postgresql >= %{pg_version_built}, geos >= 3.4.2, proj, gdal >= 1.10.0, json-c
 
 %description
 PostGIS adds support for geographic objects to the PostgreSQL object-relational
@@ -93,7 +93,7 @@ popd
 %endif
 
 %if %utils
- make -C utils
+ make %{?_smp_mflags}  -C utils
 %endif
 
 # PostGIS 2.1 breaks compatibility with 2.0, and we need to ship
@@ -103,15 +103,18 @@ cd %{name}-%{prevversion}
 %configure --without-raster --disable-rpath
 
 make %{?_smp_mflags} LPATH=`%[_bindir}/pg_config --pkglibdir` shlib="%{name}-%{prevmajorversion}.so"
-# Install postgis-2.0.so file manually:
-%{__mkdir} -p %{buildroot}/%{_libdir}/pgsql
-%{__install} -m 644 postgis/postgis-%{prevmajorversion}.so %{buildroot}/%{_libdir}/pgsql/postgis-%{prevmajorversion}.so
 
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
-make -C utils install DESTDIR=%{buildroot}
-make -C extensions install DESTDIR=%{buildroot}
+make %{?_smp_mflags}  -C utils install DESTDIR=%{buildroot}
+make %{?_smp_mflags}  -C extensions install DESTDIR=%{buildroot}
+
+# (moved into install section)
+# Install postgis-2.0.so file manually: 
+%{__mkdir} -p %{buildroot}/%{_libdir}/pgsql
+%{__install} -m 644 %{name}-%{prevversion}/postgis/postgis-%{prevmajorversion}.so %{buildroot}/%{_libdir}/pgsql/postgis-%{prevmajorversion}.so
+
 rm -f  %{buildroot}%{_datadir}/*.sql
 
 #if [ "%{_lib}" = "lib64" ] ; then
@@ -149,9 +152,9 @@ rm -rf %{buildroot}
 %attr(755,root,root) %{_libdir}/pgsql/%{name}-%{prevmajorversion}.so
 %attr(755,root,root) %{_libdir}/pgsql/%{name}-%{majorversion}.so
 %{_datadir}/pgsql/contrib/postgis-%{majorversion}/*.sql
-%if %{_lib} == lib64
-%{_datadir}/pgsql/contrib/postgis*.sql
-%endif
+#if {_lib} == lib64
+#{_datadir}/pgsql/contrib/postgis*.sql
+#endif
 %{_datadir}/pgsql/extension/postgis-*.sql
 %{_datadir}/pgsql/extension/postgis_topology*.sql
 %{_datadir}/pgsql/extension/postgis.control
@@ -197,6 +200,12 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Mon Jun 09 2014 Jozef Mlich <jmlich@redhat.com> - 2.1.3-1
+- Rebase to 2.1.3 and 2.0.6 (security bugfixes, feature bugfixes)
+  see http://svn.osgeo.org/postgis/tags/2.1.3/NEWS
+- json_c turned on
+- installation of .so file of previous version moved into install section
+
 * Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.1.1-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
