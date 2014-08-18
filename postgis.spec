@@ -12,7 +12,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	2.1.3
-Release:	4%{?dist}
+Release:	5%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -24,8 +24,8 @@ URL:		http://www.postgis.org
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, java, java-devel, ant
-BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0, json-c-devel
-Requires:	postgresql >= %{pg_version_built}, geos >= 3.4.2, proj, gdal >= 1.10.0, json-c
+BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0
+Requires:	postgresql >= %{pg_version_built}, geos >= 3.4.2, proj, gdal >= 1.10.0
 
 %description
 PostGIS adds support for geographic objects to the PostgreSQL object-relational
@@ -202,6 +202,10 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Mon Aug 18 2014 Jozef Mlich <jmlich@redhat.com> - 2.1.3-5
+- Dropped json-c because it is not building anymore
+  Resolves: #1129292
+
 * Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.1.3-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
