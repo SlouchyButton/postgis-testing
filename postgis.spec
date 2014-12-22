@@ -11,8 +11,8 @@
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	2.1.3
-Release:	5%{?dist}
+Version:	2.1.5
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -202,6 +202,11 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Mon Dec 22 2014 Devrim Gündüz <devrim@gunduz.org> - 2.1.5-1
+- Update to 2.1.5, per changes described at:
+  http://postgis.net/2014/12/18/postgis-2.1.5 and
+  http://postgis.net/2014/09/10/postgis-2.1.4
+
 * Mon Aug 18 2014 Jozef Mlich <jmlich@redhat.com> - 2.1.3-5
 - Dropped json-c because it is not building anymore
   Resolves: #1129292
