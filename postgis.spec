@@ -12,7 +12,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	2.1.5
-Release:	1%{?dist}
+Release:	2%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -25,7 +25,7 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, java, java-devel, ant
 BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0
-Requires:	postgresql >= %{pg_version_built}, geos >= 3.4.2, proj, gdal >= 1.10.0
+Requires:	postgresql >= %{pg_version_built}, geos >= 3.4.2, proj, gdal >= 1.10.0, json-c
 
 %description
 PostGIS adds support for geographic objects to the PostgreSQL object-relational
@@ -100,7 +100,7 @@ popd
 # postgis-2.0.so file along with 2.1 package, so that we can upgrade:
 tar zxf %{SOURCE3}
 cd %{name}-%{prevversion}
-%configure --without-raster --disable-rpath
+%configure --without-raster --disable-rpath --without-json
 
 make %{?_smp_mflags} LPATH=`%[_bindir}/pg_config --pkglibdir` shlib="%{name}-%{prevmajorversion}.so"
 
@@ -202,6 +202,9 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Thu Jan 08 2015 Jozef Mlich <jmlich@redhat.com> - 2.1.5-2
+- disable json-c/geojson just for upgrade part of postgis
+
 * Mon Dec 22 2014 Devrim Gündüz <devrim@gunduz.org> - 2.1.5-1
 - Update to 2.1.5, per changes described at:
   http://postgis.net/2014/12/18/postgis-2.1.5 and
