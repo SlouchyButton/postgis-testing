@@ -1,6 +1,6 @@
 Name:           proj
 Version:        4.9.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Cartographic projection software (PROJ.4)
 
 Group:          Applications/Engineering
@@ -32,6 +32,7 @@ This package contains libproj and the appropriate header files and man pages.
 %package static
 Summary:        Development files for PROJ.4
 Group:          Development/Libraries
+Requires:       %{name}-devel%{?_isa} = %{version}-%{release}
 
 %description static
 This package contains libproj static library.
@@ -114,19 +115,20 @@ rm -rf $RPM_BUILD_ROOT
 %doc NEWS AUTHORS COPYING README ChangeLog
 %{_bindir}/*
 %{_mandir}/man1/*.1*
-%{_libdir}/*.so.*
+%{_libdir}/libproj.so.9*
 
 %files devel
 %defattr(-,root,root,-)
 %{_mandir}/man3/*.3*
 %{_includedir}/*.h
-%{_libdir}/*.so
-%exclude %{_libdir}/*.a
+%{_libdir}/libproj.so
+%attr(0755,root,root) %{_libdir}/pkgconfig/%{name}.pc
+%exclude %{_libdir}/libproj.a
 %exclude %{_libdir}/libproj.la
 
 %files static
 %defattr(-,root,root,-)
-%{_libdir}/*.a
+%{_libdir}/libproj.a
 %{_libdir}/libproj.la
 
 
@@ -146,6 +148,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Wed Mar 11 2015 Rex Dieter <rdieter@fedoraproject.org> - 4.9.1-2
+- track soname so bumps are not a suprise
+- -devel: include .pc file here (left copy in -nad too)
+- -static: Requires: -devel
+
 * Wed Mar 11 2015 Devrim GÜNDÜZ <devrim@gunduz.org> 4.9.1-1
 - Update to 4.9.1
 
