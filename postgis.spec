@@ -20,19 +20,22 @@ Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
 Source3:        http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
 Source4:	filter-requires-perl-Pg.sh
 Patch0:		postgis-1.5.1-pgsql9.patch
+# CFLAGS are reset before AC_CHECK_LIBRARY, but -fPIC is necessary to link against gdal
+Patch1:		postgis-configureac21.patch
 URL:		http://www.postgis.org
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, java, java-devel, ant
 BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0
+BuildRequires:	autoconf, automake, libtool
 Requires:	postgresql >= %{pg_version_built}, geos >= 3.4.2, proj, gdal >= 1.10.0, json-c
 
 %description
 PostGIS adds support for geographic objects to the PostgreSQL object-relational
 database. In effect, PostGIS "spatially enables" the PostgreSQL server,
 allowing it to be used as a backend spatial database for geographic information
-systems (GIS), much like ESRI's SDE or Oracle's Spatial extension. PostGIS 
-follows the OpenGIS "Simple Features Specification for SQL" and has been 
+systems (GIS), much like ESRI's SDE or Oracle's Spatial extension. PostGIS
+follows the OpenGIS "Simple Features Specification for SQL" and has been
 certified as compliant with the "Types and Functions" profile.
 
 %package docs
@@ -75,11 +78,13 @@ The postgis-utils package provides the utilities for PostGIS.
 %prep
 %setup -q -n %{name}-%{version}
 %patch0 -p1 -b .pgsql9
+%patch1 -p0 -b .configureac21
 # Copy .pdf file to top directory before installing.
 cp -p %{SOURCE2} .
 
 %build
-%configure --with-gui --enable-raster 
+./autogen.sh
+%configure --with-gui --enable-raster
 make %{?_smp_mflags} LPATH=`pg_config --pkglibdir` shlib="%{name}.so"
 
 %if %javabuild
@@ -112,8 +117,8 @@ make %{?_smp_mflags}  -C extensions install DESTDIR=%{buildroot}
 
 rm -f  %{buildroot}%{_libdir}/liblwgeom.{a,la}
 
-# (moved into install section)
-# Install postgis-2.0.so file manually: 
+# (moved into install section:
+# Install postgis-2.0.so file manually:
 %{__mkdir} -p %{buildroot}/%{_libdir}/pgsql
 %{__install} -m 644 %{name}-%{prevversion}/postgis/postgis-%{prevmajorversion}.so %{buildroot}/%{_libdir}/pgsql/postgis-%{prevmajorversion}.so
 
@@ -204,6 +209,7 @@ rm -rf %{buildroot}
 %changelog
 * Wed Mar 11 2015 Devrim Gündüz <devrim@gunduz.org> - 2.1.5-3
 - Rebuild for Proj 4.9.1
+- Add patch to fix FTBFS -- patch by Sandro Mani <manisandro@gmail.com>
 
 * Thu Jan 08 2015 Jozef Mlich <jmlich@redhat.com> - 2.1.5-2
 - disable json-c/geojson just for upgrade part of postgis
