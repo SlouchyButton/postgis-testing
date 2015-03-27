@@ -11,8 +11,8 @@
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	2.1.5
-Release:	3%{?dist}
+Version:	2.1.6
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -207,6 +207,10 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Fri Mar 27 2015 Devrim Gündüz <devrim@gunduz.org> - 2.1.6-1
+- Update to 2.1.6, per changes described at:
+  http://postgis.net/2015/03/20/postgis-2.1.6
+
 * Wed Mar 11 2015 Devrim Gündüz <devrim@gunduz.org> - 2.1.5-3
 - Rebuild for Proj 4.9.1
 - Add patch to fix FTBFS -- patch by Sandro Mani <manisandro@gmail.com>
