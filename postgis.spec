@@ -4,14 +4,14 @@
 
 %global majorversion 2.1
 %global prevmajorversion 2.0
-%global prevversion %{prevmajorversion}.6
+%global prevversion %{prevmajorversion}.7
 
 %global pg_version_minimum 9.2
 %global pg_version_built  %(if [ -x %{_bindir}/pg_config ]; then %{_bindir}/pg_config --version | /bin/sed 's,^PostgreSQL *,,gi'; else echo %{pg_version_minimum}; fi)
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	2.1.6
+Version:	2.1.7
 Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
@@ -207,6 +207,10 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Wed Apr 1 2015 Devrim Gündüz <devrim@gunduz.org> - 2.1.7-1
+- Update to 2.1.7, per changes described at:
+  http://svn.osgeo.org/postgis/tags/2.1.7/NEWS
+
 * Fri Mar 27 2015 Devrim Gündüz <devrim@gunduz.org> - 2.1.6-1
 - Update to 2.1.6, per changes described at:
   http://postgis.net/2015/03/20/postgis-2.1.6
