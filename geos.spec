@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.4.2
-Release:	4%{?dist}
+Release:	5%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -138,6 +138,9 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/php.d/%{name}.ini
 
 %changelog
+* Sat May 02 2015 Kalev Lember <kalevlember@gmail.com> - 3.4.2-5
+- Rebuilt for GCC 5 C++11 ABI change
+
 * Thu Feb 26 2015 Orion Poplawski <orion@cora.nwra.com> - 3.4.2-4
 - Rebuild for gcc 5 C++11 ABI
 
