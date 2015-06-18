@@ -1,6 +1,6 @@
 Name:           proj
 Version:        4.9.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Cartographic projection software (PROJ.4)
 
 Group:          Applications/Engineering
@@ -148,6 +148,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Thu Jun 18 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.9.1-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
 * Wed Mar 11 2015 Rex Dieter <rdieter@fedoraproject.org> - 4.9.1-2
 - track soname so bumps are not a suprise
 - -devel: include .pc file here (left copy in -nad too)
