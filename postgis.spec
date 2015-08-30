@@ -12,7 +12,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	2.1.8
-Release:	1%{?dist}
+Release:	2%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -207,6 +207,9 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Sun Aug 30 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2.1.8-2
+- Rebuild again for GDAL 2.0
+
 * Tue Jul 28 2015 Devrim Gündüz <devrim@gunduz.org> - 2.1.8-1
 - Update to 2.1.8, per changes described at:
   http://svn.osgeo.org/postgis/tags/2.1.8/NEWS
