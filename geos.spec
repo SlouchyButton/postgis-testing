@@ -1,6 +1,6 @@
 Name:		geos
-Version:	3.4.2
-Release:	6%{?dist}
+Version:	3.5.0
+Release:	1%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -17,10 +17,10 @@ BuildRequires:	python-devel php-devel
 %{!?php_sitearch: %define php_sitearch %{_libdir}/php/modules}
 
 %description
-GEOS (Geometry Engine - Open Source) is a C++ port of the Java Topology 
-Suite (JTS). As such, it aims to contain the complete functionality of 
-JTS in C++. This includes all the OpenGIS "Simple Features for SQL" spatial 
-predicate functions and spatial operators, as well as specific JTS topology 
+GEOS (Geometry Engine - Open Source) is a C++ port of the Java Topology
+Suite (JTS). As such, it aims to contain the complete functionality of
+JTS in C++. This includes all the OpenGIS "Simple Features for SQL" spatial
+predicate functions and spatial operators, as well as specific JTS topology
 functions such as IsValid()
 
 %package devel
@@ -29,19 +29,20 @@ Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 
 %description devel
-GEOS (Geometry Engine - Open Source) is a C++ port of the Java Topology 
-Suite (JTS). As such, it aims to contain the complete functionality of 
-JTS in C++. This includes all the OpenGIS "Simple Features for SQL" spatial 
-predicate functions and spatial operators, as well as specific JTS topology 
-functions such as IsValid()
+GEOS (Geometry Engine - Open Source) is a C++ port of the Java Topology
+Suite (JTS). As such, it aims to contain the complete functionality of
+JTS in C++. This includes all the OpenGIS "Simple Features for SQL" spatial
+predicate functions and spatial operators, as well as specific JTS topology
+functions such as IsValid().
 
-This package contains the development files to build applications that 
-use GEOS
+This package contains the development files to build applications that
+use GEOS.
 
 %package python
 Summary:	Python modules for GEOS
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
+BuildRequires:	swig
 
 %description python
 Python module to build applications using GEOS and python
@@ -55,7 +56,7 @@ Requires:	%{name} = %{version}-%{release}
 PHP module to build applications using GEOS and PHP
 
 %prep
-%setup -q 
+%setup -q
 %patch0 -p0 -b .gcc43
 
 %build
@@ -83,11 +84,11 @@ cd doc
 make doxygen-html
 
 %install
-rm -rf %{buildroot}
+%{__rm} -rf %{buildroot}
 make DESTDIR=%{buildroot} install
 
 # install php config file
-mkdir -p %{buildroot}%{_sysconfdir}/php.d/
+%{__mkdir} -p %{buildroot}%{_sysconfdir}/php.d/
 cat > %{buildroot}%{_sysconfdir}/php.d/%{name}.ini <<EOF
 ; Enable %{name} extension module
 extension=geos.so
@@ -99,7 +100,7 @@ EOF
 make %{?_smp_mflags} check || exit 0
 
 %clean
-rm -rf %{buildroot}
+%{__rm} -rf %{buildroot}
 
 %post -p /sbin/ldconfig
 
@@ -138,6 +139,11 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/php.d/%{name}.ini
 
 %changelog
+* Tue Oct 13 2015 Devrim GUNDUZ <devrim@gunduz.org> - 3.5.0-1
+- Update to 3.5.0, per changes described at:
+  http://trac.osgeo.org/geos/browser/tags/3.5.0/NEWS
+- Add swig as BR to python subpackage, as it does not build without that.
+
 * Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.4.2-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
