@@ -1,12 +1,12 @@
 Name:           proj
-Version:        4.9.1
-Release:        3%{?dist}
+Version:        4.9.2
+Release:        1%{?dist}
 Summary:        Cartographic projection software (PROJ.4)
 
 Group:          Applications/Engineering
 License:        MIT
-URL:            http://proj.osgeo.org
-Source0:        http://download.osgeo.org/proj/proj-%{version}.tar.gz
+URL:            https://github.com/OSGeo/proj.4
+Source0:        https://github.com/OSGeo/proj.4/archive/%{version}.tar.gz
 Source1:        http://download.osgeo.org/proj/proj-datumgrid-1.5.zip
 Patch0:		proj-4.8.0-removeinclude.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -56,7 +56,7 @@ Requires:       %{name} = %{version}-%{release}
 This package contains additional EPSG dataset.
 
 %prep
-%setup -q
+%setup -q -n %{name}.4-%{version}
 %patch0 -p0
 
 # disable internal libtool to avoid hardcoded r-path
@@ -66,7 +66,7 @@ done
 
 # Prepare nad
 cd nad
-unzip %{SOURCE1}
+unzip -o %{SOURCE1}
 cd ..
 # fix shebag header of scripts
 for script in `find nad/ -type f -perm -a+x`; do
@@ -148,6 +148,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Mon Jan 4 2016 Devrim GÜNDÜZ <devrim@gunduz.org> 4.9.2-1
+- Update to 4.9.2, per bz # 1294604
+- Update URLs.
+
 * Thu Jun 18 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.9.1-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
