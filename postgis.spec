@@ -1,25 +1,23 @@
-%{!?javabuild:%define	javabuild 0}
-%{!?utils:%define	utils 1}
-%{!?gcj_support:%define	gcj_support 0}
+%{!?javabuild:%global	javabuild 0}
+%{!?utils:%global	utils 1}
+%{!?gcj_support:%global	gcj_support 0}
 
-%global majorversion 2.1
-%global prevmajorversion 2.0
-%global prevversion %{prevmajorversion}.7
+%global majorversion 2.2
+%global prevmajorversion 2.1
+%global prevversion %{prevmajorversion}.8
 
 %global pg_version_minimum 9.2
-%global pg_version_built  %(if [ -x %{_bindir}/pg_config ]; then %{_bindir}/pg_config --version | /bin/sed 's,^PostgreSQL *,,gi'; else echo %{pg_version_minimum}; fi)
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	2.1.8
-Release:	2%{?dist}
+Version:	2.2.1
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
 Source3:        http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
 Source4:	filter-requires-perl-Pg.sh
-Patch0:		postgis-1.5.1-pgsql9.patch
 # CFLAGS are reset before AC_CHECK_LIBRARY, but -fPIC is necessary to link against gdal
 Patch1:		postgis-configureac21.patch
 URL:		http://www.postgis.org
@@ -28,7 +26,9 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, java, java-devel, ant
 BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0
 BuildRequires:	autoconf, automake, libtool
-Requires:	postgresql >= %{pg_version_built}, geos >= 3.4.2, proj, gdal >= 1.10.0, json-c
+Requires:	postgresql-server(:MODULE_COMPAT_%{postgresql_major})
+Requires:	geos >= 3.4.2, proj, gdal >= 1.10.0, json-c
+
 
 %description
 PostGIS adds support for geographic objects to the PostgreSQL object-relational
@@ -37,6 +37,14 @@ allowing it to be used as a backend spatial database for geographic information
 systems (GIS), much like ESRI's SDE or Oracle's Spatial extension. PostGIS
 follows the OpenGIS "Simple Features Specification for SQL" and has been
 certified as compliant with the "Types and Functions" profile.
+
+%package devel
+Summary:	The development files for PostGIS
+Group:		Applications/Databases
+Requires:	%{name}%{?_isa} = %{version}-%{release}
+
+%description devel
+Development headers and libraries for PostGIS.
 
 %package docs
 Summary:	Extra documentation for PostGIS
@@ -77,7 +85,6 @@ The postgis-utils package provides the utilities for PostGIS.
 
 %prep
 %setup -q -n %{name}-%{version}
-%patch0 -p1 -b .pgsql9
 %patch1 -p0 -b .configureac21
 # Copy .pdf file to top directory before installing.
 cp -p %{SOURCE2} .
@@ -85,7 +92,8 @@ cp -p %{SOURCE2} .
 %build
 ./autogen.sh
 %configure --with-gui --enable-raster
-make %{?_smp_mflags} LPATH=`pg_config --pkglibdir` shlib="%{name}.so"
+# FIXME {_smp_mflags} macro doesn't work
+make LPATH=`pg_config --pkglibdir` shlib="%{name}.so"
 
 %if %javabuild
 export BUILDXML_DIR=%{_builddir}/%{name}-%{version}/java/jdbc
@@ -169,9 +177,14 @@ rm -rf %{buildroot}
 %{_datadir}/pgsql/extension/postgis_tiger_geocoder*.sql
 %{_datadir}/pgsql/extension/postgis_tiger_geocoder.control
 %{_datadir}/postgis/svn_repo_revision.pl
-%{_includedir}/liblwgeom.h
+%{_datadir}/postgis/create_unpackaged.pl
 %{_libdir}/liblwgeom*
 %{_libdir}/pgsql/rtpostgis-%{majorversion}.so
+%{_libdir}/pgsql/postgis_topology-%{majorversion}.so
+
+%files devel
+%{_includedir}/liblwgeom.h
+%{_includedir}/liblwgeom_topo.h
 
 %if %javabuild
 %files jdbc
@@ -207,6 +220,10 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Fri Jan 08 2016 Jozef Mlich <jmlich@redhat.com> - 2.2.1-1
+- Rebuild to 2.2.1, per changes described at:
+  http://svn.osgeo.org/postgis/tags/2.2.1/NEWS
+
 * Sun Aug 30 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2.1.8-2
 - Rebuild again for GDAL 2.0
 
