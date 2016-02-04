@@ -11,7 +11,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	2.2.1
-Release:	1%{?dist}
+Release:	2%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -220,6 +220,9 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 2.2.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
 * Fri Jan 08 2016 Jozef Mlich <jmlich@redhat.com> - 2.2.1-1
 - Rebuild to 2.2.1, per changes described at:
   http://svn.osgeo.org/postgis/tags/2.2.1/NEWS
