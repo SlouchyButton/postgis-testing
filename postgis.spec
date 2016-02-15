@@ -11,7 +11,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	2.2.1
-Release:	2%{?dist}
+Release:	3%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -25,6 +25,7 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, java, java-devel, ant
 BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0
+BuildRequires:	pcre-devel
 BuildRequires:	autoconf, automake, libtool
 Requires:	postgresql-server(:MODULE_COMPAT_%{postgresql_major})
 Requires:	geos >= 3.4.2, proj, gdal >= 1.10.0, json-c
@@ -170,6 +171,8 @@ rm -rf %{buildroot}
 #if {_lib} == lib64
 #{_datadir}/pgsql/contrib/postgis*.sql
 #endif
+%{_datadir}/pgsql/extension/address_standardizer*.sql
+%{_datadir}/pgsql/extension/address_standardizer*.control
 %{_datadir}/pgsql/extension/postgis-*.sql
 %{_datadir}/pgsql/extension/postgis_topology*.sql
 %{_datadir}/pgsql/extension/postgis.control
@@ -179,6 +182,7 @@ rm -rf %{buildroot}
 %{_datadir}/postgis/svn_repo_revision.pl
 %{_datadir}/postgis/create_unpackaged.pl
 %{_libdir}/liblwgeom*
+%{_libdir}/pgsql/address_standardizer-%{majorversion}.so
 %{_libdir}/pgsql/rtpostgis-%{majorversion}.so
 %{_libdir}/pgsql/postgis_topology-%{majorversion}.so
 
@@ -203,6 +207,7 @@ rm -rf %{buildroot}
 %defattr(755,root,root)
 %doc utils/README
 %dir %{_datadir}/%{name}/
+%doc %{_datadir}/doc/pgsql/extension/README.address_standardizer
 %{_datadir}/%{name}/test_estimation.pl
 %{_datadir}/%{name}/profile_intersects.pl
 %{_datadir}/%{name}/test_joinestimation.pl
@@ -220,6 +225,9 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Mon Feb 15 2016 Pavel Raiskup <praiskup@redhat.com> - 2.2.1-3
+- install address_standardizer module (rhbz#1307872)
+
 * Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 2.2.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
