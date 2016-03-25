@@ -181,6 +181,8 @@ rm -rf %{buildroot}
 %{_datadir}/pgsql/extension/postgis_tiger_geocoder.control
 %{_datadir}/postgis/svn_repo_revision.pl
 %{_datadir}/postgis/create_unpackaged.pl
+%{_datadir}/postgis/create_spatial_ref_sys_config_dump.pl
+%{_datadir}/postgis/postgis_proc_set_search_path.pl
 %{_libdir}/liblwgeom*
 %{_libdir}/pgsql/address_standardizer-%{majorversion}.so
 %{_libdir}/pgsql/rtpostgis-%{majorversion}.so
