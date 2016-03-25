@@ -10,8 +10,8 @@
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	2.2.1
-Release:	3%{?dist}
+Version:	2.2.2
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -225,6 +225,10 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Fri Mar 25 2016 Devrim Gündüz <devrim@gunduz.org> - 2.2.2-1
+- Update to 2.2.2, per changes described at
+  http://postgis.net/2016/03/22/postgis-2.2.2
+
 * Mon Feb 15 2016 Pavel Raiskup <praiskup@redhat.com> - 2.2.1-3
 - install address_standardizer module (rhbz#1307872)
 
