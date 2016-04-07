@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.5.0
-Release:	2%{?dist}
+Release:	3%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -65,6 +65,10 @@ PHP module to build applications using GEOS and PHP
 sed -i -e 's|\/lib\/python|$libdir\/python|g' configure
 sed -i -e 's|.get_python_lib(0|.get_python_lib(1|g' configure
 sed -i -e 's|find \$i -name libpython|find \$i\/lib*\/ -name libpython|g' configure
+
+# isnan is in math.h, std::isnan is in cmath
+sed -i -e 's|= isnan(|= std::isnan(|g' configure
+sed -i -e 's|(isnan(|(std::isnan(|g' include/geos/platform.h.in
 
 # disable internal libtool to avoid hardcoded r-path
 for makefile in `find . -type f -name 'Makefile.in'`; do
@@ -139,6 +143,9 @@ make %{?_smp_mflags} check || exit 0
 %config(noreplace) %{_sysconfdir}/php.d/%{name}.ini
 
 %changelog
+* Tue Apr  5 2016 Tom Hughes <tom@compton.nu> - 3.5.0-3
+- Patch FTBFS with gcc 6. Fixes #1305276 .
+
 * Wed Feb 03 2016 Fedora Release Engineering <releng@fedoraproject.org> - 3.5.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
