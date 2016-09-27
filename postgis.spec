@@ -2,15 +2,15 @@
 %{!?utils:%global	utils 1}
 %{!?gcj_support:%global	gcj_support 0}
 
-%global majorversion 2.2
-%global prevmajorversion 2.1
-%global prevversion %{prevmajorversion}.8
+%global majorversion 2.3
+%global prevmajorversion 2.2
+%global prevversion %{prevmajorversion}.2
 
 %global pg_version_minimum 9.2
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	2.2.2
+Version:	2.3.0
 Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
@@ -189,6 +189,10 @@ rm -rf %{buildroot}
 %{_libdir}/pgsql/rtpostgis-%{majorversion}.so
 %{_libdir}/pgsql/postgis_topology-%{majorversion}.so
 
+%{_datadir}/pgsql/applications/shp2pgsql-gui.desktop
+%{_datadir}/pgsql/icons/hicolor/*/apps/shp2pgsql-gui.png
+
+
 %files devel
 %{_includedir}/liblwgeom.h
 %{_includedir}/liblwgeom_topo.h
@@ -228,6 +232,10 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Tue Sep 27 2016 Jozef Mlich <imlich@fit.vutbr.cz> - 2.3.0-1
+- Update to 2.3.0, per changes described at
+  http://postgis.net/2016/09/26/postgis-2.3.0/
+
 * Fri Mar 25 2016 Devrim Gündüz <devrim@gunduz.org> - 2.2.2-1
 - Update to 2.2.2, per changes described at
   http://postgis.net/2016/03/22/postgis-2.2.2
