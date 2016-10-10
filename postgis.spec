@@ -11,7 +11,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	2.3.0
-Release:	2%{?dist}
+Release:	3%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -232,6 +232,9 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Mon Oct 10 2016 Pavel Raiskup <praiskup@redhat.com> - 2.3.0-3
+- bump: build in rawhide hit too early
+
 * Fri Oct 07 2016 Petr Kubat <pkubat@redhat.com> - 2.3.0-2
 - Rebuild for PostgreSQL 9.6.0
 
