@@ -111,14 +111,12 @@ make %{?_smp_mflags} check || exit 0
 %postun -p /sbin/ldconfig
 
 %files
-%defattr(-,root,root,-)
 %doc AUTHORS COPYING NEWS README TODO
 %{_libdir}/libgeos-%{version}.so
 %{_libdir}/libgeos_c.so.1*
 %exclude %{_libdir}/*.a
 
 %files devel
-%defattr(-,root,root,-)
 %doc doc/doxygen_docs
 %{_bindir}/geos-config
 %{_includedir}/*
@@ -128,7 +126,6 @@ make %{?_smp_mflags} check || exit 0
 %exclude %{_libdir}/*.a
 
 %files python
-%defattr(-,root,root,-)
 %dir %{python_sitearch}/%{name}
 %exclude %{python_sitearch}/%{name}/_%{name}.a
 %exclude %{python_sitearch}/%{name}/_%{name}.la
@@ -138,7 +135,6 @@ make %{?_smp_mflags} check || exit 0
 %{python_sitearch}/%{name}/_%{name}.so
 
 %files php
-%defattr(-,root,root,-)
 %{php_sitearch}/%{name}.so
 %config(noreplace) %{_sysconfdir}/php.d/%{name}.ini
 
