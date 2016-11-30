@@ -4,23 +4,23 @@
 
 %global majorversion 2.3
 %global prevmajorversion 2.2
-%global prevversion %{prevmajorversion}.2
+%global prevversion %{prevmajorversion}.4
 
 %global pg_version_minimum 9.2
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	2.3.0
-Release:	3%{?dist}
+Version:	2.3.1
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
-Source3:        http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
+Source3:	http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
 Source4:	filter-requires-perl-Pg.sh
 # CFLAGS are reset before AC_CHECK_LIBRARY, but -fPIC is necessary to link against gdal
 Patch1:		postgis-configureac21.patch
-URL:		http://www.postgis.org
+URL:		http://www.postgis.net
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	perl-generators
@@ -134,10 +134,6 @@ rm -f  %{buildroot}%{_libdir}/liblwgeom.{a,la}
 
 rm -f  %{buildroot}%{_datadir}/*.sql
 
-#if [ "%{_lib}" = "lib64" ] ; then
-#	mv %{buildroot}%{_datadir}/pgsql/contrib/%{name}-%{majorversion}/postgis.sql %{buildroot}%{_datadir}/pgsql/contrib/postgis-64.sql
-#fi
-
 %if %javabuild
 install -d %{buildroot}%{_javadir}
 install -m 755 java/jdbc/%{name}-%{version}.jar %{buildroot}%{_javadir}/%{name}.jar
@@ -232,6 +228,12 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Wed Nov 30 2016 Devrim Gündüz <devrim@gunduz.org> - 2.3.0-1
+- Update to 2.3.1, per changes described at
+  http://postgis.net/2016/11/28/postgis-2.3.1
+- Update previous version to 2.2.4
+- Fix a few rpmlint warnings.
+
 * Mon Oct 10 2016 Pavel Raiskup <praiskup@redhat.com> - 2.3.0-3
 - bump: build in rawhide hit too early
 
