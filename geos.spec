@@ -1,6 +1,6 @@
 Name:		geos
-Version:	3.5.0
-Release:	4%{?dist}
+Version:	3.6.1
+Release:	1%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -11,10 +11,9 @@ Patch0:		geos-gcc43.patch
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	doxygen libtool
-BuildRequires:	python-devel php-devel
+BuildRequires:	python-devel
 
-%{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
-%{!?php_sitearch: %define php_sitearch %{_libdir}/php/modules}
+%{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
 %description
 GEOS (Geometry Engine - Open Source) is a C++ port of the Java Topology
@@ -47,14 +46,6 @@ BuildRequires:	swig
 %description python
 Python module to build applications using GEOS and python
 
-%package php
-Summary:	PHP modules for GEOS
-Group:		Development/Libraries
-Requires:	%{name} = %{version}-%{release}
-
-%description php
-PHP module to build applications using GEOS and PHP
-
 %prep
 %setup -q
 %patch0 -p0 -b .gcc43
@@ -75,7 +66,7 @@ for makefile in `find . -type f -name 'Makefile.in'`; do
 sed -i 's|@LIBTOOL@|%{_bindir}/libtool|g' $makefile
 done
 
-%configure --disable-static --disable-dependency-tracking --enable-python --enable-php
+%configure --disable-static --disable-dependency-tracking --enable-python
 
 # Touch the file, since we are not using ruby bindings anymore:
 # Per http://lists.osgeo.org/pipermail/geos-devel/2009-May/004149.html
@@ -90,13 +81,6 @@ make doxygen-html
 %install
 %{__rm} -rf %{buildroot}
 make DESTDIR=%{buildroot} install
-
-# install php config file
-%{__mkdir} -p %{buildroot}%{_sysconfdir}/php.d/
-cat > %{buildroot}%{_sysconfdir}/php.d/%{name}.ini <<EOF
-; Enable %{name} extension module
-extension=geos.so
-EOF
 
 %check
 
@@ -134,11 +118,11 @@ make %{?_smp_mflags} check || exit 0
 %{python_sitearch}/%{name}/*.py?
 %{python_sitearch}/%{name}/_%{name}.so
 
-%files php
-%{php_sitearch}/%{name}.so
-%config(noreplace) %{_sysconfdir}/php.d/%{name}.ini
-
 %changelog
+* Wed Dec 28 2016 Devrim Gündüz <devrim@gunduz.org> - 3.6.1-1
+- Update to 3.6.1
+- Remove -php subpackage, it is now a separate project.
+
 * Tue Jul 19 2016 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.5.0-4
 - https://fedoraproject.org/wiki/Changes/Automatic_Provides_for_Python_RPM_Packages
 
