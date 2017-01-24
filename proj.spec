@@ -1,17 +1,17 @@
-Name:           proj
-Version:        4.9.2
-Release:        2%{?dist}
-Summary:        Cartographic projection software (PROJ.4)
+Name:		proj
+Version:	4.9.3
+Release:	1%{?dist}
+Summary:	Cartographic projection software (PROJ.4)
 
-Group:          Applications/Engineering
-License:        MIT
-URL:            https://github.com/OSGeo/proj.4
-Source0:        https://github.com/OSGeo/proj.4/archive/%{version}.tar.gz
-Source1:        http://download.osgeo.org/proj/proj-datumgrid-1.5.zip
-Patch0:		proj-4.8.0-removeinclude.patch
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Group:		Applications/Engineering
+License:	MIT
+URL:		https://proj4.org
+Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.gz
+Source1:	http://download.osgeo.org/%{name}/%{name}-datumgrid-1.6.zip
+Patch0:		%{name}-4.8.0-removeinclude.patch
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:  libtool
+BuildRequires:	libtool
 
 
 %description
@@ -21,42 +21,42 @@ projection functions.
 
 
 %package devel
-Summary:        Development files for PROJ.4
-Group:          Development/Libraries
-Requires:       %{name} = %{version}-%{release}
+Summary:	Development files for PROJ.4
+Group:		Development/Libraries
+Requires:	%{name} = %{version}-%{release}
 
 %description devel
 This package contains libproj and the appropriate header files and man pages.
 
 
 %package static
-Summary:        Development files for PROJ.4
-Group:          Development/Libraries
-Requires:       %{name}-devel%{?_isa} = %{version}-%{release}
+Summary:	Development files for PROJ.4
+Group:		Development/Libraries
+Requires:	%{name}-devel%{?_isa} = %{version}-%{release}
 
 %description static
 This package contains libproj static library.
 
 
 %package nad
-Summary:        US and Canadian datum shift grids for PROJ.4
-Group:          Applications/Engineering
-Requires:       %{name} = %{version}-%{release}
+Summary:	US and Canadian datum shift grids for PROJ.4
+Group:		Applications/Engineering
+Requires:	%{name} = %{version}-%{release}
 
 %description nad
 This package contains additional US and Canadian datum shift grids.
 
 
 %package epsg
-Summary:        EPSG dataset for PROJ.4
-Group:          Applications/Engineering
-Requires:       %{name} = %{version}-%{release}
+Summary:	EPSG dataset for PROJ.4
+Group:		Applications/Engineering
+Requires:	%{name} = %{version}-%{release}
 
 %description epsg
 This package contains additional EPSG dataset.
 
 %prep
-%setup -q -n %{name}.4-%{version}
+%setup -q -n %{name}-%{version}
 %patch0 -p0
 
 # disable internal libtool to avoid hardcoded r-path
@@ -82,30 +82,30 @@ sed -i -e 's|5\:4\:5|6\:4\:6|' src/Makefile*
 make OPTIMIZE="$RPM_OPT_FLAGS" %{?_smp_mflags}
 
 %install
-rm -rf $RPM_BUILD_ROOT
+%{__rm} -rf %{buildroot}
 %makeinstall
-install -p -m 0644 nad/pj_out27.dist nad/pj_out83.dist nad/td_out.dist $RPM_BUILD_ROOT%{_datadir}/%{name}
-install -p -m 0755 nad/test27 nad/test83 nad/testvarious $RPM_BUILD_ROOT%{_datadir}/%{name}
-install -p -m 0644 nad/epsg $RPM_BUILD_ROOT%{_datadir}/%{name}
+install -p -m 0644 nad/pj_out27.dist nad/pj_out83.dist nad/td_out.dist %{buildroot}%{_datadir}/%{name}
+install -p -m 0755 nad/test27 nad/test83 nad/testvarious %{buildroot}%{_datadir}/%{name}
+install -p -m 0644 nad/epsg %{buildroot}%{_datadir}/%{name}
 
 # Install projects.h manually, per #830496:
-install -p -m 0644 src/projects.h $RPM_BUILD_ROOT%{_includedir}/
+install -p -m 0644 src/projects.h %{buildroot}%{_includedir}/
 
 %check
 pushd nad
 # set test enviroment for porj
-export PROJ_LIB=$RPM_BUILD_ROOT%{_datadir}/%{name}
+export PROJ_LIB=%{buildroot}%{_datadir}/%{name}
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH%{buildroot}%{_libdir}
 # run tests for proj
-./test27      $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
-./test83      $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
-./testIGNF    $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
-./testntv2    $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
-./testvarious $RPM_BUILD_ROOT%{_bindir}/%{name} || exit 0
+./test27      %{buildroot}%{_bindir}/%{name} || exit 0
+./test83      %{buildroot}%{_bindir}/%{name} || exit 0
+./testIGNF    %{buildroot}%{_bindir}/%{name} || exit 0
+./testntv2    %{buildroot}%{_bindir}/%{name} || exit 0
+./testvarious %{buildroot}%{_bindir}/%{name} || exit 0
 popd
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+%{__rm} -rf %{buildroot}
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
@@ -115,7 +115,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc NEWS AUTHORS COPYING README ChangeLog
 %{_bindir}/*
 %{_mandir}/man1/*.1*
-%{_libdir}/libproj.so.9*
+%{_libdir}/libproj.so.12*
 
 %files devel
 %defattr(-,root,root,-)
@@ -148,10 +148,16 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Tue Jan 24 2017 Devrim Gündüz <devrim@gunduz.org> 4.9.3-1
+- Update to 4.9.3
+- Update to new datumgrid (1.6)
+- Fix rpmlint warnings
+- Cosmetic cleanup  in spec file.
+
 * Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 4.9.2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
-* Mon Jan 4 2016 Devrim GÜNDÜZ <devrim@gunduz.org> 4.9.2-1
+* Mon Jan 4 2016 Devrim Gündüz <devrim@gunduz.org> 4.9.2-1
 - Update to 4.9.2, per bz # 1294604
 - Update URLs.
 
@@ -163,7 +169,7 @@ rm -rf $RPM_BUILD_ROOT
 - -devel: include .pc file here (left copy in -nad too)
 - -static: Requires: -devel
 
-* Wed Mar 11 2015 Devrim GÜNDÜZ <devrim@gunduz.org> 4.9.1-1
+* Wed Mar 11 2015 Devrim Gündüz <devrim@gunduz.org> 4.9.1-1
 - Update to 4.9.1
 
 * Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.8.0-7
@@ -178,13 +184,13 @@ rm -rf $RPM_BUILD_ROOT
 * Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.8.0-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
-* Thu Aug 16 2012 Devrim GÜNDÜZ <devrim@gunduz.org> 4.8.0-3
+* Thu Aug 16 2012 Devrim Gündüz <devrim@gunduz.org> 4.8.0-3
 - Install projects.h manually, per #830496.
 
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.8.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
-* Fri Apr 20 2012 Devrim GÜNDÜZ <devrim@gunduz.org> 4.8.0-1
+* Fri Apr 20 2012 Devrim Gündüz <devrim@gunduz.org> 4.8.0-1
 - Update to 4.8.0, per bz #814851
 
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.7.0-5
@@ -199,7 +205,7 @@ rm -rf $RPM_BUILD_ROOT
 * Thu Mar 18 2010 Balint Cristian <cristian.balint@gmail.com> - 4.7.0-2
 - fix for bz#556091
 
-* Fri Dec 4 2009 Devrim GÜNDÜZ <devrim@gunduz.org> 4.7.0-1
+* Fri Dec 4 2009 Devrim Gündüz <devrim@gunduz.org> 4.7.0-1
 - Update to 4.7.0
 - Update to new datumgrid (1.5)
 
@@ -272,7 +278,7 @@ rm -rf $RPM_BUILD_ROOT
 - Removed the "Requires(post,postun)"
 
 * Tue Dec 30 2003 David M. Kaplan <dmk@erizo.ucdavis.edu> 0:4.4.7-0.fdr.2
-- proj-nad now owns %{_datadir}/%{name}
+- proj-nad now owns %%{_datadir}/%%{name}
 
 * Wed Oct 29 2003 Steve Arnold <sarnold@arnolds.dhs.org>
 - Basically re-wrote previous spec file from scratch so as
