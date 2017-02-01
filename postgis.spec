@@ -4,14 +4,14 @@
 
 %global majorversion 2.3
 %global prevmajorversion 2.2
-%global prevversion %{prevmajorversion}.4
+%global prevversion %{prevmajorversion}.5
 
 %global pg_version_minimum 9.2
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	2.3.1
-Release:	2%{?dist}
+Version:	2.3.2
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -228,6 +228,11 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Wed Jan 25 2017 Devrim Gündüz <devrim@gunduz.org> - 2.3.2-1
+- Update to 2.3.2, per changes described at
+  http://postgis.net/2017/01/31/postgis-2.3.2/
+  rhbz#1418136
+
 * Wed Jan 25 2017 Devrim Gündüz <devrim@gunduz.org> - 2.3.1-2
 - Rebuild against Proj 4.9.3
 
