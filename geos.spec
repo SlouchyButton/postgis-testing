@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.6.1
-Release:	4%{?dist}
+Release:	5%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -37,13 +37,17 @@ functions such as IsValid().
 This package contains the development files to build applications that
 use GEOS.
 
-%package python
+%package -n python2-geos
+%{?python_provide:%python_provide python2-geos}
+# Remove before F30
+Provides: %{name}-python%{?_isa} = %{version}-%{release}
+Obsoletes: %{name}-python < %{version}-%{release}
 Summary:	Python modules for GEOS
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 BuildRequires:	swig
 
-%description python
+%description -n python2-geos
 Python module to build applications using GEOS and python
 
 %prep
@@ -109,7 +113,7 @@ make %{?_smp_mflags} check || exit 0
 %exclude %{_libdir}/*.la
 %exclude %{_libdir}/*.a
 
-%files python
+%files -n python2-geos
 %dir %{python_sitearch}/%{name}
 %exclude %{python_sitearch}/%{name}/_%{name}.a
 %exclude %{python_sitearch}/%{name}/_%{name}.la
@@ -119,6 +123,10 @@ make %{?_smp_mflags} check || exit 0
 %{python_sitearch}/%{name}/_%{name}.so
 
 %changelog
+* Sat Aug 19 2017 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 3.6.1-5
+- Python 2 binary package renamed to python2-geos
+  See https://fedoraproject.org/wiki/FinalizingFedoraSwitchtoPython3
+
 * Wed Aug 02 2017 Fedora Release Engineering <releng@fedoraproject.org> - 3.6.1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
