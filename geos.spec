@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.6.1
-Release:	5%{?dist}
+Release:	6%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -40,6 +40,7 @@ use GEOS.
 %package -n python2-geos
 %{?python_provide:%python_provide python2-geos}
 # Remove before F30
+Provides: %{name}-python = %{version}-%{release}
 Provides: %{name}-python%{?_isa} = %{version}-%{release}
 Obsoletes: %{name}-python < %{version}-%{release}
 Summary:	Python modules for GEOS
@@ -123,6 +124,9 @@ make %{?_smp_mflags} check || exit 0
 %{python_sitearch}/%{name}/_%{name}.so
 
 %changelog
+* Sun Aug 20 2017 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 3.6.1-6
+- Add Provides for the old name without %%_isa
+
 * Sat Aug 19 2017 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 3.6.1-5
 - Python 2 binary package renamed to python2-geos
   See https://fedoraproject.org/wiki/FinalizingFedoraSwitchtoPython3
