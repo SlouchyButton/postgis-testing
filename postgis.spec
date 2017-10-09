@@ -1,6 +1,7 @@
 %{!?javabuild:%global	javabuild 0}
 %{!?utils:%global	utils 1}
 %{!?gcj_support:%global	gcj_support 0}
+%{!?upgrade:%global	upgrade 1}
 
 %global majorversion 2.4
 %global prevmajorversion 2.3
@@ -81,6 +82,18 @@ Requires:	%{name} = %{version}-%{release}, perl-DBD-Pg
 
 %description utils
 The postgis-utils package provides the utilities for PostGIS.
+%endif
+
+%if %upgrade
+%package upgrade
+Summary:	Support for upgrading from the previous major release of Postgis
+Group:		Applications/Databases
+Requires: 	%{name}%{?_isa} = %{version}-%{release}
+BuildRequires:	postgresql-upgrade-devel
+
+%description upgrade
+The postgis-upgrade package contains the previous version of postgis
+necessary for correct dump of schema from previous version of PostgreSQL.
 %endif
 
 %define __perl_requires %{SOURCE4}
