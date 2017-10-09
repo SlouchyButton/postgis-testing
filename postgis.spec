@@ -2,16 +2,16 @@
 %{!?utils:%global	utils 1}
 %{!?gcj_support:%global	gcj_support 0}
 
-%global majorversion 2.3
-%global prevmajorversion 2.2
-%global prevversion %{prevmajorversion}.5
+%global majorversion 2.4
+%global prevmajorversion 2.3
+%global prevversion %{prevmajorversion}.3
 
 %global pg_version_minimum 9.2
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	2.3.3
-Release:	3%{?dist}
+Version:	%majorversion.0
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -228,6 +228,10 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Mon Oct 09 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
+- update to 2.4.0, per upstream release notes
+  https://postgis.net/2017/09/30/postgis-2.4.0/
+
 * Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2.3.3-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
