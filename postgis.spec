@@ -6,6 +6,7 @@
 %global majorversion 2.4
 %global prevmajorversion 2.3
 %global prevversion %{prevmajorversion}.3
+%global so_files	rtpostgis postgis_topology postgis address_standardizer
 
 %global pg_version_minimum 9.2
 
@@ -17,10 +18,12 @@ License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
+%if %upgrade
 Source3:	http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
+%endif
 Source4:	filter-requires-perl-Pg.sh
-# CFLAGS are reset before AC_CHECK_LIBRARY, but -fPIC is necessary to link against gdal
 Patch1:		postgis-configureac21.patch
+Patch2:		postgis-2.4.0-upgrade-2.3.3.patch
 URL:		http://www.postgis.net
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -29,6 +32,9 @@ BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel
 BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0
 BuildRequires:	pcre-devel
 BuildRequires:	autoconf, automake, libtool
+%if %upgrade
+BuildRequires:	postgresql-upgrade-devel
+%endif
 Requires:	postgresql-server(:MODULE_COMPAT_%{postgresql_major})
 Requires:	geos >= 3.4.2, proj, gdal >= 1.10.0, json-c
 
@@ -89,7 +95,6 @@ The postgis-utils package provides the utilities for PostGIS.
 Summary:	Support for upgrading from the previous major release of Postgis
 Group:		Applications/Databases
 Requires: 	%{name}%{?_isa} = %{version}-%{release}
-BuildRequires:	postgresql-upgrade-devel
 
 %description upgrade
 The postgis-upgrade package contains the previous version of postgis
@@ -99,16 +104,20 @@ necessary for correct dump of schema from previous version of PostgreSQL.
 %define __perl_requires %{SOURCE4}
 
 %prep
-%setup -q -n %{name}-%{version}
+%setup -q -n %{name}-%{version} -a 3
+(
+cd %{name}-%{prevversion}
+# Remove once we move to prevversion==2.4 (2.4 build works fine).
 %patch1 -p0 -b .configureac21
-# Copy .pdf file to top directory before installing.
+./autogen.sh
+%patch2 -p1
+)
 cp -p %{SOURCE2} .
 
+
 %build
-./autogen.sh
 %configure --with-gui --enable-raster
-# FIXME {_smp_mflags} macro doesn't work
-make LPATH=`pg_config --pkglibdir` shlib="%{name}.so"
+make %{?_smp_mflags}
 
 %if %javabuild
 export BUILDXML_DIR=%{_builddir}/%{name}-%{version}/java/jdbc
@@ -121,16 +130,26 @@ popd
 %endif
 
 %if %utils
- make %{?_smp_mflags}  -C utils
+make %{?_smp_mflags} -C utils
 %endif
 
-# PostGIS 2.1 breaks compatibility with 2.0, and we need to ship
-# postgis-2.0.so file along with 2.1 package, so that we can upgrade:
-tar zxf %{SOURCE3}
+(
+# TODO: report that out-of-tree (VPATH) build is broken
 cd %{name}-%{prevversion}
-%configure --without-raster --disable-rpath --without-json
 
-make %{?_smp_mflags} LPATH=`%[_bindir}/pg_config --pkglibdir` shlib="%{name}-%{prevmajorversion}.so"
+# first perform compat-build (against the actual PostgreSQL version).  We need
+# only the so names.
+%configure --enable-raster
+make %{?_smp_mflags}
+mkdir ../compat-build
+for so in %so_files; do
+    find -name $so-%prevmajorversion.so -exec cp -t ../compat-build/ {} +
+done
+
+# second, build feature-full build against previous PostgreSQL version
+%configure --enable-raster --with-pgconfig=/usr/lib64/pgsql/postgresql-9.6/bin/pg_config
+make %{?_smp_mflags}
+)
 
 %install
 rm -rf %{buildroot}
@@ -140,10 +159,14 @@ make %{?_smp_mflags}  -C extensions install DESTDIR=%{buildroot}
 
 rm -f  %{buildroot}%{_libdir}/liblwgeom.{a,la}
 
-# (moved into install section:
-# Install postgis-2.0.so file manually:
-%{__mkdir} -p %{buildroot}/%{_libdir}/pgsql
-%{__install} -m 644 %{name}-%{prevversion}/postgis/postgis-%{prevmajorversion}.so %{buildroot}/%{_libdir}/pgsql/postgis-%{prevmajorversion}.so
+cd %{name}-%{prevversion}
+make install DESTDIR=%{buildroot}
+cd ..
+
+# Manually install compat-build binary.
+for so in %so_files; do
+%{__install} -m 644 compat-build/$so-%{prevmajorversion}.so %{buildroot}/%{_libdir}/pgsql
+done
 
 rm -f  %{buildroot}%{_datadir}/*.sql
 
@@ -175,7 +198,6 @@ rm -rf %{buildroot}
 %defattr(-,root,root)
 %doc COPYING CREDITS NEWS TODO README.%{name} doc/html loader/README.* doc/%{name}.xml doc/ZMSgeoms.txt 
 %attr(755,root,root) %{_bindir}/*
-%attr(755,root,root) %{_libdir}/pgsql/%{name}-%{prevmajorversion}.so
 %attr(755,root,root) %{_libdir}/pgsql/%{name}-%{majorversion}.so
 %{_datadir}/pgsql/contrib/postgis-%{majorversion}/*.sql
 #if {_lib} == lib64
@@ -206,6 +228,7 @@ rm -rf %{buildroot}
 %{_includedir}/liblwgeom.h
 %{_includedir}/liblwgeom_topo.h
 
+
 %if %javabuild
 %files jdbc
 %defattr(-,root,root)
@@ -217,6 +240,14 @@ rm -rf %{buildroot}
 %{_libdir}/gcj/%{name}/*.jar.db
 %endif
 %endif
+
+
+%if %upgrade
+%files upgrade
+%_libdir/pgsql/postgresql-9.6/*
+%_libdir/pgsql/*-%{prevmajorversion}.so
+%endif
+
 
 %if %utils
 %files utils
@@ -241,6 +272,9 @@ rm -rf %{buildroot}
 %doc postgis*.pdf
 
 %changelog
+* Tue Oct 10 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
+- provide postgis-upgrade package (rhbz#1475177)
+
 * Mon Oct 09 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
 - update to 2.4.0, per upstream release notes
   https://postgis.net/2017/09/30/postgis-2.4.0/

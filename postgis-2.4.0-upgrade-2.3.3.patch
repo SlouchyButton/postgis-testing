@@ -1,0 +1,2475 @@
+From 19b8b9cd659363fcf32a5967546d5d7aa57fc57f Mon Sep 17 00:00:00 2001
+From: Paul Ramsey <pramsey@cleverelephant.ca>
+Date: Tue, 5 Sep 2017 20:37:59 +0000
+Subject: [PATCH 1/2] Support PgSQL 10 on PostGIS 2.3
+
+git-svn-id: http://svn.osgeo.org/postgis/branches/2.3@15630 b70326c6-7e19-0410-871a-916f4a2858ee
+---
+ configure.ac                                |    9 +
+ libpgcommon/gserialized_gist.c              |    4 +
+ postgis/gserialized_estimate.c              |   65 +-
+ postgis/gserialized_gist_nd.c               |    3 +
+ raster/rt_pg/rtpostgis.sql.in               |    2 +-
+ raster/test/regress/rt_union.sql            |    8 +-
+ raster/test/regress/rt_union_expected       |    3 -
+ regress/regress_selectivity.sql             | 2147 ++++++++++++++++++++++++++-
+ topology/sql/topogeometry/totopogeom.sql.in |   31 +-
+ topology/test/regress/copytopology.sql      |   14 +-
+ topology/test/regress/copytopology_expected |   14 +-
+ 11 files changed, 2239 insertions(+), 61 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index df6dd88ad..ebf8eb402 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -433,6 +433,15 @@ if test "x$LIBLWGEOM_ONLY" = "xno"; then
+   PGSQL_MAJOR_VERSION=`echo $PGSQL_FULL_VERSION | sed 's/[[^0-9]]*\([[0-9]]*\).*/\1/'`
+   PGSQL_MINOR_VERSION=`echo $PGSQL_FULL_VERSION | sed 's/[[^\.]]*\.\([[0-9]]*\).*/\1/'`
+   PGSQL_MINOR_VERSION=`echo $PGSQL_MINOR_VERSION | sed 's/.*devel.*/0/'`
++  
++  if test $PGSQL_MAJOR_VERSION -gt 9; then
++  	dnl ==================================================================
++  	dnl Starting with PostgreSQL 10, major is the new minor
++  	dnl This is to prevent things like 10.31 ranking higher than 11.0
++  	dnl===================================================================
++  	PGSQL_MINOR_VERSION=0
++  fi
++  
+   POSTGIS_PGSQL_VERSION="$PGSQL_MAJOR_VERSION$PGSQL_MINOR_VERSION"
+ 
+   PGSQL_PKGLIBDIR=`$PG_CONFIG --pkglibdir`
+diff --git a/libpgcommon/gserialized_gist.c b/libpgcommon/gserialized_gist.c
+index d379fb26a..ec2585d6a 100644
+--- a/libpgcommon/gserialized_gist.c
++++ b/libpgcommon/gserialized_gist.c
+@@ -22,6 +22,10 @@
+ #include "lwgeom_pg.h"       /* For debugging macros. */
+ #include "gserialized_gist.h"
+ 
++#if POSTGIS_PGSQL_VERSION >= 100
++#include <float.h>
++#endif
++
+ #define FLAGS_NDIMS_GIDX(f) ( FLAGS_GET_GEODETIC(f) ? 3 : \
+                               FLAGS_GET_M(f) ? 4 : \
+                               FLAGS_GET_Z(f) ? 3 : 2 )
+diff --git a/postgis/gserialized_estimate.c b/postgis/gserialized_estimate.c
+index 5f967059b..ea343495b 100644
+--- a/postgis/gserialized_estimate.c
++++ b/postgis/gserialized_estimate.c
+@@ -827,31 +827,52 @@ nd_increment(ND_IBOX *ibox, int ndims, int *counter)
+ static ND_STATS*
+ pg_nd_stats_from_tuple(HeapTuple stats_tuple, int mode)
+ {
+-  int stats_kind = STATISTIC_KIND_ND;
+-  int rv, nvalues;
++	int stats_kind = STATISTIC_KIND_ND;
++	int rv;
++	ND_STATS *nd_stats;
++
++	/* If we're in 2D mode, set the kind appropriately */
++	if ( mode == 2 ) stats_kind = STATISTIC_KIND_2D;
++
++    /* Then read the geom status histogram from that */
++  
++#if POSTGIS_PGSQL_VERSION < 100
+ 	float4 *floatptr;
+-	ND_STATS *nd_stats;
+-
+-  /* If we're in 2D mode, set the kind appropriately */
+-  if ( mode == 2 ) stats_kind = STATISTIC_KIND_2D;
+-
+-  /* Then read the geom status histogram from that */
+-  rv = get_attstatsslot(stats_tuple, 0, 0, stats_kind, InvalidOid,
+-                        NULL, NULL, NULL, &floatptr, &nvalues);
+-  if ( ! rv ) {
+-    POSTGIS_DEBUGF(2,
+-            "no slot of kind %d in stats tuple", stats_kind);
+-    return NULL;
+-  }
++	int nvalues;
+ 	
+-  /* Clone the stats here so we can release the attstatsslot immediately */
+-  nd_stats = palloc(sizeof(float) * nvalues);
+-  memcpy(nd_stats, floatptr, sizeof(float) * nvalues);
+-
+-  /* Clean up */
+-  free_attstatsslot(0, NULL, 0, floatptr, nvalues);
++	rv = get_attstatsslot(stats_tuple, 0, 0, stats_kind, InvalidOid,
++						NULL, NULL, NULL, &floatptr, &nvalues);
++	
++	if ( ! rv ) {
++		POSTGIS_DEBUGF(2,
++				"no slot of kind %d in stats tuple", stats_kind);
++		return NULL;
++	}
++		
++	/* Clone the stats here so we can release the attstatsslot immediately */
++	nd_stats = palloc(sizeof(float) * nvalues);
++	memcpy(nd_stats, floatptr, sizeof(float) * nvalues);
++	
++	/* Clean up */
++	free_attstatsslot(0, NULL, 0, floatptr, nvalues);
++#else /* PostgreSQL 10 or higher */
++	AttStatsSlot sslot;
++	rv = get_attstatsslot(&sslot, stats_tuple, stats_kind, InvalidOid,
++						 ATTSTATSSLOT_NUMBERS);
++	if ( ! rv ) {
++		POSTGIS_DEBUGF(2,
++				"no slot of kind %d in stats tuple", stats_kind);
++		return NULL;
++	}
++	
++	/* Clone the stats here so we can release the attstatsslot immediately */
++	nd_stats = palloc(sizeof(float4) * sslot.nnumbers);
++	memcpy(nd_stats, sslot.numbers, sizeof(float4) * sslot.nnumbers);
++	
++	free_attstatsslot(&sslot);
++#endif
+ 
+-  return nd_stats;
++    return nd_stats;
+ }
+ 
+ /**
+diff --git a/postgis/gserialized_gist_nd.c b/postgis/gserialized_gist_nd.c
+index 4fc5fa476..e8c16c5ad 100644
+--- a/postgis/gserialized_gist_nd.c
++++ b/postgis/gserialized_gist_nd.c
+@@ -52,6 +52,9 @@
+ 
+ #include <assert.h>
+ 
++#if POSTGIS_PGSQL_VERSION >= 100
++#include <float.h>
++#endif
+ 
+ /* Fall back to older finite() if necessary */
+ #ifndef HAVE_ISFINITE
+diff --git a/raster/rt_pg/rtpostgis.sql.in b/raster/rt_pg/rtpostgis.sql.in
+index 295892d22..9175705d2 100644
+--- a/raster/rt_pg/rtpostgis.sql.in
++++ b/raster/rt_pg/rtpostgis.sql.in
+@@ -7037,7 +7037,7 @@ CREATE OR REPLACE FUNCTION _raster_constraint_info_blocksize(rastschema name, ra
+ 	SELECT
+ 		CASE
+ 			WHEN strpos(s.consrc, 'ANY (ARRAY[') > 0 THEN
+-				split_part((regexp_matches(s.consrc, E'ARRAY\\[(.*?){1}\\]'))[1], ',', 1)::integer
++                split_part((substring(s.consrc FROM E'ARRAY\\[(.*?){1}\\]')), ',', 1)::integer
+ 			ELSE
+ 				regexp_replace(
+ 					split_part(s.consrc, '= ', 2),
+diff --git a/raster/test/regress/rt_union.sql b/raster/test/regress/rt_union.sql
+index 8b47e877f..a64b23a1c 100644
+--- a/raster/test/regress/rt_union.sql
++++ b/raster/test/regress/rt_union.sql
+@@ -143,13 +143,13 @@ INSERT INTO raster_union_out
+ 
+ SELECT
+ 	uniontype,
+-	x,
+-	y,
+-	val
++	(pp).x,
++	(pp).y,
++	(pp).val
+ FROM (
+ 	SELECT
+ 		uniontype,
+-		(ST_PixelAsPoints(rast)).*
++		(ST_PixelAsPoints(rast)) AS pp
+ 	FROM raster_union_out
+ ) foo
+ ORDER BY uniontype, y, x;
+diff --git a/raster/test/regress/rt_union_expected b/raster/test/regress/rt_union_expected
+index ac32ef69d..51cc3e3d2 100644
+--- a/raster/test/regress/rt_union_expected
++++ b/raster/test/regress/rt_union_expected
+@@ -53,9 +53,6 @@ SUM|3|2|2
+ SUM|2|3|2
+ SUM|3|3|2
+ NOTICE:  No pixels found for band 1
+-NOTICE:  No pixels found for band 1
+-NOTICE:  No pixels found for band 1
+-NOTICE:  No pixels found for band 1
+ COUNT|1|1|1
+ COUNT|2|1|1
+ COUNT|3|1|1
+diff --git a/regress/regress_selectivity.sql b/regress/regress_selectivity.sql
+index 82c5e70d8..ca7f2722d 100644
+--- a/regress/regress_selectivity.sql
++++ b/regress/regress_selectivity.sql
+@@ -1,3 +1,2140 @@
++-- Make example data
++
++CREATE TABLE regular_overdots_ab (
++    a integer,
++    b integer
++);
++
++COPY regular_overdots_ab (a, b) FROM stdin;
++1	1
++1	1
++1	2
++1	1
++1	2
++1	3
++1	1
++1	2
++1	3
++1	4
++1	1
++1	2
++1	3
++1	4
++1	5
++1	1
++1	2
++1	3
++1	4
++1	5
++1	6
++1	1
++1	2
++1	3
++1	4
++1	5
++1	6
++1	7
++1	1
++1	2
++1	3
++1	4
++1	5
++1	6
++1	7
++1	8
++1	1
++1	2
++1	3
++1	4
++1	5
++1	6
++1	7
++1	8
++1	9
++1	1
++1	2
++1	3
++1	4
++1	5
++1	6
++1	7
++1	8
++1	9
++1	10
++1	1
++2	1
++1	1
++2	2
++1	1
++2	2
++1	3
++2	1
++1	2
++2	3
++1	1
++2	2
++1	3
++2	4
++1	1
++2	2
++1	3
++2	4
++1	5
++2	1
++1	2
++2	3
++1	4
++2	5
++1	1
++2	2
++1	3
++2	4
++1	5
++2	6
++1	1
++2	2
++1	3
++2	4
++1	5
++2	6
++1	7
++2	1
++1	2
++2	3
++1	4
++2	5
++1	6
++2	7
++1	1
++2	2
++1	3
++2	4
++1	5
++2	6
++1	7
++2	8
++1	1
++2	2
++1	3
++2	4
++1	5
++2	6
++1	7
++2	8
++1	9
++2	1
++1	2
++2	3
++1	4
++2	5
++1	6
++2	7
++1	8
++2	9
++1	1
++2	2
++1	3
++2	4
++1	5
++2	6
++1	7
++2	8
++1	9
++2	10
++1	1
++2	1
++3	1
++1	1
++2	2
++3	1
++1	2
++2	1
++3	2
++1	1
++2	2
++3	3
++1	1
++2	2
++3	3
++1	4
++2	1
++3	2
++1	3
++2	4
++3	1
++1	2
++2	3
++3	4
++1	1
++2	2
++3	3
++1	4
++2	5
++3	1
++1	2
++2	3
++3	4
++1	5
++2	1
++3	2
++1	3
++2	4
++3	5
++1	1
++2	2
++3	3
++1	4
++2	5
++3	6
++1	1
++2	2
++3	3
++1	4
++2	5
++3	6
++1	7
++2	1
++3	2
++1	3
++2	4
++3	5
++1	6
++2	7
++3	1
++1	2
++2	3
++3	4
++1	5
++2	6
++3	7
++1	1
++2	2
++3	3
++1	4
++2	5
++3	6
++1	7
++2	8
++3	1
++1	2
++2	3
++3	4
++1	5
++2	6
++3	7
++1	8
++2	1
++3	2
++1	3
++2	4
++3	5
++1	6
++2	7
++3	8
++1	1
++2	2
++3	3
++1	4
++2	5
++3	6
++1	7
++2	8
++3	9
++1	1
++2	2
++3	3
++1	4
++2	5
++3	6
++1	7
++2	8
++3	9
++1	10
++2	1
++3	2
++1	3
++2	4
++3	5
++1	6
++2	7
++3	8
++1	9
++2	10
++3	1
++1	2
++2	3
++3	4
++1	5
++2	6
++3	7
++1	8
++2	9
++3	10
++1	1
++2	1
++3	1
++4	1
++1	1
++2	2
++3	1
++4	2
++1	1
++2	2
++3	3
++4	1
++1	2
++2	3
++3	1
++4	2
++1	3
++2	1
++3	2
++4	3
++1	1
++2	2
++3	3
++4	4
++1	1
++2	2
++3	3
++4	4
++1	5
++2	1
++3	2
++4	3
++1	4
++2	5
++3	1
++4	2
++1	3
++2	4
++3	5
++4	1
++1	2
++2	3
++3	4
++4	5
++1	1
++2	2
++3	3
++4	4
++1	5
++2	6
++3	1
++4	2
++1	3
++2	4
++3	5
++4	6
++1	1
++2	2
++3	3
++4	4
++1	5
++2	6
++3	7
++4	1
++1	2
++2	3
++3	4
++4	5
++1	6
++2	7
++3	1
++4	2
++1	3
++2	4
++3	5
++4	6
++1	7
++2	1
++3	2
++4	3
++1	4
++2	5
++3	6
++4	7
++1	1
++2	2
++3	3
++4	4
++1	5
++2	6
++3	7
++4	8
++1	1
++2	2
++3	3
++4	4
++1	5
++2	6
++3	7
++4	8
++1	9
++2	1
++3	2
++4	3
++1	4
++2	5
++3	6
++4	7
++1	8
++2	9
++3	1
++4	2
++1	3
++2	4
++3	5
++4	6
++1	7
++2	8
++3	9
++4	1
++1	2
++2	3
++3	4
++4	5
++1	6
++2	7
++3	8
++4	9
++1	1
++2	2
++3	3
++4	4
++1	5
++2	6
++3	7
++4	8
++1	9
++2	10
++3	1
++4	2
++1	3
++2	4
++3	5
++4	6
++1	7
++2	8
++3	9
++4	10
++1	1
++2	1
++3	1
++4	1
++5	1
++1	1
++2	2
++3	1
++4	2
++5	1
++1	2
++2	1
++3	2
++4	1
++5	2
++1	1
++2	2
++3	3
++4	1
++5	2
++1	3
++2	1
++3	2
++4	3
++5	1
++1	2
++2	3
++3	1
++4	2
++5	3
++1	1
++2	2
++3	3
++4	4
++5	1
++1	2
++2	3
++3	4
++4	1
++5	2
++1	3
++2	4
++3	1
++4	2
++5	3
++1	4
++2	1
++3	2
++4	3
++5	4
++1	1
++2	2
++3	3
++4	4
++5	5
++1	1
++2	2
++3	3
++4	4
++5	5
++1	6
++2	1
++3	2
++4	3
++5	4
++1	5
++2	6
++3	1
++4	2
++5	3
++1	4
++2	5
++3	6
++4	1
++5	2
++1	3
++2	4
++3	5
++4	6
++5	1
++1	2
++2	3
++3	4
++4	5
++5	6
++1	1
++2	2
++3	3
++4	4
++5	5
++1	6
++2	7
++3	1
++4	2
++5	3
++1	4
++2	5
++3	6
++4	7
++5	1
++1	2
++2	3
++3	4
++4	5
++5	6
++1	7
++2	1
++3	2
++4	3
++5	4
++1	5
++2	6
++3	7
++4	1
++5	2
++1	3
++2	4
++3	5
++4	6
++5	7
++1	1
++2	2
++3	3
++4	4
++5	5
++1	6
++2	7
++3	8
++4	1
++5	2
++1	3
++2	4
++3	5
++4	6
++5	7
++1	8
++2	1
++3	2
++4	3
++5	4
++1	5
++2	6
++3	7
++4	8
++5	1
++1	2
++2	3
++3	4
++4	5
++5	6
++1	7
++2	8
++3	1
++4	2
++5	3
++1	4
++2	5
++3	6
++4	7
++5	8
++1	1
++2	2
++3	3
++4	4
++5	5
++1	6
++2	7
++3	8
++4	9
++5	1
++1	2
++2	3
++3	4
++4	5
++5	6
++1	7
++2	8
++3	9
++4	1
++5	2
++1	3
++2	4
++3	5
++4	6
++5	7
++1	8
++2	9
++3	1
++4	2
++5	3
++1	4
++2	5
++3	6
++4	7
++5	8
++1	9
++2	1
++3	2
++4	3
++5	4
++1	5
++2	6
++3	7
++4	8
++5	9
++1	1
++2	2
++3	3
++4	4
++5	5
++1	6
++2	7
++3	8
++4	9
++5	10
++1	1
++2	1
++3	1
++4	1
++5	1
++6	1
++1	1
++2	2
++3	1
++4	2
++5	1
++6	2
++1	1
++2	2
++3	3
++4	1
++5	2
++6	3
++1	1
++2	2
++3	3
++4	4
++5	1
++6	2
++1	3
++2	4
++3	1
++4	2
++5	3
++6	4
++1	1
++2	2
++3	3
++4	4
++5	5
++6	1
++1	2
++2	3
++3	4
++4	5
++5	1
++6	2
++1	3
++2	4
++3	5
++4	1
++5	2
++6	3
++1	4
++2	5
++3	1
++4	2
++5	3
++6	4
++1	5
++2	1
++3	2
++4	3
++5	4
++6	5
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++1	7
++2	1
++3	2
++4	3
++5	4
++6	5
++1	6
++2	7
++3	1
++4	2
++5	3
++6	4
++1	5
++2	6
++3	7
++4	1
++5	2
++6	3
++1	4
++2	5
++3	6
++4	7
++5	1
++6	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	1
++1	2
++2	3
++3	4
++4	5
++5	6
++6	7
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++1	7
++2	8
++3	1
++4	2
++5	3
++6	4
++1	5
++2	6
++3	7
++4	8
++5	1
++6	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	8
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++1	7
++2	8
++3	9
++4	1
++5	2
++6	3
++1	4
++2	5
++3	6
++4	7
++5	8
++6	9
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++1	7
++2	8
++3	9
++4	10
++5	1
++6	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	8
++1	9
++2	10
++3	1
++4	2
++5	3
++6	4
++1	5
++2	6
++3	7
++4	8
++5	9
++6	10
++1	1
++2	1
++3	1
++4	1
++5	1
++6	1
++7	1
++1	1
++2	2
++3	1
++4	2
++5	1
++6	2
++7	1
++1	2
++2	1
++3	2
++4	1
++5	2
++6	1
++7	2
++1	1
++2	2
++3	3
++4	1
++5	2
++6	3
++7	1
++1	2
++2	3
++3	1
++4	2
++5	3
++6	1
++7	2
++1	3
++2	1
++3	2
++4	3
++5	1
++6	2
++7	3
++1	1
++2	2
++3	3
++4	4
++5	1
++6	2
++7	3
++1	4
++2	1
++3	2
++4	3
++5	4
++6	1
++7	2
++1	3
++2	4
++3	1
++4	2
++5	3
++6	4
++7	1
++1	2
++2	3
++3	4
++4	1
++5	2
++6	3
++7	4
++1	1
++2	2
++3	3
++4	4
++5	5
++6	1
++7	2
++1	3
++2	4
++3	5
++4	1
++5	2
++6	3
++7	4
++1	5
++2	1
++3	2
++4	3
++5	4
++6	5
++7	1
++1	2
++2	3
++3	4
++4	5
++5	1
++6	2
++7	3
++1	4
++2	5
++3	1
++4	2
++5	3
++6	4
++7	5
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	1
++1	2
++2	3
++3	4
++4	5
++5	6
++6	1
++7	2
++1	3
++2	4
++3	5
++4	6
++5	1
++6	2
++7	3
++1	4
++2	5
++3	6
++4	1
++5	2
++6	3
++7	4
++1	5
++2	6
++3	1
++4	2
++5	3
++6	4
++7	5
++1	6
++2	1
++3	2
++4	3
++5	4
++6	5
++7	6
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++1	8
++2	1
++3	2
++4	3
++5	4
++6	5
++7	6
++1	7
++2	8
++3	1
++4	2
++5	3
++6	4
++7	5
++1	6
++2	7
++3	8
++4	1
++5	2
++6	3
++7	4
++1	5
++2	6
++3	7
++4	8
++5	1
++6	2
++7	3
++1	4
++2	5
++3	6
++4	7
++5	8
++6	1
++7	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	8
++7	1
++1	2
++2	3
++3	4
++4	5
++5	6
++6	7
++7	8
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++1	8
++2	9
++3	1
++4	2
++5	3
++6	4
++7	5
++1	6
++2	7
++3	8
++4	9
++5	1
++6	2
++7	3
++1	4
++2	5
++3	6
++4	7
++5	8
++6	9
++7	1
++1	2
++2	3
++3	4
++4	5
++5	6
++6	7
++7	8
++1	9
++2	1
++3	2
++4	3
++5	4
++6	5
++7	6
++1	7
++2	8
++3	9
++4	1
++5	2
++6	3
++7	4
++1	5
++2	6
++3	7
++4	8
++5	9
++6	1
++7	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	8
++7	9
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++1	8
++2	9
++3	10
++4	1
++5	2
++6	3
++7	4
++1	5
++2	6
++3	7
++4	8
++5	9
++6	10
++7	1
++1	2
++2	3
++3	4
++4	5
++5	6
++6	7
++7	8
++1	9
++2	10
++3	1
++4	2
++5	3
++6	4
++7	5
++1	6
++2	7
++3	8
++4	9
++5	10
++6	1
++7	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	8
++7	9
++1	10
++2	1
++3	2
++4	3
++5	4
++6	5
++7	6
++1	7
++2	8
++3	9
++4	10
++5	1
++6	2
++7	3
++1	4
++2	5
++3	6
++4	7
++5	8
++6	9
++7	10
++1	1
++2	1
++3	1
++4	1
++5	1
++6	1
++7	1
++8	1
++1	1
++2	2
++3	1
++4	2
++5	1
++6	2
++7	1
++8	2
++1	1
++2	2
++3	3
++4	1
++5	2
++6	3
++7	1
++8	2
++1	3
++2	1
++3	2
++4	3
++5	1
++6	2
++7	3
++8	1
++1	2
++2	3
++3	1
++4	2
++5	3
++6	1
++7	2
++8	3
++1	1
++2	2
++3	3
++4	4
++5	1
++6	2
++7	3
++8	4
++1	1
++2	2
++3	3
++4	4
++5	5
++6	1
++7	2
++8	3
++1	4
++2	5
++3	1
++4	2
++5	3
++6	4
++7	5
++8	1
++1	2
++2	3
++3	4
++4	5
++5	1
++6	2
++7	3
++8	4
++1	5
++2	1
++3	2
++4	3
++5	4
++6	5
++7	1
++8	2
++1	3
++2	4
++3	5
++4	1
++5	2
++6	3
++7	4
++8	5
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	1
++8	2
++1	3
++2	4
++3	5
++4	6
++5	1
++6	2
++7	3
++8	4
++1	5
++2	6
++3	1
++4	2
++5	3
++6	4
++7	5
++8	6
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++8	1
++1	2
++2	3
++3	4
++4	5
++5	6
++6	7
++7	1
++8	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	1
++7	2
++8	3
++1	4
++2	5
++3	6
++4	7
++5	1
++6	2
++7	3
++8	4
++1	5
++2	6
++3	7
++4	1
++5	2
++6	3
++7	4
++8	5
++1	6
++2	7
++3	1
++4	2
++5	3
++6	4
++7	5
++8	6
++1	7
++2	1
++3	2
++4	3
++5	4
++6	5
++7	6
++8	7
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++8	8
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++8	8
++1	9
++2	1
++3	2
++4	3
++5	4
++6	5
++7	6
++8	7
++1	8
++2	9
++3	1
++4	2
++5	3
++6	4
++7	5
++8	6
++1	7
++2	8
++3	9
++4	1
++5	2
++6	3
++7	4
++8	5
++1	6
++2	7
++3	8
++4	9
++5	1
++6	2
++7	3
++8	4
++1	5
++2	6
++3	7
++4	8
++5	9
++6	1
++7	2
++8	3
++1	4
++2	5
++3	6
++4	7
++5	8
++6	9
++7	1
++8	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	8
++7	9
++8	1
++1	2
++2	3
++3	4
++4	5
++5	6
++6	7
++7	8
++8	9
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++8	8
++1	9
++2	10
++3	1
++4	2
++5	3
++6	4
++7	5
++8	6
++1	7
++2	8
++3	9
++4	10
++5	1
++6	2
++7	3
++8	4
++1	5
++2	6
++3	7
++4	8
++5	9
++6	10
++7	1
++8	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	8
++7	9
++8	10
++1	1
++2	1
++3	1
++4	1
++5	1
++6	1
++7	1
++8	1
++9	1
++1	1
++2	2
++3	1
++4	2
++5	1
++6	2
++7	1
++8	2
++9	1
++1	2
++2	1
++3	2
++4	1
++5	2
++6	1
++7	2
++8	1
++9	2
++1	1
++2	2
++3	3
++4	1
++5	2
++6	3
++7	1
++8	2
++9	3
++1	1
++2	2
++3	3
++4	4
++5	1
++6	2
++7	3
++8	4
++9	1
++1	2
++2	3
++3	4
++4	1
++5	2
++6	3
++7	4
++8	1
++9	2
++1	3
++2	4
++3	1
++4	2
++5	3
++6	4
++7	1
++8	2
++9	3
++1	4
++2	1
++3	2
++4	3
++5	4
++6	1
++7	2
++8	3
++9	4
++1	1
++2	2
++3	3
++4	4
++5	5
++6	1
++7	2
++8	3
++9	4
++1	5
++2	1
++3	2
++4	3
++5	4
++6	5
++7	1
++8	2
++9	3
++1	4
++2	5
++3	1
++4	2
++5	3
++6	4
++7	5
++8	1
++9	2
++1	3
++2	4
++3	5
++4	1
++5	2
++6	3
++7	4
++8	5
++9	1
++1	2
++2	3
++3	4
++4	5
++5	1
++6	2
++7	3
++8	4
++9	5
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	1
++8	2
++9	3
++1	4
++2	5
++3	6
++4	1
++5	2
++6	3
++7	4
++8	5
++9	6
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++8	1
++9	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	1
++7	2
++8	3
++9	4
++1	5
++2	6
++3	7
++4	1
++5	2
++6	3
++7	4
++8	5
++9	6
++1	7
++2	1
++3	2
++4	3
++5	4
++6	5
++7	6
++8	7
++9	1
++1	2
++2	3
++3	4
++4	5
++5	6
++6	7
++7	1
++8	2
++9	3
++1	4
++2	5
++3	6
++4	7
++5	1
++6	2
++7	3
++8	4
++9	5
++1	6
++2	7
++3	1
++4	2
++5	3
++6	4
++7	5
++8	6
++9	7
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++8	8
++9	1
++1	2
++2	3
++3	4
++4	5
++5	6
++6	7
++7	8
++8	1
++9	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	8
++7	1
++8	2
++9	3
++1	4
++2	5
++3	6
++4	7
++5	8
++6	1
++7	2
++8	3
++9	4
++1	5
++2	6
++3	7
++4	8
++5	1
++6	2
++7	3
++8	4
++9	5
++1	6
++2	7
++3	8
++4	1
++5	2
++6	3
++7	4
++8	5
++9	6
++1	7
++2	8
++3	1
++4	2
++5	3
++6	4
++7	5
++8	6
++9	7
++1	8
++2	1
++3	2
++4	3
++5	4
++6	5
++7	6
++8	7
++9	8
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++8	8
++9	9
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++8	8
++9	9
++1	10
++2	1
++3	2
++4	3
++5	4
++6	5
++7	6
++8	7
++9	8
++1	9
++2	10
++3	1
++4	2
++5	3
++6	4
++7	5
++8	6
++9	7
++1	8
++2	9
++3	10
++4	1
++5	2
++6	3
++7	4
++8	5
++9	6
++1	7
++2	8
++3	9
++4	10
++5	1
++6	2
++7	3
++8	4
++9	5
++1	6
++2	7
++3	8
++4	9
++5	10
++6	1
++7	2
++8	3
++9	4
++1	5
++2	6
++3	7
++4	8
++5	9
++6	10
++7	1
++8	2
++9	3
++1	4
++2	5
++3	6
++4	7
++5	8
++6	9
++7	10
++8	1
++9	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	8
++7	9
++8	10
++9	1
++1	2
++2	3
++3	4
++4	5
++5	6
++6	7
++7	8
++8	9
++9	10
++1	1
++2	1
++3	1
++4	1
++5	1
++6	1
++7	1
++8	1
++9	1
++10	1
++1	1
++2	2
++3	1
++4	2
++5	1
++6	2
++7	1
++8	2
++9	1
++10	2
++1	1
++2	2
++3	3
++4	1
++5	2
++6	3
++7	1
++8	2
++9	3
++10	1
++1	2
++2	3
++3	1
++4	2
++5	3
++6	1
++7	2
++8	3
++9	1
++10	2
++1	3
++2	1
++3	2
++4	3
++5	1
++6	2
++7	3
++8	1
++9	2
++10	3
++1	1
++2	2
++3	3
++4	4
++5	1
++6	2
++7	3
++8	4
++9	1
++10	2
++1	3
++2	4
++3	1
++4	2
++5	3
++6	4
++7	1
++8	2
++9	3
++10	4
++1	1
++2	2
++3	3
++4	4
++5	5
++6	1
++7	2
++8	3
++9	4
++10	5
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	1
++8	2
++9	3
++10	4
++1	5
++2	6
++3	1
++4	2
++5	3
++6	4
++7	5
++8	6
++9	1
++10	2
++1	3
++2	4
++3	5
++4	6
++5	1
++6	2
++7	3
++8	4
++9	5
++10	6
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++8	1
++9	2
++10	3
++1	4
++2	5
++3	6
++4	7
++5	1
++6	2
++7	3
++8	4
++9	5
++10	6
++1	7
++2	1
++3	2
++4	3
++5	4
++6	5
++7	6
++8	7
++9	1
++10	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	1
++7	2
++8	3
++9	4
++10	5
++1	6
++2	7
++3	1
++4	2
++5	3
++6	4
++7	5
++8	6
++9	7
++10	1
++1	2
++2	3
++3	4
++4	5
++5	6
++6	7
++7	1
++8	2
++9	3
++10	4
++1	5
++2	6
++3	7
++4	1
++5	2
++6	3
++7	4
++8	5
++9	6
++10	7
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++8	8
++9	1
++10	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	8
++7	1
++8	2
++9	3
++10	4
++1	5
++2	6
++3	7
++4	8
++5	1
++6	2
++7	3
++8	4
++9	5
++10	6
++1	7
++2	8
++3	1
++4	2
++5	3
++6	4
++7	5
++8	6
++9	7
++10	8
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++8	8
++9	9
++10	1
++1	2
++2	3
++3	4
++4	5
++5	6
++6	7
++7	8
++8	9
++9	1
++10	2
++1	3
++2	4
++3	5
++4	6
++5	7
++6	8
++7	9
++8	1
++9	2
++10	3
++1	4
++2	5
++3	6
++4	7
++5	8
++6	9
++7	1
++8	2
++9	3
++10	4
++1	5
++2	6
++3	7
++4	8
++5	9
++6	1
++7	2
++8	3
++9	4
++10	5
++1	6
++2	7
++3	8
++4	9
++5	1
++6	2
++7	3
++8	4
++9	5
++10	6
++1	7
++2	8
++3	9
++4	1
++5	2
++6	3
++7	4
++8	5
++9	6
++10	7
++1	8
++2	9
++3	1
++4	2
++5	3
++6	4
++7	5
++8	6
++9	7
++10	8
++1	9
++2	1
++3	2
++4	3
++5	4
++6	5
++7	6
++8	7
++9	8
++10	9
++1	1
++2	2
++3	3
++4	4
++5	5
++6	6
++7	7
++8	8
++9	9
++10	10
++\.
++
+ 
+ -- Check for error messages
+ create table no_stats ( g geometry, id integer );
+@@ -8,15 +2145,12 @@ select _postgis_join_selectivity('no_stats', 'g', 'no_stats_join', 'g');
+ insert into no_stats (g, id) values ('POINT(0 0)', 0);
+ analyze no_stats;
+ select _postgis_join_selectivity('no_stats', 'g', 'no_stats_join', 'g');
+-drop table no_stats;
+-drop table no_stats_join;
++drop table if exists no_stats;
++drop table if exists no_stats_join;
+ 
+ -- Table with uniformly variable density, highest at 1,1, lowest at 10,10
+ create table regular_overdots as
+-with
+-ij as ( select i, j from generate_series(1, 10) i, generate_series(1, 10) j),
+-iijj as (select generate_series(1, i) as a, generate_series(1, j) b from ij)
+-select st_makepoint(a, b) as g from iijj;
++  select st_makepoint(a, b) as g from regular_overdots_ab;
+ 
+ -- Generate the stats
+ analyze regular_overdots;
+@@ -49,4 +2183,5 @@ select 'selectivity_09', 'estimated', _postgis_selectivity('regular_overdots','g
+ 
+ -- Clean
+ drop table if exists regular_overdots;
++drop table if exists regular_overdots_ab;
+ 
+diff --git a/topology/sql/topogeometry/totopogeom.sql.in b/topology/sql/topogeometry/totopogeom.sql.in
+index 79520c64e..6d3192de0 100644
+--- a/topology/sql/topogeometry/totopogeom.sql.in
++++ b/topology/sql/topogeometry/totopogeom.sql.in
+@@ -139,6 +139,7 @@ DECLARE
+   tolerance FLOAT8;
+   alayer INT;
+   atopology TEXT;
++  var_dims integer;
+ BEGIN
+ 
+ #ifdef POSTGIS_TOPOLOGY_DEBUG
+@@ -230,23 +231,31 @@ BEGIN
+         'Unexpected feature dimension %', ST_Dimension(ageom);
+   END IF;
+ 
++
+   -- Now that we have an empty topogeometry, we loop over distinct components
+   -- and add them to the definition of it. We add them as soon
+   -- as possible so that each element can further edit the
+   -- definition by splitting
+   FOR rec IN SELECT id(tg), alayer as lyr,
+-    geom, ST_Dimension(geom) as dims
+-    FROM (SELECT (ST_Dump(ageom)).geom) as f
+-    WHERE NOT ST_IsEmpty(geom)
++    geom, ST_Dimension(gd.geom) as dims
++    FROM ST_Dump(ageom) AS gd
++    WHERE NOT ST_IsEmpty(gd.geom)
+   LOOP
+-    FOR rec2 IN SELECT CASE
+-       WHEN rec.dims = 0 THEN
+-         topology.topogeo_addPoint(atopology, rec.geom, tolerance)
+-       WHEN rec.dims = 1 THEN
+-         topology.topogeo_addLineString(atopology, rec.geom, tolerance)
+-       WHEN rec.dims = 2 THEN
+-         topology.topogeo_addPolygon(atopology, rec.geom, tolerance)
+-       END as primitive
++    -- NOTE: Switched from using case to this because of PG 10 behavior change
++    -- Using a UNION ALL only one will be processed because of the WHERE
++    -- Since the WHERE clause will be processed first
++    FOR rec2 IN SELECT primitive
++          FROM
++            (
++              SELECT topology.topogeo_addPoint(atopology, rec.geom, tolerance)
++                WHERE rec.dims = 0
++              UNION ALL
++              SELECT topology.topogeo_addLineString(atopology, rec.geom, tolerance)
++                WHERE rec.dims = 1
++              UNION ALL
++              SELECT topology.topogeo_addPolygon(atopology, rec.geom, tolerance)
++                WHERE rec.dims = 2
++            ) AS f(primitive)
+     LOOP
+       elem := ARRAY[rec.dims+1, rec2.primitive]::text;
+       IF elems @> ARRAY[elem] THEN
+diff --git a/topology/test/regress/copytopology.sql b/topology/test/regress/copytopology.sql
+index 414e01993..182ff493c 100644
+--- a/topology/test/regress/copytopology.sql
++++ b/topology/test/regress/copytopology.sql
+@@ -39,13 +39,13 @@ WHERE l.topology_id = t.id and t.name = 'CITY_data_UP_down'
+ ORDER BY l.layer_id;
+ 
+ -- Check sequences
+-SELECT * from "CITY_data_UP_down".node_node_id_seq;
+-SELECT * from "CITY_data_UP_down".edge_data_edge_id_seq;
+-SELECT * from "CITY_data_UP_down".face_face_id_seq;
+-SELECT sequence_name, last_value, start_value, increment_by, max_value, min_value, cache_value, is_cycled, is_called from "CITY_data_UP_down".layer_id_seq;
+-SELECT * from "CITY_data_UP_down".topogeo_s_1;
+-SELECT * from "CITY_data_UP_down".topogeo_s_2;
+-SELECT * from "CITY_data_UP_down".topogeo_s_3;
++SELECT tableoid::regclass AS sequence_name, last_value,  is_called from "CITY_data_UP_down".node_node_id_seq;
++SELECT tableoid::regclass AS sequence_name, last_value,  is_called from "CITY_data_UP_down".edge_data_edge_id_seq;
++SELECT tableoid::regclass AS sequence_name, last_value,  is_called from "CITY_data_UP_down".face_face_id_seq;
++SELECT tableoid::regclass AS sequence_name, last_value,  is_called from "CITY_data_UP_down".layer_id_seq;
++SELECT tableoid::regclass AS sequence_name, last_value,  is_called  from "CITY_data_UP_down".topogeo_s_1;
++SELECT tableoid::regclass AS sequence_name, last_value,  is_called  from "CITY_data_UP_down".topogeo_s_2;
++SELECT tableoid::regclass AS sequence_name, last_value,  is_called  from "CITY_data_UP_down".topogeo_s_3;
+ 
+ SELECT topology.DropTopology('CITY_data_UP_down');
+ SELECT topology.DropTopology('city_data');
+diff --git a/topology/test/regress/copytopology_expected b/topology/test/regress/copytopology_expected
+index 95083dbbf..ffdb1316b 100644
+--- a/topology/test/regress/copytopology_expected
++++ b/topology/test/regress/copytopology_expected
+@@ -19,13 +19,13 @@ layers|3
+ 1|CITY_data_UP_down|LAYER1|
+ 2|CITY_data_UP_down|LAYER2|
+ 3|CITY_data_UP_down|LAYER3|
+-node_node_id_seq|22|1|1|9223372036854775807|1|1|0|f|t
+-edge_data_edge_id_seq|26|1|1|9223372036854775807|1|1|0|f|t
+-face_face_id_seq|9|1|1|9223372036854775807|1|1|0|f|t
+-layer_id_seq|1|1|1|9223372036854775807|1|1|f|f
+-topogeo_s_1|9|1|1|9223372036854775807|1|1|0|f|t
+-topogeo_s_2|8|1|1|9223372036854775807|1|1|0|f|t
+-topogeo_s_3|8|1|1|9223372036854775807|1|1|0|f|t
++"CITY_data_UP_down".node_node_id_seq|22|t
++"CITY_data_UP_down".edge_data_edge_id_seq|26|t
++"CITY_data_UP_down".face_face_id_seq|9|t
++"CITY_data_UP_down".layer_id_seq|1|f
++"CITY_data_UP_down".topogeo_s_1|9|t
++"CITY_data_UP_down".topogeo_s_2|8|t
++"CITY_data_UP_down".topogeo_s_3|8|t
+ Topology 'CITY_data_UP_down' dropped
+ Topology 'city_data' dropped
+ #2184.1|t
+-- 
+2.13.6
+
