@@ -95,6 +95,7 @@ The postgis-utils package provides the utilities for PostGIS.
 Summary:	Support for upgrading from the previous major release of Postgis
 Group:		Applications/Databases
 Requires: 	%{name}%{?_isa} = %{version}-%{release}
+Requires:	postgresql-upgrade
 
 %description upgrade
 The postgis-upgrade package contains the previous version of postgis
@@ -147,7 +148,7 @@ for so in %so_files; do
 done
 
 # second, build feature-full build against previous PostgreSQL version
-%configure --enable-raster --with-pgconfig=/usr/lib64/pgsql/postgresql-9.6/bin/pg_config
+%configure --enable-raster --with-pgconfig=%postgresql_upgrade_prefix/bin/pg_config
 make %{?_smp_mflags}
 )
 
@@ -244,7 +245,7 @@ rm -rf %{buildroot}
 
 %if %upgrade
 %files upgrade
-%_libdir/pgsql/postgresql-9.6/*
+%postgresql_upgrade_prefix/*
 %_libdir/pgsql/*-%{prevmajorversion}.so
 %endif
 
