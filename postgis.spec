@@ -7,6 +7,7 @@
 %global prevmajorversion 2.3
 %global prevversion %{prevmajorversion}.3
 %global so_files	rtpostgis postgis_topology postgis address_standardizer
+%global configure_opts	--disable-rpath --enable-raster
 
 %global pg_version_minimum 9.2
 
@@ -25,7 +26,6 @@ Source4:	filter-requires-perl-Pg.sh
 Patch1:		postgis-configureac21.patch
 Patch2:		postgis-2.4.0-upgrade-2.3.3.patch
 URL:		http://www.postgis.net
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	perl-generators
 BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, java, java-devel, ant
@@ -47,6 +47,7 @@ systems (GIS), much like ESRI's SDE or Oracle's Spatial extension. PostGIS
 follows the OpenGIS "Simple Features Specification for SQL" and has been
 certified as compliant with the "Types and Functions" profile.
 
+
 %package devel
 Summary:	The development files for PostGIS
 Group:		Applications/Databases
@@ -55,11 +56,13 @@ Requires:	%{name}%{?_isa} = %{version}-%{release}
 %description devel
 Development headers and libraries for PostGIS.
 
+
 %package docs
 Summary:	Extra documentation for PostGIS
 Group:		Applications/Databases
 %description docs
 The postgis-docs package includes PDF documentation of PostGIS.
+
 
 %if %javabuild
 %package jdbc
@@ -80,21 +83,24 @@ Requires(postun):	%{_bindir}/rebuild-gcj-db
 The postgis-jdbc package provides the essential jdbc driver for PostGIS.
 %endif
 
+
 %if %utils
 %package utils
 Summary:	The utils for PostGIS
 Group:		Applications/Databases
-Requires:	%{name} = %{version}-%{release}, perl-DBD-Pg
+Requires:	%{name}%{?_isa} = %{version}-%{release}
+Requires:	perl-DBD-Pg
 
 %description utils
 The postgis-utils package provides the utilities for PostGIS.
 %endif
 
+
 %if %upgrade
 %package upgrade
 Summary:	Support for upgrading from the previous major release of Postgis
 Group:		Applications/Databases
-Requires: 	%{name}%{?_isa} = %{version}-%{release}
+Requires:	%{name}%{?_isa} = %{version}-%{release}
 Requires:	postgresql-upgrade
 
 %description upgrade
@@ -103,6 +109,7 @@ necessary for correct dump of schema from previous version of PostgreSQL.
 %endif
 
 %define __perl_requires %{SOURCE4}
+
 
 %prep
 %setup -q -n %{name}-%{version} -a 3
@@ -117,7 +124,9 @@ cp -p %{SOURCE2} .
 
 
 %build
-%configure --with-gui --enable-raster
+%configure %configure_opts --with-gui
+sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
+sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
 make %{?_smp_mflags}
 
 %if %javabuild
@@ -140,7 +149,7 @@ cd %{name}-%{prevversion}
 
 # first perform compat-build (against the actual PostgreSQL version).  We need
 # only the so names.
-%configure --enable-raster
+%configure %configure_opts
 make %{?_smp_mflags}
 mkdir ../compat-build
 for so in %so_files; do
@@ -148,17 +157,15 @@ for so in %so_files; do
 done
 
 # second, build feature-full build against previous PostgreSQL version
-%configure --enable-raster --with-pgconfig=%postgresql_upgrade_prefix/bin/pg_config
+%configure %configure_opts --with-pgconfig=%postgresql_upgrade_prefix/bin/pg_config
 make %{?_smp_mflags}
 )
 
+
 %install
-rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
 make %{?_smp_mflags}  -C utils install DESTDIR=%{buildroot}
 make %{?_smp_mflags}  -C extensions install DESTDIR=%{buildroot}
-
-rm -f  %{buildroot}%{_libdir}/liblwgeom.{a,la}
 
 cd %{name}-%{prevversion}
 make install DESTDIR=%{buildroot}
@@ -168,6 +175,7 @@ cd ..
 for so in %so_files; do
 %{__install} -m 644 compat-build/$so-%{prevmajorversion}.so %{buildroot}/%{_libdir}/pgsql
 done
+
 
 rm -f  %{buildroot}%{_datadir}/*.sql
 
@@ -185,8 +193,8 @@ install -d %{buildroot}%{_datadir}/%{name}
 install -m 755 utils/*.pl %{buildroot}%{_datadir}/%{name}
 %endif
 
-%clean
-rm -rf %{buildroot}
+find %buildroot \( -name '*.la' -or -name '*.a' \) -delete
+
 
 %if %javabuild
 %if %gcj_support
@@ -195,9 +203,10 @@ rm -rf %{buildroot}
 %endif
 %endif
 
+
 %files
-%defattr(-,root,root)
-%doc COPYING CREDITS NEWS TODO README.%{name} doc/html loader/README.* doc/%{name}.xml doc/ZMSgeoms.txt 
+%license COPYING
+%doc CREDITS NEWS TODO README.%{name} loader/README.* doc/%{name}.xml doc/ZMSgeoms.txt
 %attr(755,root,root) %{_bindir}/*
 %attr(755,root,root) %{_libdir}/pgsql/%{name}-%{majorversion}.so
 %{_datadir}/pgsql/contrib/postgis-%{majorversion}/*.sql
@@ -216,7 +225,7 @@ rm -rf %{buildroot}
 %{_datadir}/postgis/create_unpackaged.pl
 %{_datadir}/postgis/create_spatial_ref_sys_config_dump.pl
 %{_datadir}/postgis/postgis_proc_set_search_path.pl
-%{_libdir}/liblwgeom*
+%{_libdir}/liblwgeom*.so.*
 %{_libdir}/pgsql/address_standardizer-%{majorversion}.so
 %{_libdir}/pgsql/rtpostgis-%{majorversion}.so
 %{_libdir}/pgsql/postgis_topology-%{majorversion}.so
@@ -228,11 +237,11 @@ rm -rf %{buildroot}
 %files devel
 %{_includedir}/liblwgeom.h
 %{_includedir}/liblwgeom_topo.h
+%{_libdir}/liblwgeom.so
 
 
 %if %javabuild
 %files jdbc
-%defattr(-,root,root)
 %doc java/jdbc/COPYING_LGPL java/jdbc/README
 %attr(755,root,root) %{_javadir}/%{name}.jar
 %if %{gcj_support}
@@ -252,7 +261,6 @@ rm -rf %{buildroot}
 
 %if %utils
 %files utils
-%defattr(755,root,root)
 %doc utils/README
 %dir %{_datadir}/%{name}/
 %doc %{_datadir}/doc/pgsql/extension/README.address_standardizer
@@ -268,9 +276,10 @@ rm -rf %{buildroot}
 %{_datadir}/%{name}/test_geography_joinestimation.pl
 %endif
 
+
 %files docs
-%defattr(-,root,root)
 %doc postgis*.pdf
+
 
 %changelog
 * Tue Oct 10 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
