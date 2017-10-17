@@ -25,11 +25,12 @@ Source3:	http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
 Source4:	filter-requires-perl-Pg.sh
 Patch1:		postgis-configureac21.patch
 Patch2:		postgis-2.4.0-upgrade-2.3.3.patch
+Patch3:		postgis-2.4.0-install-desktop.patch
 URL:		http://www.postgis.net
 
 BuildRequires:	perl-generators
 BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, java, java-devel, ant
-BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0
+BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0, desktop-file-utils
 BuildRequires:	pcre-devel
 BuildRequires:	autoconf, automake, libtool
 %if %upgrade
@@ -120,6 +121,7 @@ cd %{name}-%{prevversion}
 ./autogen.sh
 %patch2 -p1
 )
+%patch3 -p1
 cp -p %{SOURCE2} .
 
 
@@ -167,6 +169,9 @@ make install DESTDIR=%{buildroot}
 make %{?_smp_mflags}  -C utils install DESTDIR=%{buildroot}
 make %{?_smp_mflags}  -C extensions install DESTDIR=%{buildroot}
 
+# hack: this requires postgis-%version-install-desktop.patch
+make -C loader install-rpm-desktop DESTDIR=%{buildroot} datadir=%{_datadir}
+
 cd %{name}-%{prevversion}
 make install DESTDIR=%{buildroot}
 cd ..
@@ -194,6 +199,10 @@ install -m 755 utils/*.pl %{buildroot}%{_datadir}/%{name}
 %endif
 
 find %buildroot \( -name '*.la' -or -name '*.a' \) -delete
+
+
+%check
+desktop-file-validate %{buildroot}/%{_datadir}/applications/shp2pgsql-gui.desktop
 
 
 %if %javabuild
@@ -230,8 +239,8 @@ find %buildroot \( -name '*.la' -or -name '*.a' \) -delete
 %{_libdir}/pgsql/rtpostgis-%{majorversion}.so
 %{_libdir}/pgsql/postgis_topology-%{majorversion}.so
 
-%{_datadir}/pgsql/applications/shp2pgsql-gui.desktop
-%{_datadir}/pgsql/icons/hicolor/*/apps/shp2pgsql-gui.png
+%{_datadir}/applications/shp2pgsql-gui.desktop
+%{_datadir}/icons/hicolor/*/apps/shp2pgsql-gui.png
 
 
 %files devel
@@ -282,6 +291,9 @@ find %buildroot \( -name '*.la' -or -name '*.a' \) -delete
 
 
 %changelog
+* Tue Oct 17 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
+- install desktop files into /usr/share/applications
+
 * Tue Oct 10 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
 - provide postgis-upgrade package (rhbz#1475177)
 
