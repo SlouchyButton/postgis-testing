@@ -12,6 +12,8 @@
 
 %global pg_version_minimum 9.2
 
+%global __provides_exclude_from %{_libdir}/pgsql
+
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	%majorversion.0
@@ -167,8 +169,14 @@ for so in %so_files; do
     find -name $so-%prevmajorversion.so -exec cp -t ../compat-build/ {} +
 done
 
-# second, build feature-full build against previous PostgreSQL version
-%configure %configure_opts --with-pgconfig=%postgresql_upgrade_prefix/bin/pg_config
+# Second, build feature-full build against previous PostgreSQL version.  We
+# intentionally don't use %%configure here since there is too many pre-defined
+# directories, and not everything from postgis-%%prevversion directory respects
+# the `pg_config` output (liblwgeom especially).
+./configure %configure_opts \
+	--with-pgconfig=%postgresql_upgrade_prefix/bin/pg_config \
+	--libdir=%postgresql_upgrade_prefix/lib \
+	--includedir=%postgresql_upgrade_prefix/include
 make %{?_smp_mflags}
 )
 %endif
@@ -251,7 +259,7 @@ LD_LIBRARY_PATH=%{buildroot}%_libdir make check %{_smp_mflags}
 %{_datadir}/postgis/create_unpackaged.pl
 %{_datadir}/postgis/create_spatial_ref_sys_config_dump.pl
 %{_datadir}/postgis/postgis_proc_set_search_path.pl
-%{_libdir}/liblwgeom*.so.*
+%{_libdir}/liblwgeom-%majorversion.so.*
 %{_libdir}/pgsql/address_standardizer-%{majorversion}.so
 %{_libdir}/pgsql/rtpostgis-%{majorversion}.so
 %{_libdir}/pgsql/postgis_topology-%{majorversion}.so
