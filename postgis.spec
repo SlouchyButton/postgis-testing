@@ -35,7 +35,6 @@ BuildRequires:	autoconf, automake, libtool
 BuildRequires:	postgresql-upgrade-devel
 %endif
 Requires:	postgresql-server(:MODULE_COMPAT_%{postgresql_major})
-Requires:	geos >= 3.4.2, proj, gdal >= 1.10.0, json-c
 
 
 %description
@@ -298,6 +297,7 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/shp2pgsql-gui.deskto
 * Tue Oct 17 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
 - install desktop files into /usr/share/applications
 - optimize build without %%upgrade
+- drop explicit requires on libraries (resolved by implicit lib*.so*())
 
 * Tue Oct 10 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
 - provide postgis-upgrade package (rhbz#1475177)
