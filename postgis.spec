@@ -2,6 +2,7 @@
 %{!?utils:%global	utils 1}
 %{!?gcj_support:%global	gcj_support 0}
 %{!?upgrade:%global	upgrade 1}
+%{!?runselftest:%global	runselftest 1}
 
 %global majorversion 2.4
 %global prevmajorversion 2.3
@@ -24,6 +25,8 @@ Source4:	filter-requires-perl-Pg.sh
 Patch1:		postgis-configureac21.patch
 Patch2:		postgis-2.4.0-upgrade-2.3.3.patch
 Patch3:		postgis-2.4.0-install-desktop.patch
+Patch4:		postgis-2.4.0-code-check-only.patch
+Patch5:		postgis-2.4.0-check-gdal.patch
 URL:		http://www.postgis.net
 
 BuildRequires:	perl-generators
@@ -35,6 +38,9 @@ BuildRequires:	autoconf, automake, libtool
 BuildRequires:	postgresql-upgrade-devel
 %endif
 Requires:	postgresql-server(:MODULE_COMPAT_%{postgresql_major})
+%if %runselftest
+BuildRequires:	postgresql-server
+%endif
 
 
 %description
@@ -122,6 +128,8 @@ cd %{name}-%{prevversion}
 )
 %endif
 %patch3 -p1
+%patch4 -p1
+%patch5 -p1
 cp -p %{SOURCE2} .
 
 
@@ -206,6 +214,12 @@ find %buildroot \( -name '*.la' -or -name '*.a' \) -delete
 
 %check
 desktop-file-validate %{buildroot}/%{_datadir}/applications/shp2pgsql-gui.desktop
+%if %runselftest
+%pgtests_init
+%pgtests_start
+export PGIS_REG_TMPDIR=`mktemp -d`
+LD_LIBRARY_PATH=%{buildroot}%_libdir make check %{_smp_mflags}
+%endif
 
 
 %if %javabuild
@@ -298,6 +312,7 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/shp2pgsql-gui.deskto
 - install desktop files into /usr/share/applications
 - optimize build without %%upgrade
 - drop explicit requires on libraries (resolved by implicit lib*.so*())
+- enable build testsuite
 
 * Tue Oct 10 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
 - provide postgis-upgrade package (rhbz#1475177)
