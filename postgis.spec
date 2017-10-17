@@ -19,9 +19,7 @@ License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
-%if %upgrade
 Source3:	http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
-%endif
 Source4:	filter-requires-perl-Pg.sh
 Patch1:		postgis-configureac21.patch
 Patch2:		postgis-2.4.0-upgrade-2.3.3.patch
@@ -114,6 +112,8 @@ necessary for correct dump of schema from previous version of PostgreSQL.
 
 %prep
 %setup -q -n %{name}-%{version} -a 3
+
+%if %upgrade
 (
 cd %{name}-%{prevversion}
 # Remove once we move to prevversion==2.4 (2.4 build works fine).
@@ -121,6 +121,7 @@ cd %{name}-%{prevversion}
 ./autogen.sh
 %patch2 -p1
 )
+%endif
 %patch3 -p1
 cp -p %{SOURCE2} .
 
@@ -145,6 +146,7 @@ popd
 make %{?_smp_mflags} -C utils
 %endif
 
+%if %upgrade
 (
 # TODO: report that out-of-tree (VPATH) build is broken
 cd %{name}-%{prevversion}
@@ -162,6 +164,7 @@ done
 %configure %configure_opts --with-pgconfig=%postgresql_upgrade_prefix/bin/pg_config
 make %{?_smp_mflags}
 )
+%endif
 
 
 %install
@@ -172,6 +175,7 @@ make %{?_smp_mflags}  -C extensions install DESTDIR=%{buildroot}
 # hack: this requires postgis-%version-install-desktop.patch
 make -C loader install-rpm-desktop DESTDIR=%{buildroot} datadir=%{_datadir}
 
+%if %upgrade
 cd %{name}-%{prevversion}
 make install DESTDIR=%{buildroot}
 cd ..
@@ -180,7 +184,7 @@ cd ..
 for so in %so_files; do
 %{__install} -m 644 compat-build/$so-%{prevmajorversion}.so %{buildroot}/%{_libdir}/pgsql
 done
-
+%endif
 
 rm -f  %{buildroot}%{_datadir}/*.sql
 
@@ -293,6 +297,7 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/shp2pgsql-gui.deskto
 %changelog
 * Tue Oct 17 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
 - install desktop files into /usr/share/applications
+- optimize build without %%upgrade
 
 * Tue Oct 10 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
 - provide postgis-upgrade package (rhbz#1475177)
