@@ -7,6 +7,14 @@
 # rhbz#1503454
 %global _smp_mflags	-j1
 
+%ifarch s390x
+# rhbz#1503476
+%undefine _hardened_build
+%endif
+%if 0%{?fedora} == 26
+%undefine _hardened_build
+%endif
+
 %global majorversion 2.4
 %global prevmajorversion 2.3
 %global prevversion %{prevmajorversion}.3
@@ -334,6 +342,7 @@ fi
 - optimize build without %%upgrade
 - drop explicit requires on libraries (resolved by implicit lib*.so*())
 - enable build testsuite
+- disable hardening on f26 (all arches) and on s390x (all distros)
 
 * Tue Oct 10 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
 - provide postgis-upgrade package (rhbz#1475177)
