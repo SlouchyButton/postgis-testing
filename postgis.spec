@@ -253,8 +253,8 @@ fi
 
 %if %javabuild
 %if %gcj_support
-%post -p %{_bindir}/rebuild-gcj-db
-%postun -p %{_bindir}/rebuild-gcj-db
+%post   jdbc -p %{_bindir}/rebuild-gcj-db
+%postun jdbc -p %{_bindir}/rebuild-gcj-db
 %endif
 %endif
 
@@ -340,6 +340,7 @@ fi
 %changelog
 * Wed Oct 18 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-2
 - build against json-c again (rhbz#1484031)
+- post/postun set for jdbc sub-package (rhbz#979685)
 
 * Tue Oct 17 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
 - install desktop files into /usr/share/applications
