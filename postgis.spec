@@ -28,7 +28,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	%majorversion.0
-Release:	1%{?dist}
+Release:	2%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -47,6 +47,7 @@ BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel
 BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0, desktop-file-utils
 BuildRequires:	pcre-devel
 BuildRequires:	autoconf, automake, libtool
+BuildRequires:	json-c-devel
 %if %upgrade
 BuildRequires:	postgresql-upgrade-devel
 %endif
@@ -337,6 +338,9 @@ fi
 
 
 %changelog
+* Wed Oct 18 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-2
+- build against json-c again (rhbz#1484031)
+
 * Tue Oct 17 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-1
 - install desktop files into /usr/share/applications
 - optimize build without %%upgrade
