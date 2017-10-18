@@ -1,3 +1,5 @@
+rhbz#1503453
+
 diff --git a/raster/test/regress/check_gdal_expected b/raster/test/regress/check_gdal_expected
 index ab1eebe..0a4be7f 100644
 --- a/raster/test/regress/check_gdal_expected

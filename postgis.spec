@@ -4,6 +4,9 @@
 %{!?upgrade:%global	upgrade 1}
 %{!?runselftest:%global	runselftest 1}
 
+# rhbz#1503454
+%global _smp_mflags	-j1
+
 %global majorversion 2.4
 %global prevmajorversion 2.3
 %global prevversion %{prevmajorversion}.3
@@ -226,8 +229,17 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/shp2pgsql-gui.deskto
 %pgtests_init
 %pgtests_start
 export PGIS_REG_TMPDIR=`mktemp -d`
-LD_LIBRARY_PATH=%{buildroot}%_libdir make check %{_smp_mflags}
+if ! LD_LIBRARY_PATH=%{buildroot}%_libdir make check %{_smp_mflags} ; then
+    for file in $(find $PGIS_REG_TMPDIR -name '*_diff'); do
+        echo "== $file =="
+        cat "$file"
+    done
+%ifnarch %ix86 ppc64 s390x
+    # rhbz#1503453
+    false
 %endif
+fi
+%endif # runselftest
 
 
 %if %javabuild
@@ -259,6 +271,7 @@ LD_LIBRARY_PATH=%{buildroot}%_libdir make check %{_smp_mflags}
 %{_datadir}/postgis/create_unpackaged.pl
 %{_datadir}/postgis/create_spatial_ref_sys_config_dump.pl
 %{_datadir}/postgis/postgis_proc_set_search_path.pl
+# rhbz#1503456
 %{_libdir}/liblwgeom-%majorversion.so.*
 %{_libdir}/pgsql/address_standardizer-%{majorversion}.so
 %{_libdir}/pgsql/rtpostgis-%{majorversion}.so
