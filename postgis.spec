@@ -27,8 +27,8 @@
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	%majorversion.0
-Release:	2%{?dist}
+Version:	%majorversion.1
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -338,6 +338,10 @@ fi
 
 
 %changelog
+* Mon Oct 23 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.1-1
+- update to 2.4.1, per NEWS file:
+  https://svn.osgeo.org/postgis/tags/2.4.1/NEWS
+
 * Wed Oct 18 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.0-2
 - build against json-c again (rhbz#1484031)
 - post/postun set for jdbc sub-package (rhbz#979685)
