@@ -28,7 +28,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	%majorversion.1
-Release:	1%{?dist}
+Release:	2%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -120,6 +120,7 @@ Summary:	Support for upgrading from the previous major release of Postgis
 Group:		Applications/Databases
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 Requires:	postgresql-upgrade
+Provides:	bundled(postgis) = %prevversion
 
 %description upgrade
 The postgis-upgrade package contains the previous version of postgis
@@ -206,6 +207,10 @@ make -C loader install-rpm-desktop DESTDIR=%{buildroot} datadir=%{_datadir}
 cd %{name}-%{prevversion}
 make install DESTDIR=%{buildroot}
 cd ..
+
+# drop unused stuff from upgrade-only installation
+/bin/rm -rf %buildroot%postgresql_upgrade_prefix/bin
+/bin/rm -rf %buildroot%postgresql_upgrade_prefix/lib/lib*
 
 # Manually install compat-build binary.
 for so in %so_files; do
@@ -338,6 +343,10 @@ fi
 
 
 %changelog
+* Thu Oct 26 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.1-2
+- upgrade: drop not-used /bin directory and liblwgeom (rhbz#1055293)
+- upgrade: confess that we bundle postgis = prevversion
+
 * Mon Oct 23 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.1-1
 - update to 2.4.1, per NEWS file:
   https://svn.osgeo.org/postgis/tags/2.4.1/NEWS
