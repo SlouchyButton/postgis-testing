@@ -28,7 +28,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	%majorversion.1
-Release:	2%{?dist}
+Release:	3%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -343,6 +343,9 @@ fi
 
 
 %changelog
+* Sun Dec 10 2017 Björn Esser <besser82@fedoraproject.org> - 2.4.1-3
+- Rebuilt for libjson-c.so.3
+
 * Thu Oct 26 2017 Pavel Raiskup <praiskup@redhat.com> - 2.4.1-2
 - upgrade: drop not-used /bin directory and liblwgeom (rhbz#1055293)
 - upgrade: confess that we bundle postgis = prevversion
