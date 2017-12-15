@@ -28,7 +28,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	%majorversion.1
-Release:	3%{?dist}
+Release:	4%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -40,6 +40,8 @@ Patch2:		postgis-2.4.0-upgrade-2.3.3.patch
 Patch3:		postgis-2.4.0-install-desktop.patch
 Patch4:		postgis-2.4.0-code-check-only.patch
 Patch5:		postgis-2.4.0-check-gdal.patch
+# Upstreamed.
+Patch6:		%{name}-2.4.1_json-c_013.patch
 URL:		http://www.postgis.net
 
 BuildRequires:	perl-generators
@@ -140,11 +142,13 @@ cd %{name}-%{prevversion}
 %patch1 -p0 -b .configureac21
 ./autogen.sh
 %patch2 -p1
+%patch6 -p1
 )
 %endif
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 cp -p %{SOURCE2} .
 
 
@@ -343,6 +347,9 @@ fi
 
 
 %changelog
+* Fri Dec 15 2017 Björn Esser <besser82@fedoraproject.org> - 2.4.1-4
+- Add patch for changes in json-c >= 0.13
+
 * Sun Dec 10 2017 Björn Esser <besser82@fedoraproject.org> - 2.4.1-3
 - Rebuilt for libjson-c.so.3
 
