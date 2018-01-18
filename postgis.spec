@@ -17,7 +17,7 @@
 
 %global majorversion 2.4
 %global prevmajorversion 2.3
-%global prevversion %{prevmajorversion}.3
+%global prevversion %{prevmajorversion}.6
 %global so_files	rtpostgis postgis_topology postgis address_standardizer
 %global configure_opts	--disable-rpath --enable-raster
 
@@ -27,8 +27,8 @@
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	%majorversion.1
-Release:	4%{?dist}
+Version:	%majorversion.3
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -36,7 +36,6 @@ Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
 Source3:	http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
 Source4:	filter-requires-perl-Pg.sh
 Patch1:		postgis-configureac21.patch
-Patch2:		postgis-2.4.0-upgrade-2.3.3.patch
 Patch3:		postgis-2.4.0-install-desktop.patch
 Patch4:		postgis-2.4.0-code-check-only.patch
 Patch5:		postgis-2.4.0-check-gdal.patch
@@ -141,7 +140,6 @@ cd %{name}-%{prevversion}
 # Remove once we move to prevversion==2.4 (2.4 build works fine).
 %patch1 -p0 -b .configureac21
 ./autogen.sh
-%patch2 -p1
 %patch6 -p1
 )
 %endif
@@ -347,6 +345,9 @@ fi
 
 
 %changelog
+* Thu Jan 18 2018 Pavel Raiskup <praiskup@redhat.com> - 2.4.3-1
+- rebase to latest upstream release (rhbz#1513788)
+
 * Fri Dec 15 2017 Björn Esser <besser82@fedoraproject.org> - 2.4.1-4
 - Add patch for changes in json-c >= 0.13
 
