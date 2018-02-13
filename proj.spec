@@ -9,7 +9,6 @@ URL:		https://proj4.org
 Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.gz
 Source1:	http://download.osgeo.org/%{name}/%{name}-datumgrid-1.6.zip
 Patch0:		%{name}-4.8.0-removeinclude.patch
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	libtool
 
