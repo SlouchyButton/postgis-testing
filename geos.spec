@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.6.1
-Release:	7%{?dist}
+Release:	8%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -10,7 +10,7 @@ Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
 Patch0:		geos-gcc43.patch
 
 BuildRequires:	doxygen libtool
-BuildRequires:	python-devel
+BuildRequires:	python2-devel
 
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
@@ -120,6 +120,10 @@ make %{?_smp_mflags} check || exit 0
 %{python_sitearch}/%{name}/_%{name}.so
 
 %changelog
+* Wed Feb 14 2018 Iryna Shcherbina <ishcherb@redhat.com> - 3.6.1-8
+- Update Python 2 dependency declarations to new packaging standards
+  (See https://fedoraproject.org/wiki/FinalizingFedoraSwitchtoPython3)
+
 * Wed Feb 07 2018 Fedora Release Engineering <releng@fedoraproject.org> - 3.6.1-7
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
 
