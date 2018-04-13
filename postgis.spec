@@ -28,7 +28,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	%majorversion.3
-Release:	3%{?dist}
+Release:	4%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -54,7 +54,7 @@ BuildRequires:	postgresql-upgrade-devel
 %endif
 Requires:	postgresql-server(:MODULE_COMPAT_%{postgresql_major})
 %if %runselftest
-BuildRequires:	postgresql-server
+BuildRequires:	postgresql-test-rpm-macros
 %endif
 
 
@@ -242,8 +242,7 @@ find %buildroot \( -name '*.la' -or -name '*.a' \) -delete
 %check
 desktop-file-validate %{buildroot}/%{_datadir}/applications/shp2pgsql-gui.desktop
 %if %runselftest
-%pgtests_init
-%pgtests_start
+%postgresql_tests_run
 export PGIS_REG_TMPDIR=`mktemp -d`
 if ! LD_LIBRARY_PATH=%{buildroot}%_libdir make check %{_smp_mflags} ; then
     for file in $(find $PGIS_REG_TMPDIR -name '*_diff'); do
@@ -345,6 +344,9 @@ fi
 
 
 %changelog
+* Fri Apr 13 2018 Pavel Raiskup <praiskup@redhat.com> - 2.4.3-4
+- postgresql.spec moved testing macros to postgresql-test-rpm-macros
+
 * Tue Mar 06 2018 Björn Esser <besser82@fedoraproject.org> - 2.4.3-3
 - Rebuilt for libjson-c.so.4 (json-c v0.13.1)
 
