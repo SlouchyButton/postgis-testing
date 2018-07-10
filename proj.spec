@@ -107,14 +107,12 @@ popd
 %postun -p /sbin/ldconfig
 
 %files
-%defattr(-,root,root,-)
 %doc NEWS AUTHORS COPYING README ChangeLog
 %{_bindir}/*
 %{_mandir}/man1/*.1*
 %{_libdir}/libproj.so.12*
 
 %files devel
-%defattr(-,root,root,-)
 %{_mandir}/man3/*.3*
 %{_includedir}/*.h
 %{_libdir}/libproj.so
@@ -123,13 +121,11 @@ popd
 %exclude %{_libdir}/libproj.la
 
 %files static
-%defattr(-,root,root,-)
 %{_libdir}/libproj.a
 %{_libdir}/libproj.la
 
 
 %files nad
-%defattr(-,root,root,-)
 %doc nad/README
 %attr(0755,root,root) %{_datadir}/%{name}/test27
 %attr(0755,root,root) %{_datadir}/%{name}/test83
@@ -139,7 +135,6 @@ popd
 %{_datadir}/%{name}
 
 %files epsg
-%defattr(-,root,root,-)
 %doc nad/README
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
