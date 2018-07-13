@@ -1,6 +1,6 @@
 Name:		proj
 Version:	4.9.3
-Release:	5%{?dist}
+Release:	6%{?dist}
 Summary:	Cartographic projection software (PROJ.4)
 
 Group:		Applications/Engineering
@@ -139,6 +139,9 @@ popd
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 4.9.3-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
 * Fri Feb 09 2018 Fedora Release Engineering <releng@fedoraproject.org> - 4.9.3-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
 
