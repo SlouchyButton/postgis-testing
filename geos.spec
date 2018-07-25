@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.6.1
-Release:	9%{?dist}
+Release:	10%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -9,7 +9,7 @@ URL:		http://trac.osgeo.org/geos/
 Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
 Patch0:		geos-gcc43.patch
 
-BuildRequires:  gcc-c++
+BuildRequires:  gcc gcc-c++
 BuildRequires:	doxygen libtool
 BuildRequires:	python2-devel
 
@@ -121,6 +121,9 @@ make %{?_smp_mflags} check || exit 0
 %{python_sitearch}/%{name}/_%{name}.so
 
 %changelog
+* Wed Jul 25 2018 Devrim Gündüz <devrim@gunduz.org> - 3.6.1-10
+- Fix #1606885
+
 * Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 3.6.1-9
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
 
