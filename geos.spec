@@ -115,10 +115,10 @@ make %{?_smp_mflags} check || exit 0
 %dir %{python_sitearch}/%{name}
 %exclude %{python_sitearch}/%{name}/_%{name}.a
 %exclude %{python_sitearch}/%{name}/_%{name}.la
-%{python_sitearch}/%{name}.pth
-%{python_sitearch}/%{name}/*.py
-%{python_sitearch}/%{name}/*.py?
-%{python_sitearch}/%{name}/_%{name}.so
+%{python2_sitearch}/%{name}.pth
+%{python2_sitearch}/%{name}/*.py
+%{python2_sitearch}/%{name}/*.py?
+%{python2_sitearch}/%{name}/_%{name}.so
 
 %changelog
 * Wed Jul 25 2018 Devrim Gündüz <devrim@gunduz.org> - 3.6.1-10
