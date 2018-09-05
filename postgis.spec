@@ -28,7 +28,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	%majorversion.3
-Release:	5%{?dist}
+Release:	6%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -346,6 +346,9 @@ fi
 
 
 %changelog
+* Wed Sep 05 2018 Pavel Raiskup <praiskup@redhat.com> - 2.4.3-6
+- rebuild against postgresql-server-devel (rhbz#1618698)
+
 * Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 2.4.3-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
 
