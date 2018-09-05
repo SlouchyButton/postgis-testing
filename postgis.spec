@@ -44,7 +44,9 @@ Patch6:		%{name}-2.4.1_json-c_013.patch
 URL:		http://www.postgis.net
 
 BuildRequires:	perl-generators
-BuildRequires:	postgresql-devel >= %{pg_version_minimum}, proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, java, java-devel, ant
+BuildRequires:	postgresql-server-devel >= %{pg_version_minimum}
+BuildRequires:	libpq-devel
+BuildRequires:	proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, java, java-devel, ant
 BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0, desktop-file-utils
 BuildRequires:	pcre-devel
 BuildRequires:	autoconf, automake, libtool
@@ -52,7 +54,7 @@ BuildRequires:	json-c-devel
 %if %upgrade
 BuildRequires:	postgresql-upgrade-devel
 %endif
-Requires:	postgresql-server(:MODULE_COMPAT_%{postgresql_major})
+%{?postgresql_module_requires}
 %if %runselftest
 BuildRequires:	postgresql-test-rpm-macros
 %endif
