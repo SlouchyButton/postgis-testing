@@ -112,9 +112,9 @@ make %{?_smp_mflags} check || exit 0
 %exclude %{_libdir}/*.a
 
 %files -n python2-geos
-%dir %{python_sitearch}/%{name}
-%exclude %{python_sitearch}/%{name}/_%{name}.a
-%exclude %{python_sitearch}/%{name}/_%{name}.la
+%dir %{python2_sitearch}/%{name}
+%exclude %{python2_sitearch}/%{name}/_%{name}.a
+%exclude %{python2_sitearch}/%{name}/_%{name}.la
 %{python2_sitearch}/%{name}.pth
 %{python2_sitearch}/%{name}/*.py
 %{python2_sitearch}/%{name}/*.py?
