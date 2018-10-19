@@ -10,7 +10,7 @@ index 878548e..3c95a2f 100644
 +check: all
  
  check-no-trailing-blanks:
- 	! find . -name '*.c' -o -name '*.h' | \
+	! find . -name '*.c' -o -name '*.h' -o -name '*.proto' | \
 diff --git a/doc/Makefile.in b/doc/Makefile.in
 index 31fd778..6268e7f 100644
 --- a/doc/Makefile.in

@@ -15,32 +15,28 @@
 %undefine _hardened_build
 %endif
 
-%global majorversion 2.4
-%global prevmajorversion 2.3
-%global prevversion %{prevmajorversion}.6
+%global majorversion 2.5
+%global prevmajorversion 2.4
+%global prevversion %{prevmajorversion}.5
 %global so_files	rtpostgis postgis_topology postgis address_standardizer
 %global configure_opts	--disable-rpath --enable-raster
 
-%global pg_version_minimum 9.2
+%global pg_version_minimum 9.4
 
 %global __provides_exclude_from %{_libdir}/pgsql
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	%majorversion.3
-Release:	6%{?dist}
+Version:	%majorversion.0
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
 Source3:	http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
 Source4:	filter-requires-perl-Pg.sh
-Patch1:		postgis-configureac21.patch
 Patch3:		postgis-2.4.0-install-desktop.patch
 Patch4:		postgis-2.4.0-code-check-only.patch
-Patch5:		postgis-2.4.0-check-gdal.patch
-# Upstreamed.
-Patch6:		%{name}-2.4.1_json-c_013.patch
 URL:		http://www.postgis.net
 
 BuildRequires:	perl-generators
@@ -139,16 +135,11 @@ necessary for correct dump of schema from previous version of PostgreSQL.
 %if %upgrade
 (
 cd %{name}-%{prevversion}
-# Remove once we move to prevversion==2.4 (2.4 build works fine).
-%patch1 -p0 -b .configureac21
 ./autogen.sh
-%patch6 -p1
 )
 %endif
 %patch3 -p1
 %patch4 -p1
-%patch5 -p1
-%patch6 -p1
 cp -p %{SOURCE2} .
 
 
@@ -204,7 +195,7 @@ make install DESTDIR=%{buildroot}
 make %{?_smp_mflags}  -C utils install DESTDIR=%{buildroot}
 make %{?_smp_mflags}  -C extensions install DESTDIR=%{buildroot}
 
-# hack: this requires postgis-%version-install-desktop.patch
+# hack: this requires postgis-%%version-install-desktop.patch
 make -C loader install-rpm-desktop DESTDIR=%{buildroot} datadir=%{_datadir}
 
 %if %upgrade
@@ -290,7 +281,7 @@ fi
 %{_datadir}/postgis/postgis_proc_set_search_path.pl
 # rhbz#1503456
 %{_libdir}/liblwgeom-%majorversion.so.*
-%{_libdir}/pgsql/address_standardizer-%{majorversion}.so
+%{_libdir}/pgsql/address_standardizer.so
 %{_libdir}/pgsql/rtpostgis-%{majorversion}.so
 %{_libdir}/pgsql/postgis_topology-%{majorversion}.so
 
@@ -346,6 +337,10 @@ fi
 
 
 %changelog
+* Mon Oct 22 2018 Petr Kubat <pkubat@redhat.com> - 2.5.0-1
+- update to 2.5.0, per NEWS file:
+  https://svn.osgeo.org/postgis/tags/2.5.0/NEWS
+
 * Wed Sep 05 2018 Pavel Raiskup <praiskup@redhat.com> - 2.4.3-6
 - rebuild against postgresql-server-devel (rhbz#1618698)
 
