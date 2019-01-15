@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.6.1
-Release:	10%{?dist}
+Release:	11%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 Group:		Applications/Engineering
@@ -9,11 +9,10 @@ URL:		http://trac.osgeo.org/geos/
 Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
 Patch0:		geos-gcc43.patch
 
-BuildRequires:  gcc gcc-c++
-BuildRequires:	doxygen libtool
-BuildRequires:	python2-devel
-
-%{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
+BuildRequires:  gcc
+BuildRequires:  gcc-c++
+BuildRequires:	doxygen
+BuildRequires:	libtool
 
 %description
 GEOS (Geometry Engine - Open Source) is a C++ port of the Java Topology
@@ -37,20 +36,6 @@ functions such as IsValid().
 This package contains the development files to build applications that
 use GEOS.
 
-%package -n python2-geos
-%{?python_provide:%python_provide python2-geos}
-# Remove before F30
-Provides: %{name}-python = %{version}-%{release}
-Provides: %{name}-python%{?_isa} = %{version}-%{release}
-Obsoletes: %{name}-python < %{version}-%{release}
-Summary:	Python modules for GEOS
-Group:		Development/Libraries
-Requires:	%{name} = %{version}-%{release}
-BuildRequires:	swig
-
-%description -n python2-geos
-Python module to build applications using GEOS and python
-
 %prep
 %setup -q
 %patch0 -p0 -b .gcc43
@@ -71,7 +56,7 @@ for makefile in `find . -type f -name 'Makefile.in'`; do
 sed -i 's|@LIBTOOL@|%{_bindir}/libtool|g' $makefile
 done
 
-%configure --disable-static --disable-dependency-tracking --enable-python
+%configure --disable-static --disable-dependency-tracking --disable-python
 
 # Touch the file, since we are not using ruby bindings anymore:
 # Per http://lists.osgeo.org/pipermail/geos-devel/2009-May/004149.html
@@ -111,16 +96,11 @@ make %{?_smp_mflags} check || exit 0
 %exclude %{_libdir}/*.la
 %exclude %{_libdir}/*.a
 
-%files -n python2-geos
-%dir %{python2_sitearch}/%{name}
-%exclude %{python2_sitearch}/%{name}/_%{name}.a
-%exclude %{python2_sitearch}/%{name}/_%{name}.la
-%{python2_sitearch}/%{name}.pth
-%{python2_sitearch}/%{name}/*.py
-%{python2_sitearch}/%{name}/*.py?
-%{python2_sitearch}/%{name}/_%{name}.so
-
 %changelog
+* Tue Jan 15 2019 Miro Hrončok <mhroncok@redhat.com> - 3.6.1-11
+- Subpackage python2-geos has been removed
+  See https://fedoraproject.org/wiki/Changes/Mass_Python_2_Package_Removal
+
 * Wed Jul 25 2018 Devrim Gündüz <devrim@gunduz.org> - 3.6.1-10
 - Fix #1606885
 
