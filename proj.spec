@@ -103,8 +103,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH%{buildroot}%{_libdir}
 ./testvarious %{buildroot}%{_bindir}/%{name} || exit 0
 popd
 
-%post -p /sbin/ldconfig
-%postun -p /sbin/ldconfig
+%ldconfig_scriptlets
 
 %files
 %doc NEWS AUTHORS COPYING README ChangeLog
