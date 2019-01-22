@@ -77,9 +77,7 @@ make DESTDIR=%{buildroot} install
 # test module
 make %{?_smp_mflags} check || exit 0
 
-%post -p /sbin/ldconfig
-
-%postun -p /sbin/ldconfig
+%ldconfig_scriptlets
 
 %files
 %doc AUTHORS COPYING NEWS README TODO
