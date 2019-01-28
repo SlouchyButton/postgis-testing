@@ -3,7 +3,6 @@ Version:	4.9.3
 Release:	6%{?dist}
 Summary:	Cartographic projection software (PROJ.4)
 
-Group:		Applications/Engineering
 License:	MIT
 URL:		https://proj4.org
 Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.gz
@@ -21,7 +20,6 @@ projection functions.
 
 %package devel
 Summary:	Development files for PROJ.4
-Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 
 %description devel
@@ -30,7 +28,6 @@ This package contains libproj and the appropriate header files and man pages.
 
 %package static
 Summary:	Development files for PROJ.4
-Group:		Development/Libraries
 Requires:	%{name}-devel%{?_isa} = %{version}-%{release}
 
 %description static
@@ -39,7 +36,6 @@ This package contains libproj static library.
 
 %package nad
 Summary:	US and Canadian datum shift grids for PROJ.4
-Group:		Applications/Engineering
 Requires:	%{name} = %{version}-%{release}
 
 %description nad
@@ -48,7 +44,6 @@ This package contains additional US and Canadian datum shift grids.
 
 %package epsg
 Summary:	EPSG dataset for PROJ.4
-Group:		Applications/Engineering
 Requires:	%{name} = %{version}-%{release}
 
 %description epsg
