@@ -3,7 +3,6 @@ Version:	3.6.1
 Release:	11%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
-Group:		Applications/Engineering
 License:	LGPLv2
 URL:		http://trac.osgeo.org/geos/
 Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
@@ -23,7 +22,6 @@ functions such as IsValid()
 
 %package devel
 Summary:	Development files for GEOS
-Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 
 %description devel
