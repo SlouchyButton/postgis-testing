@@ -30,7 +30,6 @@ Name:		postgis
 Version:	%majorversion.0
 Release:	1%{?dist}
 License:	GPLv2+
-Group:		Applications/Databases
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
 Source3:	http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
@@ -67,7 +66,6 @@ certified as compliant with the "Types and Functions" profile.
 
 %package devel
 Summary:	The development files for PostGIS
-Group:		Applications/Databases
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 
 %description devel
@@ -76,7 +74,6 @@ Development headers and libraries for PostGIS.
 
 %package docs
 Summary:	Extra documentation for PostGIS
-Group:		Applications/Databases
 %description docs
 The postgis-docs package includes PDF documentation of PostGIS.
 
@@ -84,7 +81,6 @@ The postgis-docs package includes PDF documentation of PostGIS.
 %if %javabuild
 %package jdbc
 Summary:	The JDBC driver for PostGIS
-Group:		Applications/Databases
 License:	LGPLv2+
 Requires:	%{name} = %{version}-%{release}, postgresql-jdbc
 BuildRequires:	ant >= 0:1.6.2, junit >= 0:3.7, postgresql-jdbc
@@ -104,7 +100,6 @@ The postgis-jdbc package provides the essential jdbc driver for PostGIS.
 %if %utils
 %package utils
 Summary:	The utils for PostGIS
-Group:		Applications/Databases
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 Requires:	perl-DBD-Pg
 
@@ -116,7 +111,6 @@ The postgis-utils package provides the utilities for PostGIS.
 %if %upgrade
 %package upgrade
 Summary:	Support for upgrading from the previous major release of Postgis
-Group:		Applications/Databases
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 Requires:	postgresql-upgrade
 Provides:	bundled(postgis) = %prevversion
