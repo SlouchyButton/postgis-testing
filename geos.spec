@@ -1,6 +1,6 @@
 Name:		geos
 Version:	3.6.1
-Release:	11%{?dist}
+Release:	12%{?dist}
 Summary:	GEOS is a C++ port of the Java Topology Suite
 
 License:	LGPLv2
@@ -93,6 +93,9 @@ make %{?_smp_mflags} check || exit 0
 %exclude %{_libdir}/*.a
 
 %changelog
+* Thu Jan 31 2019 Fedora Release Engineering <releng@fedoraproject.org> - 3.6.1-12
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
+
 * Tue Jan 15 2019 Miro Hrončok <mhroncok@redhat.com> - 3.6.1-11
 - Subpackage python2-geos has been removed
   See https://fedoraproject.org/wiki/Changes/Mass_Python_2_Package_Removal
