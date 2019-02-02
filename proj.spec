@@ -21,7 +21,7 @@ projection functions.
 
 %package devel
 Summary:	Development files for PROJ.4
-Requires:	%{name} = %{version}-%{release}
+Requires:	%{name}%{?_isa} = %{version}-%{release}
 
 %description devel
 This package contains libproj and the appropriate header files and man pages.
@@ -37,7 +37,7 @@ This package contains libproj static library.
 
 %package nad
 Summary:	US and Canadian datum shift grids for PROJ.4
-Requires:	%{name} = %{version}-%{release}
+Requires:	%{name}%{?_isa} = %{version}-%{release}
 
 %description nad
 This package contains additional US and Canadian datum shift grids.
@@ -45,7 +45,7 @@ This package contains additional US and Canadian datum shift grids.
 
 %package epsg
 Summary:	EPSG dataset for PROJ.4
-Requires:	%{name} = %{version}-%{release}
+Requires:	%{name}%{?_isa} = %{version}-%{release}
 
 %description epsg
 This package contains additional EPSG dataset.
