@@ -110,7 +110,7 @@ popd
 %{_mandir}/man3/*.3*
 %{_includedir}/*.h
 %{_libdir}/libproj.so
-%attr(0755,root,root) %{_libdir}/pkgconfig/%{name}.pc
+%{_libdir}/pkgconfig/%{name}.pc
 %exclude %{_libdir}/libproj.a
 %exclude %{_libdir}/libproj.la
 
@@ -121,16 +121,15 @@ popd
 
 %files nad
 %doc nad/README
-%attr(0755,root,root) %{_datadir}/%{name}/test27
-%attr(0755,root,root) %{_datadir}/%{name}/test83
-%attr(0755,root,root) %{_datadir}/%{name}/testvarious
-%attr(0755,root,root) %{_libdir}/pkgconfig/%{name}.pc
+%{_datadir}/%{name}/test27
+%{_datadir}/%{name}/test83
+%{_datadir}/%{name}/testvarious
 %exclude %{_datadir}/%{name}/epsg
 %{_datadir}/%{name}
 
 %files epsg
 %doc nad/README
-%attr(0644,root,root) %{_datadir}/%{name}/epsg
+%{_datadir}/%{name}/epsg
 
 %changelog
 * Mon Feb 04 2019 Devrim Gündüz <devrim@gunduz.org> - 5.2.0-1
