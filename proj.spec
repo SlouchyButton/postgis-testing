@@ -1,17 +1,24 @@
+%global proj_version 5.2.0
+%global datumgrid_version 1.8
+
 Name:		proj
-Version:	5.2.0
+Version:	%{proj_version}
 Release:	2%{?dist}
 Summary:	Cartographic projection software (PROJ.4)
 
 License:	MIT
 URL:		https://proj4.org
 Source0:	https://download.osgeo.org/%{name}/%{name}-%{version}.tar.gz
-Source1:	https://download.osgeo.org/%{name}/%{name}-datumgrid-1.8.zip
+Source1:	https://download.osgeo.org/%{name}/%{name}-datumgrid-%{datumgrid_version}.tar.gz
 # https://github.com/OSGeo/proj.4/pull/1246
 Patch0001:	0001-Allow-building-against-external-GTest-with-autotools.patch
 
 BuildRequires:	libtool gcc-c++
 BuildRequires:	gtest-devel >= 1.8.0
+
+# Merged into main package; remove after Fedora 31.
+Obsoletes:	proj-epsg < 5.2.0-2
+Provides:	proj-epsg = %{version}-%{release}
 
 %description
 Proj and invproj perform respective forward and inverse transformation of
@@ -35,32 +42,28 @@ Requires:	%{name}-devel%{?_isa} = %{version}-%{release}
 This package contains libproj static library.
 
 
-%package nad
-Summary:	US and Canadian datum shift grids for PROJ.4
-Requires:	%{name}%{?_isa} = %{version}-%{release}
+%package datumgrid
+Summary:	Additional datum shift grids for PROJ.4
+Version:	%{datumgrid_version}
+# See README.DATUMGRID
+License:	CC-BY and Freely Distributable and Ouverte and Public Domain
+BuildArch:	noarch
+Requires:	%{name} = %{proj_version}-%{release}
 
-%description nad
-This package contains additional US and Canadian datum shift grids.
+# Renamed; remove after Fedora 31.
+Obsoletes:	proj-nad < 5.2.0-2
+Provides:	proj-nad = %{proj_version}-%{release}
 
+%description datumgrid
+This package contains additional datum shift grids.
 
-%package epsg
-Summary:	EPSG dataset for PROJ.4
-Requires:	%{name}%{?_isa} = %{version}-%{release}
-
-%description epsg
-This package contains additional EPSG dataset.
 
 %prep
-%autosetup -n %{name}-%{version} -p1
+%autosetup -p1
 
-# Prepare nad
-cd nad
-unzip -o %{SOURCE1}
-cd ..
-# fix shebag header of scripts
-for script in `find nad/ -type f -perm -a+x`; do
-sed -i -e '1,1s|:|#!/bin/bash|' $script
-done
+# Prepare datumgrid and file list (in {datadir}/proj and README marked as doc)
+tar xvf %{SOURCE1} -C nad | \
+    sed -e 's!^!%{_datadir}/%{name}/!' -e '/README/s!^!%%doc !' > datumgrid.files
 
 
 %build
@@ -74,12 +77,9 @@ sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
 
 %install
 %make_install
-%{__install} -p -m 0644 nad/pj_out27.dist nad/pj_out83.dist nad/td_out.dist %{buildroot}%{_datadir}/%{name}
-%{__install} -p -m 0755 nad/test27 nad/test83 nad/testvarious %{buildroot}%{_datadir}/%{name}
-%{__install} -p -m 0644 nad/epsg %{buildroot}%{_datadir}/%{name}
+chmod -x %{buildroot}%{_libdir}/libproj.la
+install -p -m 0644 nad/README.DATUMGRID %{buildroot}%{_datadir}/%{name}
 
-# Install projects.h manually, per #830496:
-%{__install} -p -m 0644 src/projects.h %{buildroot}%{_includedir}/
 
 %check
 LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
@@ -91,6 +91,23 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 %{_bindir}/*
 %{_mandir}/man1/*.1*
 %{_libdir}/libproj.so.13*
+%dir %{_datadir}/%{name}
+%{_datadir}/%{name}/CH
+%{_datadir}/%{name}/GL27
+%{_datadir}/%{name}/IGNF
+%{_datadir}/%{name}/ITRF2000
+%{_datadir}/%{name}/ITRF2008
+%{_datadir}/%{name}/ITRF2014
+%{_datadir}/%{name}/epsg
+%{_datadir}/%{name}/esri
+%{_datadir}/%{name}/esri.extra
+%{_datadir}/%{name}/nad.lst
+%{_datadir}/%{name}/nad27
+%{_datadir}/%{name}/nad83
+%{_datadir}/%{name}/null
+%{_datadir}/%{name}/other.extra
+%{_datadir}/%{name}/proj_def.dat
+%{_datadir}/%{name}/world
 
 %files devel
 %{_mandir}/man3/*.3*
@@ -104,22 +121,15 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 %{_libdir}/libproj.a
 %{_libdir}/libproj.la
 
+%files datumgrid -f datumgrid.files
 
-%files nad
-%doc nad/README
-%{_datadir}/%{name}/test27
-%{_datadir}/%{name}/test83
-%{_datadir}/%{name}/testvarious
-%exclude %{_datadir}/%{name}/epsg
-%{_datadir}/%{name}
-
-%files epsg
-%doc nad/README
-%{_datadir}/%{name}/epsg
 
 %changelog
 * Tue Feb 12 2019 Elliott Sales de Andrade <quantum.analyst@gmail.com> - 5.2.0-2
+- Rename proj-nad subpackage as proj-datumgrid
+- Fold proj-epsg package into main one
 - Enable full test suite during build
+- Various spec file cleanups
 
 * Mon Feb 04 2019 Devrim Gündüz <devrim@gunduz.org> - 5.2.0-1
 - Update to 5.2.0
