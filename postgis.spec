@@ -27,8 +27,8 @@
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	%majorversion.0
-Release:	2%{?dist}
+Version:	%majorversion.1
+Release:	1%{?dist}
 License:	GPLv2+
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
@@ -41,9 +41,9 @@ URL:		http://www.postgis.net
 BuildRequires:	perl-generators
 BuildRequires:	postgresql-server-devel >= %{pg_version_minimum}
 BuildRequires:	libpq-devel
-BuildRequires:	proj-devel, geos-devel >= 3.4.2 byacc, proj-devel, flex, java, java-devel, ant
-BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0, desktop-file-utils
-BuildRequires:	pcre-devel
+BuildRequires:	proj-devel >= 5.2.0, geos-devel >= 3.7.1 byacc, proj-devel, flex, java, java-devel
+BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0, desktop-file-utils, ant
+BuildRequires:	pcre-devel, gcc-c++
 BuildRequires:	autoconf, automake, libtool
 BuildRequires:	json-c-devel
 %if %upgrade
@@ -331,6 +331,10 @@ fi
 
 
 %changelog
+* Mon Feb 4 2019 Devrim Gündüz <devrim@gunduz.org> - 2.5.1-1
+- Update to 2.5.1
+
+
 * Sat Feb 02 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2.5.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
 
