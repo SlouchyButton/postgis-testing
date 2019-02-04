@@ -233,8 +233,8 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/shp2pgsql-gui.deskto
 export PGIS_REG_TMPDIR=`mktemp -d`
 if ! LD_LIBRARY_PATH=%{buildroot}%_libdir make check %{_smp_mflags} ; then
     for file in $(find $PGIS_REG_TMPDIR -name '*_diff'); do
-        echo "== $file =="
-        cat "$file"
+	echo "== $file =="
+	cat "$file"
     done
 %ifnarch %ix86 ppc64 s390x
     # rhbz#1503453
