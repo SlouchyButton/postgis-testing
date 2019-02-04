@@ -1,12 +1,12 @@
 Name:		proj
-Version:	4.9.3
-Release:	7%{?dist}
+Version:	5.2.0
+Release:	1%{?dist}
 Summary:	Cartographic projection software (PROJ.4)
 
 License:	MIT
 URL:		https://proj4.org
 Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.gz
-Source1:	http://download.osgeo.org/%{name}/%{name}-datumgrid-1.6.zip
+Source1:	http://download.osgeo.org/%{name}/%{name}-datumgrid-1.8.zip
 Patch0:		%{name}-4.8.0-removeinclude.patch
 
 BuildRequires:	libtool
@@ -78,12 +78,12 @@ make OPTIMIZE="$RPM_OPT_FLAGS" %{?_smp_mflags}
 %install
 %{__rm} -rf %{buildroot}
 %makeinstall
-install -p -m 0644 nad/pj_out27.dist nad/pj_out83.dist nad/td_out.dist %{buildroot}%{_datadir}/%{name}
-install -p -m 0755 nad/test27 nad/test83 nad/testvarious %{buildroot}%{_datadir}/%{name}
-install -p -m 0644 nad/epsg %{buildroot}%{_datadir}/%{name}
+%{__install} -p -m 0644 nad/pj_out27.dist nad/pj_out83.dist nad/td_out.dist %{buildroot}%{_datadir}/%{name}
+%{__install} -p -m 0755 nad/test27 nad/test83 nad/testvarious %{buildroot}%{_datadir}/%{name}
+%{__install} -p -m 0644 nad/epsg %{buildroot}%{_datadir}/%{name}
 
 # Install projects.h manually, per #830496:
-install -p -m 0644 src/projects.h %{buildroot}%{_includedir}/
+%{__install} -p -m 0644 src/projects.h %{buildroot}%{_includedir}/
 
 %check
 pushd nad
@@ -104,7 +104,7 @@ popd
 %doc NEWS AUTHORS COPYING README ChangeLog
 %{_bindir}/*
 %{_mandir}/man1/*.1*
-%{_libdir}/libproj.so.12*
+%{_libdir}/libproj.so.13*
 
 %files devel
 %{_mandir}/man3/*.3*
@@ -133,6 +133,10 @@ popd
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
 
 %changelog
+* Mon Feb 04 2019 Devrim Gündüz <devrim@gunduz.org> - 5.2.0-1
+- Update to 5.2.0
+- Update to new datumgrid (1.8)
+
 * Sat Feb 02 2019 Fedora Release Engineering <releng@fedoraproject.org> - 4.9.3-7
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
 
