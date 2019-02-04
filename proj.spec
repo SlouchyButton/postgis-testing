@@ -9,7 +9,7 @@ Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.gz
 Source1:	http://download.osgeo.org/%{name}/%{name}-datumgrid-1.8.zip
 Patch0:		%{name}-4.8.0-removeinclude.patch
 
-BuildRequires:	libtool
+BuildRequires:	libtool gcc-c++
 
 
 %description
