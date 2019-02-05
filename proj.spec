@@ -5,8 +5,8 @@ Summary:	Cartographic projection software (PROJ.4)
 
 License:	MIT
 URL:		https://proj4.org
-Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.gz
-Source1:	http://download.osgeo.org/%{name}/%{name}-datumgrid-1.8.zip
+Source0:	https://download.osgeo.org/%{name}/%{name}-%{version}.tar.gz
+Source1:	https://download.osgeo.org/%{name}/%{name}-datumgrid-1.8.zip
 
 BuildRequires:	libtool gcc-c++
 
