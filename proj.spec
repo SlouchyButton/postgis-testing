@@ -1,6 +1,6 @@
 Name:		proj
 Version:	5.2.0
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Cartographic projection software (PROJ.4)
 
 License:	MIT
@@ -78,17 +78,8 @@ sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
 %{__install} -p -m 0644 src/projects.h %{buildroot}%{_includedir}/
 
 %check
-pushd nad
-# set test enviroment for porj
-export PROJ_LIB=%{buildroot}%{_datadir}/%{name}
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH%{buildroot}%{_libdir}
-# run tests for proj
-./test27      %{buildroot}%{_bindir}/%{name} || exit 0
-./test83      %{buildroot}%{_bindir}/%{name} || exit 0
-./testIGNF    %{buildroot}%{_bindir}/%{name} || exit 0
-./testntv2    %{buildroot}%{_bindir}/%{name} || exit 0
-./testvarious %{buildroot}%{_bindir}/%{name} || exit 0
-popd
+LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
+    make PROJ_LIB=%{buildroot}%{_datadir}/%{name} check || ( cat src/test-suite.log; exit 1 )
 
 
 %files
@@ -123,6 +114,9 @@ popd
 %{_datadir}/%{name}/epsg
 
 %changelog
+* Tue Feb 12 2019 Elliott Sales de Andrade <quantum.analyst@gmail.com> - 5.2.0-2
+- Enable full test suite during build
+
 * Mon Feb 04 2019 Devrim Gündüz <devrim@gunduz.org> - 5.2.0-1
 - Update to 5.2.0
 - Update to new datumgrid (1.8)
