@@ -51,11 +51,6 @@ This package contains additional EPSG dataset.
 %prep
 %setup -q -n %{name}-%{version}
 
-# disable internal libtool to avoid hardcoded r-path
-for makefile in `find . -type f -name 'Makefile.in'`; do
-sed -i 's|@LIBTOOL@|%{_bindir}/libtool|g' $makefile
-done
-
 # Prepare nad
 cd nad
 unzip -o %{SOURCE1}
@@ -65,17 +60,16 @@ for script in `find nad/ -type f -perm -a+x`; do
 sed -i -e '1,1s|:|#!/bin/bash|' $script
 done
 
+
 %build
-
-# fix version info to respect new ABI
-sed -i -e 's|5\:4\:5|6\:4\:6|' src/Makefile*
-
 %configure
-make OPTIMIZE="$RPM_OPT_FLAGS" %{?_smp_mflags}
+sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
+sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
+%make_build
+
 
 %install
-%{__rm} -rf %{buildroot}
-%makeinstall
+%make_install
 %{__install} -p -m 0644 nad/pj_out27.dist nad/pj_out83.dist nad/td_out.dist %{buildroot}%{_datadir}/%{name}
 %{__install} -p -m 0755 nad/test27 nad/test83 nad/testvarious %{buildroot}%{_datadir}/%{name}
 %{__install} -p -m 0644 nad/epsg %{buildroot}%{_datadir}/%{name}
@@ -96,7 +90,6 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH%{buildroot}%{_libdir}
 ./testvarious %{buildroot}%{_bindir}/%{name} || exit 0
 popd
 
-%ldconfig_scriptlets
 
 %files
 %doc NEWS AUTHORS COPYING README ChangeLog
