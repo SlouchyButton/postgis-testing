@@ -7,9 +7,11 @@ License:	MIT
 URL:		https://proj4.org
 Source0:	https://download.osgeo.org/%{name}/%{name}-%{version}.tar.gz
 Source1:	https://download.osgeo.org/%{name}/%{name}-datumgrid-1.8.zip
+# https://github.com/OSGeo/proj.4/pull/1246
+Patch0001:	0001-Allow-building-against-external-GTest-with-autotools.patch
 
 BuildRequires:	libtool gcc-c++
-
+BuildRequires:	gtest-devel >= 1.8.0
 
 %description
 Proj and invproj perform respective forward and inverse transformation of
@@ -49,7 +51,7 @@ Requires:	%{name} = %{version}-%{release}
 This package contains additional EPSG dataset.
 
 %prep
-%setup -q -n %{name}-%{version}
+%autosetup -n %{name}-%{version} -p1
 
 # Prepare nad
 cd nad
@@ -62,6 +64,8 @@ done
 
 
 %build
+# rebuild due to patch
+autoreconf -i
 %configure
 sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
