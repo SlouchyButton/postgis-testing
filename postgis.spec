@@ -40,12 +40,10 @@ URL:		http://www.postgis.net
 
 BuildRequires:	perl-generators
 BuildRequires:	postgresql-server-devel >= %{pg_version_minimum}
-BuildRequires:	libpq-devel
-BuildRequires:	proj-devel >= 5.2.0, geos-devel >= 3.7.1 byacc, proj-devel, flex, java, java-devel
-BuildRequires:	gtk2-devel, libxml2-devel, gdal-devel >= 1.10.0, desktop-file-utils, ant
-BuildRequires:	pcre-devel, gcc-c++
-BuildRequires:	autoconf, automake, libtool
-BuildRequires:	json-c-devel
+BuildRequires:	libpq-devel, json-c-devel, gcc-c++, pcre-devel, autoconf
+BuildRequires:	proj-devel >= 5.2.0, geos-devel >= 3.7.1 byacc, automake
+BuildRequires:	flex, java, java-devel, gtk2-devel, ant, libtool
+BuildRequires:	libxml2-devel, gdal-devel >= 1.10.0, desktop-file-utils
 %if %upgrade
 BuildRequires:	postgresql-upgrade-devel
 %endif
@@ -333,7 +331,6 @@ fi
 %changelog
 * Mon Feb 4 2019 Devrim Gündüz <devrim@gunduz.org> - 2.5.1-1
 - Update to 2.5.1
-
 
 * Sat Feb 02 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2.5.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
