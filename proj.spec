@@ -20,6 +20,8 @@ BuildRequires:	gtest-devel >= 1.8.0
 Obsoletes:	proj-epsg < 5.2.0-2
 Provides:	proj-epsg = %{version}-%{release}
 
+Requires:	proj-datumgrid = %{datumgrid_version}-%{release}
+
 %description
 Proj and invproj perform respective forward and inverse transformation of
 cartographic data to or from cartesian data with a wide range of selectable
@@ -48,7 +50,6 @@ Version:	%{datumgrid_version}
 # See README.DATUMGRID
 License:	CC-BY and Freely Distributable and Ouverte and Public Domain
 BuildArch:	noarch
-Requires:	%{name} = %{proj_version}-%{release}
 
 # Renamed; remove after Fedora 31.
 Obsoletes:	proj-nad < 5.2.0-2
@@ -122,6 +123,7 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 %{_libdir}/libproj.la
 
 %files datumgrid -f datumgrid.files
+%dir %{_datadir}/%{name}
 
 
 %changelog
