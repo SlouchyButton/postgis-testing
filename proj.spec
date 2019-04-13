@@ -127,7 +127,7 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 
 
 %changelog
-* Tue Feb 12 2019 Elliott Sales de Andrade <quantum.analyst@gmail.com> - 5.2.0-2
+* Sat Apr 13 2019 Elliott Sales de Andrade <quantum.analyst@gmail.com> - 5.2.0-2
 - Rename proj-nad subpackage as proj-datumgrid
 - Fold proj-epsg package into main one
 - Enable full test suite during build
