@@ -96,7 +96,7 @@ set(PROJ4_LIBRARY_DIRS /usr/lib)
 endif()
 set(PROJ4_BINARY_DIRS %{_bindir})
 set(PROJ4_VERSION %{proj_version})
-message(STATUS "Found PROJ4: version ${PROJ4_VERSION}")
+message(STATUS "Found PROJ4: version \${PROJ4_VERSION}")
 EOF
 
 
