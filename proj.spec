@@ -3,7 +3,7 @@
 
 Name:		proj
 Version:	%{proj_version}
-Release:	3%{?dist}
+Release:	4%{?dist}
 Summary:	Cartographic projection software (PROJ.4)
 
 License:	MIT
@@ -89,7 +89,7 @@ cat << EOF > %{buildroot}%{_datadir}/cmake/Modules/FindPROJ4.cmake
 set(PROJ4_FOUND 1)
 set(PROJ4_INCLUDE_DIRS %{_includedir})
 set(PROJ4_LIBRARIES proj)
-if(\${LIB_SUFFIX} == 64)
+if(\${LIB_SUFFIX} MATCHES 64)
 set(PROJ4_LIBRARY_DIRS /usr/lib64)
 else()
 set(PROJ4_LIBRARY_DIRS /usr/lib)
@@ -146,6 +146,9 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 
 
 %changelog
+* Tue Apr 16 2019 Dan Horák <dan[at]danny.cz> - 5.2.0-4
+- fix condition in cmake config
+
 * Tue Apr 16 2019 Dan Horák <dan[at]danny.cz> - 5.2.0-3
 - install cmake config
 
