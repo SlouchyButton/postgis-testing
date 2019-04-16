@@ -3,7 +3,7 @@
 
 Name:		proj
 Version:	%{proj_version}
-Release:	2%{?dist}
+Release:	3%{?dist}
 Summary:	Cartographic projection software (PROJ.4)
 
 License:	MIT
@@ -82,6 +82,24 @@ chmod -x %{buildroot}%{_libdir}/libproj.la
 install -p -m 0644 nad/README.DATUMGRID %{buildroot}%{_datadir}/%{name}
 
 
+# Install cmake config manually because we use autotools for building
+mkdir -p %{buildroot}%{_datadir}/cmake/Modules/
+
+cat << EOF > %{buildroot}%{_datadir}/cmake/Modules/FindPROJ4.cmake
+set(PROJ4_FOUND 1)
+set(PROJ4_INCLUDE_DIRS %{_includedir})
+set(PROJ4_LIBRARIES proj)
+if(\${LIB_SUFFIX} == 64)
+set(PROJ4_LIBRARY_DIRS /usr/lib64)
+else()
+set(PROJ4_LIBRARY_DIRS /usr/lib)
+endif()
+set(PROJ4_BINARY_DIRS %{_bindir})
+set(PROJ4_VERSION %{proj_version})
+message(STATUS "Found PROJ4: version ${PROJ4_VERSION}")
+EOF
+
+
 %check
 LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
     make PROJ_LIB=%{buildroot}%{_datadir}/%{name} check || ( cat src/test-suite.log; exit 1 )
@@ -115,6 +133,7 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 %{_includedir}/*.h
 %{_libdir}/libproj.so
 %{_libdir}/pkgconfig/%{name}.pc
+%{_datadir}/cmake/Modules/FindPROJ4.cmake
 %exclude %{_libdir}/libproj.a
 %exclude %{_libdir}/libproj.la
 
@@ -127,6 +146,9 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 
 
 %changelog
+* Tue Apr 16 2019 Dan Horák <dan[at]danny.cz> - 5.2.0-3
+- install cmake config
+
 * Sat Apr 13 2019 Elliott Sales de Andrade <quantum.analyst@gmail.com> - 5.2.0-2
 - Rename proj-nad subpackage as proj-datumgrid
 - Fold proj-epsg package into main one
