@@ -3,7 +3,7 @@
 
 Name:		proj
 Version:	%{proj_version}
-Release:	4%{?dist}
+Release:	5%{?dist}
 Summary:	Cartographic projection software (PROJ.4)
 
 License:	MIT
@@ -146,6 +146,9 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 
 
 %changelog
+* Fri Jul 26 2019 Fedora Release Engineering <releng@fedoraproject.org> - 5.2.0-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
+
 * Tue Apr 16 2019 Dan Horák <dan[at]danny.cz> - 5.2.0-4
 - fix condition in cmake config
 
