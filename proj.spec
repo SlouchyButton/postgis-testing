@@ -89,8 +89,8 @@ EOF
 
 
 %check
-#LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
-#    make PROJ_LIB=%{buildroot}%{_datadir}/%{name} check || ( cat src/test-suite.log; exit 1 )
+LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
+    make PROJ_LIB=%{buildroot}%{_datadir}/%{name} check || ( cat src/test-suite.log; exit 1 )
 
 
 %files
