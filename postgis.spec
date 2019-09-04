@@ -17,7 +17,7 @@
 
 %global majorversion 2.5
 %global prevmajorversion 2.4
-%global prevversion %{prevmajorversion}.5
+%global prevversion %{prevmajorversion}.8
 %global so_files	rtpostgis postgis_topology postgis address_standardizer
 %global configure_opts	--disable-rpath --enable-raster
 
@@ -27,8 +27,8 @@
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	%majorversion.1
-Release:	2%{?dist}
+Version:	%majorversion.3
+Release:	1%{?dist}
 License:	GPLv2+
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
@@ -329,6 +329,10 @@ fi
 
 
 %changelog
+* Wed Sep 4 2019 Devrim Gündüz <devrim@gunduz.org> - 2.5.3-1
+- Update to 2.5.3
+- Update prev version to 2.4.8
+
 * Fri Jul 26 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2.5.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
 
