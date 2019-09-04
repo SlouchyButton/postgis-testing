@@ -166,7 +166,7 @@ cd %{name}-%{prevversion}
 make %{?_smp_mflags}
 mkdir ../compat-build
 for so in %so_files; do
-    find -name $so-%prevmajorversion.so -exec cp -t ../compat-build/ {} +
+    find -name $so.so -exec cp -t ../compat-build/ {} +
 done
 
 # Second, build feature-full build against previous PostgreSQL version.  We
