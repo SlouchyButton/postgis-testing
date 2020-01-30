@@ -3,7 +3,7 @@
 
 Name:		proj
 Version:	%{proj_version}
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Cartographic projection software (PROJ)
 
 License:	MIT
@@ -134,6 +134,9 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 
 
 %changelog
+* Thu Jan 30 2020 Fedora Release Engineering <releng@fedoraproject.org> - 6.2.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
+
 * Sun Sep 1 2019 Devrim Gündüz <devrim@gunduz.org> - 6.2.0-1
 - Update to 6.2.0
 - Applied https://src.fedoraproject.org/rpms/proj/pull-request/6 by
