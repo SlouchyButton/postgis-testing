@@ -9,26 +9,26 @@
 
 %ifarch s390x
 # rhbz#1503476
-%undefine _hardened_build
+%undefine	_hardened_build
 %endif
 %if 0%{?fedora} == 26
-%undefine _hardened_build
+%undefine	_hardened_build
 %endif
 
-%global majorversion 2.5
-%global prevmajorversion 2.4
-%global prevversion %{prevmajorversion}.8
-%global so_files	rtpostgis postgis_topology postgis address_standardizer
-%global configure_opts	--disable-rpath --enable-raster
+%global		majorversion 3.0
+%global		prevmajorversion 2.5
+%global		prevversion %{prevmajorversion}.3
+%global		so_files	postgis postgis_topology postgis_raster address_standardizer
+%global		configure_opts	--disable-rpath --enable-raster
 
-%global pg_version_minimum 9.4
+%global		pg_version_minimum 9.4
 
-%global __provides_exclude_from %{_libdir}/pgsql
+%global		__provides_exclude_from %{_libdir}/pgsql
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	%majorversion.3
-Release:	2%{?dist}
+Version:	%majorversion.0
+Release:	1%{?dist}
 License:	GPLv2+
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
@@ -239,7 +239,7 @@ if ! LD_LIBRARY_PATH=%{buildroot}%_libdir make check %{_smp_mflags} ; then
     false
 %endif
 fi
-%endif # runselftest
+%endif
 
 
 %if %javabuild
@@ -329,6 +329,9 @@ fi
 
 
 %changelog
+* Sun Feb 16 2020 Devrim Gündüz <devrim@gunduz.org> - 3.0.0-1
+- Update to 3.0.0
+
 * Thu Jan 30 2020 Fedora Release Engineering <releng@fedoraproject.org> - 2.5.3-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 
