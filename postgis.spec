@@ -129,7 +129,7 @@ cd %{name}-%{prevversion}
 ./autogen.sh
 )
 %endif
-%patch3 -p1
+%patch3 -p0
 cp -p %{SOURCE2} .
 
 
