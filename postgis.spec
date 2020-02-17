@@ -34,8 +34,7 @@ Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
 Source3:	http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
 Source4:	filter-requires-perl-Pg.sh
-Patch3:		postgis-2.4.0-install-desktop.patch
-Patch4:		postgis-2.4.0-code-check-only.patch
+Patch3:		postgis-%{majorversion}-install-desktop.patch
 URL:		http://www.postgis.net
 
 BuildRequires:	perl-generators
@@ -131,7 +130,6 @@ cd %{name}-%{prevversion}
 )
 %endif
 %patch3 -p1
-%patch4 -p1
 cp -p %{SOURCE2} .
 
 
