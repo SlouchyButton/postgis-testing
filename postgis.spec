@@ -16,9 +16,10 @@
 %endif
 
 %global		majorversion 3.0
+%global		soversion 3
 %global		prevmajorversion 2.5
 %global		prevversion %{prevmajorversion}.3
-%global		so_files	postgis postgis_topology postgis_raster address_standardizer
+%global		so_files	postgis postgis_topology rtpostgis address_standardizer
 %global		configure_opts	--disable-rpath --enable-raster
 
 %global		pg_version_minimum 9.4
@@ -34,7 +35,6 @@ Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
 Source3:	http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
 Source4:	filter-requires-perl-Pg.sh
-Patch3:		postgis-%{majorversion}-install-desktop.patch
 URL:		http://www.postgis.net
 
 BuildRequires:	perl-generators
@@ -43,6 +43,8 @@ BuildRequires:	libpq-devel, json-c-devel, gcc-c++, pcre-devel, autoconf
 BuildRequires:	proj-devel >= 5.2.0, geos-devel >= 3.7.1 byacc, automake
 BuildRequires:	flex, java, java-devel, gtk2-devel, ant, libtool
 BuildRequires:	libxml2-devel, gdal-devel >= 1.10.0, desktop-file-utils
+BuildRequires:  clang llvm
+BuildRequires:  libxslt docbook-dtds
 %if %upgrade
 BuildRequires:	postgresql-upgrade-devel
 %endif
@@ -61,12 +63,12 @@ follows the OpenGIS "Simple Features Specification for SQL" and has been
 certified as compliant with the "Types and Functions" profile.
 
 
-%package devel
-Summary:	The development files for PostGIS
+%package llvmjit
+Summary:	Just-in-time compilation support for PostGIS
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 
-%description devel
-Development headers and libraries for PostGIS.
+%description llvmjit
+Just-in-time compilation support for PostGIS.
 
 
 %package docs
@@ -129,12 +131,15 @@ cd %{name}-%{prevversion}
 ./autogen.sh
 )
 %endif
-%patch3 -p0
 cp -p %{SOURCE2} .
 
 
 %build
 %configure %configure_opts --with-gui
+sed -i 's| -fstack-clash-protection | |' postgis/Makefile
+sed -i 's| -fstack-clash-protection | |' raster/rt_pg/Makefile
+sed -i 's| -fstack-clash-protection | |' topology/Makefile
+sed -i 's| -fstack-clash-protection | |' extensions/address_standardizer/Makefile
 sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
 make %{?_smp_mflags}
@@ -161,10 +166,15 @@ cd %{name}-%{prevversion}
 # first perform compat-build (against the actual PostgreSQL version).  We need
 # only the so names.
 %configure %configure_opts
+sed -i 's| -fstack-clash-protection | |' postgis/Makefile
+sed -i 's| -fstack-clash-protection | |' raster/rt_pg/Makefile
+sed -i 's| -fstack-clash-protection | |' topology/Makefile
+sed -i 's| -fstack-clash-protection | |' extensions/address_standardizer/Makefile
 make %{?_smp_mflags}
 mkdir ../compat-build
 for so in %so_files; do
-    find -name $so.so -exec cp -t ../compat-build/ {} +
+    find -name $so.so -exec cp {} ../compat-build/$so-%{prevmajorversion}.so \;
+    find -name $so-%{prevmajorversion}.so -exec cp -t ../compat-build/ {} +
 done
 
 # Second, build feature-full build against previous PostgreSQL version.  We
@@ -175,6 +185,10 @@ done
 	--with-pgconfig=%postgresql_upgrade_prefix/bin/pg_config \
 	--libdir=%postgresql_upgrade_prefix/lib \
 	--includedir=%postgresql_upgrade_prefix/include
+sed -i 's| -fstack-clash-protection | |' postgis/Makefile
+sed -i 's| -fstack-clash-protection | |' raster/rt_pg/Makefile
+sed -i 's| -fstack-clash-protection | |' topology/Makefile
+sed -i 's| -fstack-clash-protection | |' extensions/address_standardizer/Makefile
 make %{?_smp_mflags}
 )
 %endif
@@ -185,8 +199,9 @@ make install DESTDIR=%{buildroot}
 make %{?_smp_mflags}  -C utils install DESTDIR=%{buildroot}
 make %{?_smp_mflags}  -C extensions install DESTDIR=%{buildroot}
 
-# hack: this requires postgis-%%version-install-desktop.patch
-make -C loader install-rpm-desktop DESTDIR=%{buildroot} datadir=%{_datadir}
+# move application metadata to correct location
+mv %{buildroot}/%{_datadir}/pgsql/applications %{buildroot}/%{_datadir}
+mv %{buildroot}/%{_datadir}/pgsql/icons %{buildroot}/%{_datadir}
 
 %if %upgrade
 cd %{name}-%{prevversion}
@@ -252,7 +267,7 @@ fi
 %license COPYING
 %doc CREDITS NEWS TODO README.%{name} loader/README.* doc/%{name}.xml doc/ZMSgeoms.txt
 %attr(755,root,root) %{_bindir}/*
-%attr(755,root,root) %{_libdir}/pgsql/%{name}-%{majorversion}.so
+%attr(755,root,root) %{_libdir}/pgsql/%{name}-%{soversion}.so
 %{_datadir}/pgsql/contrib/postgis-%{majorversion}/*.sql
 #if {_lib} == lib64
 #{_datadir}/pgsql/contrib/postgis*.sql
@@ -260,8 +275,10 @@ fi
 %{_datadir}/pgsql/extension/address_standardizer*.sql
 %{_datadir}/pgsql/extension/address_standardizer*.control
 %{_datadir}/pgsql/extension/postgis-*.sql
+%{_datadir}/pgsql/extension/postgis_raster*.sql
 %{_datadir}/pgsql/extension/postgis_topology*.sql
 %{_datadir}/pgsql/extension/postgis.control
+%{_datadir}/pgsql/extension/postgis_raster.control
 %{_datadir}/pgsql/extension/postgis_topology.control
 %{_datadir}/pgsql/extension/postgis_tiger_geocoder*.sql
 %{_datadir}/pgsql/extension/postgis_tiger_geocoder.control
@@ -269,20 +286,19 @@ fi
 %{_datadir}/postgis/create_unpackaged.pl
 %{_datadir}/postgis/create_spatial_ref_sys_config_dump.pl
 %{_datadir}/postgis/postgis_proc_set_search_path.pl
-# rhbz#1503456
-%{_libdir}/liblwgeom-%majorversion.so.*
-%{_libdir}/pgsql/address_standardizer.so
-%{_libdir}/pgsql/rtpostgis-%{majorversion}.so
-%{_libdir}/pgsql/postgis_topology-%{majorversion}.so
+%{_libdir}/pgsql/address_standardizer-%{soversion}.so
+%{_libdir}/pgsql/postgis_raster-%{soversion}.so
+%{_libdir}/pgsql/postgis_topology-%{soversion}.so
 
 %{_datadir}/applications/shp2pgsql-gui.desktop
 %{_datadir}/icons/hicolor/*/apps/shp2pgsql-gui.png
 
 
-%files devel
-%{_includedir}/liblwgeom.h
-%{_includedir}/liblwgeom_topo.h
-%{_libdir}/liblwgeom.so
+%files llvmjit
+%{_libdir}/pgsql/bitcode/address_standardizer-*
+%{_libdir}/pgsql/bitcode/postgis-*
+%{_libdir}/pgsql/bitcode/postgis_raster-*
+%{_libdir}/pgsql/bitcode/postgis_topology-*
 
 
 %if %javabuild
@@ -312,6 +328,7 @@ fi
 %{_datadir}/%{name}/test_estimation.pl
 %{_datadir}/%{name}/profile_intersects.pl
 %{_datadir}/%{name}/test_joinestimation.pl
+%{_datadir}/%{name}/create_extension_unpackage.pl
 %{_datadir}/%{name}/create_undef.pl
 %{_datadir}/%{name}/%{name}_proc_upgrade.pl
 %{_datadir}/%{name}/%{name}_restore.pl
