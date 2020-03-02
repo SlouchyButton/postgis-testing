@@ -1,17 +1,28 @@
-Name:		geos
-Version:	3.7.1
-Release:	3%{?dist}
-Summary:	GEOS is a C++ port of the Java Topology Suite
+Name:          geos
+Version:       3.8.0
+Release:       1%{?dist}
+Summary:       GEOS is a C++ port of the Java Topology Suite
 
-License:	LGPLv2
-URL:		http://trac.osgeo.org/geos/
-Source0:	http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
-Patch0:		geos-gcc43.patch
+License:       LGPLv2
+URL:           http://trac.osgeo.org/geos/
+Source0:       http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
+# File missing in tarball
+Source1:       https://git.osgeo.org/gitea/geos/geos/raw/branch/master/doc/check_doxygen_errors.cmake
 
-BuildRequires:  gcc
-BuildRequires:  gcc-c++
-BuildRequires:	doxygen
-BuildRequires:	libtool
+# Backport fix for out-of-bounds array access
+# https://github.com/libgeos/geos/commit/3fc652822ef3a825784919423d636c9584dbd2ba.patch
+Patch0:        3fc652822ef3a825784919423d636c9584dbd2ba.patch
+# Honour libsuffix
+Patch1:        geos_libsuffix.patch
+# Fix borken geos-config returning -lgeos instead of -lgeos_c
+Patch2:        geos_geosconfig.patch
+
+BuildRequires: cmake
+BuildRequires: doxygen
+BuildRequires: gcc
+BuildRequires: gcc-c++
+BuildRequires: make
+
 
 %description
 GEOS (Geometry Engine - Open Source) is a C++ port of the Java Topology
@@ -20,9 +31,10 @@ JTS in C++. This includes all the OpenGIS "Simple Features for SQL" spatial
 predicate functions and spatial operators, as well as specific JTS topology
 functions such as IsValid()
 
+
 %package devel
-Summary:	Development files for GEOS
-Requires:	%{name} = %{version}-%{release}
+Summary:       Development files for GEOS
+Requires:      %{name} = %{version}-%{release}
 
 %description devel
 GEOS (Geometry Engine - Open Source) is a C++ port of the Java Topology
@@ -34,65 +46,56 @@ functions such as IsValid().
 This package contains the development files to build applications that
 use GEOS.
 
+
 %prep
-%setup -q
-%patch0 -p0 -b .gcc43
+%autosetup -p1
+cp -a %{SOURCE1} doc/check_doxygen_errors.cmake
+
 
 %build
+%cmake \
+%ifarch armv7hl aarch64 s390x
+  -DDISABLE_GEOS_INLINE=ON \
+%endif
+  -DBUILD_DOCUMENTATION=ON
+%make_build
 
-# fix python path on 64bit
-sed -i -e 's|\/lib\/python|$libdir\/python|g' configure
-sed -i -e 's|.get_python_lib(0|.get_python_lib(1|g' configure
-sed -i -e 's|find \$i -name libpython|find \$i\/lib*\/ -name libpython|g' configure
-
-# isnan is in math.h, std::isnan is in cmath
-sed -i -e 's|= isnan(|= std::isnan(|g' configure
-sed -i -e 's|(isnan(|(std::isnan(|g' include/geos/platform.h.in
-
-# disable internal libtool to avoid hardcoded r-path
-for makefile in `find . -type f -name 'Makefile.in'`; do
-sed -i 's|@LIBTOOL@|%{_bindir}/libtool|g' $makefile
-done
-
-%configure --disable-static --disable-dependency-tracking --disable-python
-
-# Touch the file, since we are not using ruby bindings anymore:
-# Per http://lists.osgeo.org/pipermail/geos-devel/2009-May/004149.html
-touch swig/python/geos_wrap.cxx
-
-make %{?_smp_mflags}
-
-# Make doxygen documentation files
-cd doc
-make doxygen-html
 
 %install
-%{__rm} -rf %{buildroot}
-make DESTDIR=%{buildroot} install
+%make_install
+make docs
+
 
 %check
+%ifarch armv7hl aarch64 s390x ppc64le
+make test || :
+%else
+make test
+%endif
 
-# test module
-make %{?_smp_mflags} check || exit 0
 
 %ldconfig_scriptlets
 
+
 %files
-%doc AUTHORS COPYING NEWS README.md TODO
-%{_libdir}/libgeos-%{version}.so
+%doc AUTHORS NEWS README.md
+%license COPYING
+%{_libdir}/libgeos.so.%{version}
 %{_libdir}/libgeos_c.so.1*
-%exclude %{_libdir}/*.a
 
 %files devel
 %doc doc/doxygen_docs
 %{_bindir}/geos-config
-%{_includedir}/*
-%{_libdir}/libgeos.so
+%{_includedir}/geos/
+%{_includedir}/geos_c.h
 %{_libdir}/libgeos_c.so
-%exclude %{_libdir}/*.la
-%exclude %{_libdir}/*.a
+%{_libdir}/cmake/GEOS/
+
 
 %changelog
+* Thu Feb 20 2020 Sandro Mani <manisandro@gmail.com> - 3.8.0-1
+- Update to 3.8.0
+
 * Tue Jan 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 3.7.1-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 

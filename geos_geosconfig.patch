@@ -1,0 +1,12 @@
+diff -rupN --no-dereference geos-3.8.0/tools/geos-config.cmake geos-3.8.0-new/tools/geos-config.cmake
+--- geos-3.8.0/tools/geos-config.cmake	2020-02-24 10:59:48.382554848 +0100
++++ geos-3.8.0-new/tools/geos-config.cmake	2020-02-24 10:59:48.383554846 +0100
+@@ -59,7 +59,7 @@ case $1 in
+       echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos -lm
+       ;;
+     --ldflags)
+-      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos
++      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos_c
+       ;;
+     --includes)
+       echo @CMAKE_INSTALL_PREFIX@/include

@@ -1,0 +1,80 @@
+diff -rupN --no-dereference geos-3.8.0/CMakeLists.txt geos-3.8.0-new/CMakeLists.txt
+--- geos-3.8.0/CMakeLists.txt	2019-10-08 18:20:34.000000000 +0200
++++ geos-3.8.0-new/CMakeLists.txt	2020-02-24 10:59:48.306554996 +0100
+@@ -281,16 +281,16 @@ configure_file(cmake/geos-config.cmake
+ 
+ install(TARGETS geos geos_cxx_flags
+   EXPORT geos-targets
+-  LIBRARY DESTINATION lib NAMELINK_SKIP
+-  ARCHIVE DESTINATION lib
++  LIBRARY DESTINATION lib${LIB_SUFFIX} NAMELINK_SKIP
++  ARCHIVE DESTINATION lib${LIB_SUFFIX}
+   RUNTIME DESTINATION bin
+   INCLUDES DESTINATION include
+   )
+ 
+ install(TARGETS geos_c
+   EXPORT geos-targets
+-  LIBRARY DESTINATION lib
+-  ARCHIVE DESTINATION lib
++  LIBRARY DESTINATION lib${LIB_SUFFIX}
++  ARCHIVE DESTINATION lib${LIB_SUFFIX}
+   RUNTIME DESTINATION bin
+   INCLUDES DESTINATION include
+   )
+@@ -298,12 +298,12 @@ install(TARGETS geos_c
+ install(EXPORT geos-targets
+   FILE geos-targets.cmake
+   NAMESPACE GEOS::
+-  DESTINATION lib/cmake/GEOS)
++  DESTINATION lib${LIB_SUFFIX}/cmake/GEOS)
+ 
+ install(FILES
+   "${CMAKE_CURRENT_BINARY_DIR}/geos-config.cmake"
+   "${CMAKE_CURRENT_BINARY_DIR}/geos-config-version.cmake"
+-  DESTINATION lib/cmake/GEOS)
++  DESTINATION lib${LIB_SUFFIX}/cmake/GEOS)
+ install(DIRECTORY
+   "${CMAKE_CURRENT_LIST_DIR}/include/geos"
+   "${CMAKE_CURRENT_BINARY_DIR}/include/geos"
+diff -rupN --no-dereference geos-3.8.0/tools/geos-config.cmake geos-3.8.0-new/tools/geos-config.cmake
+--- geos-3.8.0/tools/geos-config.cmake	2019-10-08 18:20:35.000000000 +0200
++++ geos-3.8.0-new/tools/geos-config.cmake	2020-02-24 10:59:48.306554996 +0100
+@@ -2,7 +2,7 @@
+ 
+ prefix=@CMAKE_INSTALL_PREFIX@
+ exec_prefix=@CMAKE_INSTALL_PREFIX@/bin
+-libdir=@CMAKE_INSTALL_PREFIX@/lib
++libdir=@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@
+ 
+ usage()
+ {
+@@ -44,22 +44,22 @@ case $1 in
+       echo -I@CMAKE_INSTALL_PREFIX@/include
+       ;;
+     --libs)
+-      echo -L@CMAKE_INSTALL_PREFIX@/lib -lgeos-@GEOS_VERSION_MAJOR@
++      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos-@GEOS_VERSION_MAJOR@
+       ;;
+     --clibs)
+-      echo -L@CMAKE_INSTALL_PREFIX@/lib -lgeos_c
++      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos_c
+       ;;
+     --cclibs)
+-      echo -L@CMAKE_INSTALL_PREFIX@/lib -lgeos
++      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos
+       ;;
+     --static-clibs)
+-      echo -L@CMAKE_INSTALL_PREFIX@/lib -lgeos_c -lgeos -lm
++      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos_c -lgeos -lm
+       ;;
+     --static-cclibs)
+-      echo -L@CMAKE_INSTALL_PREFIX@/lib -lgeos -lm
++      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos -lm
+       ;;
+     --ldflags)
+-      echo -L@CMAKE_INSTALL_PREFIX@/lib -lgeos
++      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos
+       ;;
+     --includes)
+       echo @CMAKE_INSTALL_PREFIX@/include
