@@ -28,7 +28,7 @@
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	%majorversion.0
+Version:	%majorversion.1
 Release:	1%{?dist}
 License:	GPLv2+
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
@@ -282,9 +282,9 @@ fi
 %{_datadir}/pgsql/extension/postgis_topology.control
 %{_datadir}/pgsql/extension/postgis_tiger_geocoder*.sql
 %{_datadir}/pgsql/extension/postgis_tiger_geocoder.control
-%{_datadir}/postgis/svn_repo_revision.pl
 %{_datadir}/postgis/create_unpackaged.pl
 %{_datadir}/postgis/create_spatial_ref_sys_config_dump.pl
+%{_datadir}/postgis/repo_revision.pl
 %{_datadir}/postgis/postgis_proc_set_search_path.pl
 %{_libdir}/pgsql/address_standardizer-%{soversion}.so
 %{_libdir}/pgsql/postgis_raster-%{soversion}.so
@@ -344,6 +344,9 @@ fi
 
 
 %changelog
+* Mon Mar 02 2020 Sandro Mani <manisandro@gmail.com> - 3.0.1-1
+- Update to 3.0.1
+
 * Sun Feb 16 2020 Devrim Gündüz <devrim@gunduz.org> - 3.0.0-1
 - Update to 3.0.0
 
