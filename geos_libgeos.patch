@@ -1,0 +1,12 @@
+diff -rupN --no-dereference geos-3.8.0/CMakeLists.txt geos-3.8.0-new/CMakeLists.txt
+--- geos-3.8.0/CMakeLists.txt	2020-03-03 15:33:10.497255877 +0100
++++ geos-3.8.0-new/CMakeLists.txt	2020-03-03 15:33:10.582255890 +0100
+@@ -281,7 +281,7 @@ configure_file(cmake/geos-config.cmake
+ 
+ install(TARGETS geos geos_cxx_flags
+   EXPORT geos-targets
+-  LIBRARY DESTINATION lib${LIB_SUFFIX} NAMELINK_SKIP
++  LIBRARY DESTINATION lib${LIB_SUFFIX}
+   ARCHIVE DESTINATION lib${LIB_SUFFIX}
+   RUNTIME DESTINATION bin
+   INCLUDES DESTINATION include

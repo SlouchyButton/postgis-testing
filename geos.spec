@@ -1,6 +1,6 @@
 Name:          geos
 Version:       3.8.0
-Release:       1%{?dist}
+Release:       2%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
 License:       LGPLv2
@@ -16,6 +16,8 @@ Patch0:        3fc652822ef3a825784919423d636c9584dbd2ba.patch
 Patch1:        geos_libsuffix.patch
 # Fix borken geos-config returning -lgeos instead of -lgeos_c
 Patch2:        geos_geosconfig.patch
+# Install libgeos.so symlink (some packages still use the C++ API)
+Patch3:        geos_libgeos.patch
 
 BuildRequires: cmake
 BuildRequires: doxygen
@@ -89,10 +91,14 @@ make test
 %{_includedir}/geos/
 %{_includedir}/geos_c.h
 %{_libdir}/libgeos_c.so
+%{_libdir}/libgeos.so
 %{_libdir}/cmake/GEOS/
 
 
 %changelog
+* Tue Mar 03 2020 Sandro Mani <manisandro@gmail.com> - 3.8.0-2
+- Install libgeos.so
+
 * Thu Feb 20 2020 Sandro Mani <manisandro@gmail.com> - 3.8.0-1
 - Update to 3.8.0
 

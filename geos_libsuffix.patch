@@ -1,6 +1,6 @@
 diff -rupN --no-dereference geos-3.8.0/CMakeLists.txt geos-3.8.0-new/CMakeLists.txt
 --- geos-3.8.0/CMakeLists.txt	2019-10-08 18:20:34.000000000 +0200
-+++ geos-3.8.0-new/CMakeLists.txt	2020-02-24 10:59:48.306554996 +0100
++++ geos-3.8.0-new/CMakeLists.txt	2020-03-03 15:33:10.415255865 +0100
 @@ -281,16 +281,16 @@ configure_file(cmake/geos-config.cmake
  
  install(TARGETS geos geos_cxx_flags
@@ -39,7 +39,7 @@ diff -rupN --no-dereference geos-3.8.0/CMakeLists.txt geos-3.8.0-new/CMakeLists.
    "${CMAKE_CURRENT_BINARY_DIR}/include/geos"
 diff -rupN --no-dereference geos-3.8.0/tools/geos-config.cmake geos-3.8.0-new/tools/geos-config.cmake
 --- geos-3.8.0/tools/geos-config.cmake	2019-10-08 18:20:35.000000000 +0200
-+++ geos-3.8.0-new/tools/geos-config.cmake	2020-02-24 10:59:48.306554996 +0100
++++ geos-3.8.0-new/tools/geos-config.cmake	2020-03-03 15:33:10.415255865 +0100
 @@ -2,7 +2,7 @@
  
  prefix=@CMAKE_INSTALL_PREFIX@
