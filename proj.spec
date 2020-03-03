@@ -1,9 +1,18 @@
-%global proj_version 6.2.0
+%global proj_version 6.3.1
 %global datumgrid_version 1.8
+
+# The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
+%global baserelease 1
+
+# In order to avoid needing to keep incrementing the release version for the
+# main package forever, we will just construct one for npm that is guaranteed
+# to increment safely. Changing this can only be done during an update when the
+# base npm version number is increasing.
+%global datumgrid_release %{proj_version}.%{baserelease}
 
 Name:		proj
 Version:	%{proj_version}
-Release:	2%{?dist}
+Release:	%{baserelease}%{?dist}
 Summary:	Cartographic projection software (PROJ)
 
 License:	MIT
@@ -14,7 +23,7 @@ Source1:	https://download.osgeo.org/%{name}/%{name}-datumgrid-%{datumgrid_versio
 BuildRequires:	gcc-c++ sqlite-devel
 BuildRequires:	gtest-devel >= 1.8.0
 
-Requires:	proj-datumgrid = %{datumgrid_version}-%{release}
+Requires:	proj-datumgrid = %{datumgrid_version}-%{datumgrid_release}
 
 %description
 Proj and invproj perform respective forward and inverse transformation of
@@ -41,6 +50,7 @@ This package contains libproj static library.
 %package datumgrid
 Summary:	Additional datum shift grids for PROJ
 Version:	%{datumgrid_version}
+Release:        %{datumgrid_release}
 # See README.DATUMGRID
 License:	CC-BY and Freely Distributable and Ouverte and Public Domain
 BuildArch:	noarch
@@ -117,7 +127,6 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 %{_mandir}/man3/*.3*
 %{_includedir}/*.h
 %{_includedir}/proj/
-%{_includedir}/proj_json_streaming_writer.hpp
 %{_datadir}/proj/projjson.schema.json
 %{_libdir}/libproj.so
 %{_libdir}/pkgconfig/%{name}.pc
@@ -134,6 +143,9 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 
 
 %changelog
+* Wed Feb 19 2020 Sandro Mani <manisandro@gmail.com> - 6.3.1-1
+- Update to 6.3.1
+
 * Thu Jan 30 2020 Fedora Release Engineering <releng@fedoraproject.org> - 6.2.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 
