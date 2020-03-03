@@ -2,7 +2,7 @@
 %global datumgrid_version 1.8
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 1
+%global baserelease 2
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for npm that is guaranteed
@@ -50,7 +50,7 @@ This package contains libproj static library.
 %package datumgrid
 Summary:	Additional datum shift grids for PROJ
 Version:	%{datumgrid_version}
-Release:        %{datumgrid_release}
+Release:        %{datumgrid_release}%{?dist}
 # See README.DATUMGRID
 License:	CC-BY and Freely Distributable and Ouverte and Public Domain
 BuildArch:	noarch
@@ -143,6 +143,9 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 
 
 %changelog
+* Tue Mar 03 2020 Sandro Mani <manisandro@gmail.com> - 6.3.1-2
+- Fix proj-datumgrid release missing %%{?dist}
+
 * Wed Feb 19 2020 Sandro Mani <manisandro@gmail.com> - 6.3.1-1
 - Update to 6.3.1
 
