@@ -7,7 +7,7 @@ License:       LGPLv2
 URL:           http://trac.osgeo.org/geos/
 Source0:       http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
 # File missing in tarball
-Source1:       https://git.osgeo.org/gitea/geos/geos/raw/branch/master/doc/check_doxygen_errors.cmake
+Source1:       http://git.osgeo.org/gitea/geos/geos/raw/tag/%{version}/doc/check_doxygen_errors.cmake
 
 # Honour libsuffix
 Patch1:        geos_libsuffix.patch
