@@ -1,6 +1,6 @@
 Name:          geos
-Version:       3.8.0
-Release:       2%{?dist}
+Version:       3.8.1
+Release:       1%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
 License:       LGPLv2
@@ -9,15 +9,10 @@ Source0:       http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
 # File missing in tarball
 Source1:       https://git.osgeo.org/gitea/geos/geos/raw/branch/master/doc/check_doxygen_errors.cmake
 
-# Backport fix for out-of-bounds array access
-# https://github.com/libgeos/geos/commit/3fc652822ef3a825784919423d636c9584dbd2ba.patch
-Patch0:        3fc652822ef3a825784919423d636c9584dbd2ba.patch
 # Honour libsuffix
 Patch1:        geos_libsuffix.patch
-# Fix borken geos-config returning -lgeos instead of -lgeos_c
-Patch2:        geos_geosconfig.patch
 # Install libgeos.so symlink (some packages still use the C++ API)
-Patch3:        geos_libgeos.patch
+Patch2:        geos_libgeos.patch
 
 BuildRequires: cmake
 BuildRequires: doxygen
@@ -96,6 +91,9 @@ make test
 
 
 %changelog
+* Wed Mar 11 2020 Sandro Mani <manisandro@gmail.com> - 3.8.1-1
+- Update to 3.8.1
+
 * Tue Mar 03 2020 Sandro Mani <manisandro@gmail.com> - 3.8.0-2
 - Install libgeos.so
 

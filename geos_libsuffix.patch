@@ -1,6 +1,6 @@
-diff -rupN --no-dereference geos-3.8.0/CMakeLists.txt geos-3.8.0-new/CMakeLists.txt
---- geos-3.8.0/CMakeLists.txt	2019-10-08 18:20:34.000000000 +0200
-+++ geos-3.8.0-new/CMakeLists.txt	2020-03-03 15:33:10.415255865 +0100
+diff -rupN --no-dereference geos-3.8.1/CMakeLists.txt geos-3.8.1-new/CMakeLists.txt
+--- geos-3.8.1/CMakeLists.txt	2020-01-05 17:44:53.000000000 +0100
++++ geos-3.8.1-new/CMakeLists.txt	2020-03-11 13:01:25.940873494 +0100
 @@ -281,16 +281,16 @@ configure_file(cmake/geos-config.cmake
  
  install(TARGETS geos geos_cxx_flags
@@ -37,15 +37,15 @@ diff -rupN --no-dereference geos-3.8.0/CMakeLists.txt geos-3.8.0-new/CMakeLists.
  install(DIRECTORY
    "${CMAKE_CURRENT_LIST_DIR}/include/geos"
    "${CMAKE_CURRENT_BINARY_DIR}/include/geos"
-diff -rupN --no-dereference geos-3.8.0/tools/geos-config.cmake geos-3.8.0-new/tools/geos-config.cmake
---- geos-3.8.0/tools/geos-config.cmake	2019-10-08 18:20:35.000000000 +0200
-+++ geos-3.8.0-new/tools/geos-config.cmake	2020-03-03 15:33:10.415255865 +0100
+diff -rupN --no-dereference geos-3.8.1/tools/geos-config.cmake geos-3.8.1-new/tools/geos-config.cmake
+--- geos-3.8.1/tools/geos-config.cmake	2019-10-29 23:44:33.000000000 +0100
++++ geos-3.8.1-new/tools/geos-config.cmake	2020-03-11 13:01:25.940873494 +0100
 @@ -2,7 +2,7 @@
  
  prefix=@CMAKE_INSTALL_PREFIX@
  exec_prefix=@CMAKE_INSTALL_PREFIX@/bin
 -libdir=@CMAKE_INSTALL_PREFIX@/lib
-+libdir=@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@
++libdir=@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@@LIB_SUFFIX@
  
  usage()
  {
@@ -73,8 +73,8 @@ diff -rupN --no-dereference geos-3.8.0/tools/geos-config.cmake geos-3.8.0-new/to
 +      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos -lm
        ;;
      --ldflags)
--      echo -L@CMAKE_INSTALL_PREFIX@/lib -lgeos
-+      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos
+-      echo -L@CMAKE_INSTALL_PREFIX@/lib 
++      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@
        ;;
      --includes)
        echo @CMAKE_INSTALL_PREFIX@/include
