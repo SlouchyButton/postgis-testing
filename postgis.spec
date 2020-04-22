@@ -2,7 +2,7 @@
 %{!?utils:%global	utils 1}
 %{!?gcj_support:%global	gcj_support 0}
 %{!?upgrade:%global	upgrade 1}
-%{!?runselftest:%global	runselftest 0}
+%{!?runselftest:%global	runselftest 1}
 
 # rhbz#1503454
 %global _smp_mflags	-j1
@@ -29,7 +29,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	%majorversion.1
-Release:	3%{?dist}
+Release:	4%{?dist}
 License:	GPLv2+
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
@@ -344,6 +344,9 @@ fi
 
 
 %changelog
+* Wed Apr 22 2020 Björn Esser <besser82@fedoraproject.org> - 3.0.1-4
+- Re-enable selftests
+
 * Tue Apr 21 2020 Björn Esser <besser82@fedoraproject.org> - 3.0.1-3
 - Rebuild (json-c)
 - Disable selftests, as they seem to be flaky
