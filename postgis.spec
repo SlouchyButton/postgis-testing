@@ -2,7 +2,7 @@
 %{!?utils:%global	utils 1}
 %{!?gcj_support:%global	gcj_support 0}
 %{!?upgrade:%global	upgrade 1}
-%{!?runselftest:%global	runselftest 1}
+%{!?runselftest:%global	runselftest 0}
 
 # rhbz#1503454
 %global _smp_mflags	-j1
@@ -346,6 +346,7 @@ fi
 %changelog
 * Tue Apr 21 2020 Björn Esser <besser82@fedoraproject.org> - 3.0.1-3
 - Rebuild (json-c)
+- Disable selftests, as they seem to be flaky
 
 * Tue Mar 03 2020 Sandro Mani <manisandro@gmail.com> - 3.0.1-2
 - Rebuild (gdal)
