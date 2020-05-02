@@ -1,4 +1,4 @@
-%global proj_version 6.3.1
+%global proj_version 6.3.2
 %global datumgrid_version 1.8
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
@@ -143,6 +143,9 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 
 
 %changelog
+* Sat May 02 2020 Sandro Mani <manisandro@gmail.com> - 6.3.2-1
+- Update to 6.3.2
+
 * Tue Mar 03 2020 Sandro Mani <manisandro@gmail.com> - 6.3.1-3
 - Fix datumgrid require
 
