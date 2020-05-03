@@ -29,7 +29,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	%majorversion.1
-Release:	5%{?dist}
+Release:	6%{?dist}
 License:	GPLv2+
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
@@ -135,7 +135,7 @@ cp -p %{SOURCE2} .
 
 
 %build
-%configure %configure_opts --with-gui
+%configure %configure_opts --with-gui --with-pgconfig=%{_bindir}/pg_server_config
 sed -i 's| -fstack-clash-protection | |' postgis/Makefile
 sed -i 's| -fstack-clash-protection | |' raster/rt_pg/Makefile
 sed -i 's| -fstack-clash-protection | |' topology/Makefile
@@ -344,6 +344,9 @@ fi
 
 
 %changelog
+* Mon May 04 2020 Sandro Mani <manisandro@gmail.com> - 3.0.1-6
+- Pass --with-pgconfig=%%{_bindir}/pg_server_config
+
 * Sun May 03 2020 Sandro Mani <manisandro@gmail.com> - 3.0.1-5
 - Move postgis-upgrade to 2.5.4
 
