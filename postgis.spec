@@ -2,7 +2,7 @@
 %{!?utils:%global	utils 1}
 %{!?gcj_support:%global	gcj_support 0}
 %{!?upgrade:%global	upgrade 1}
-%{!?runselftest:%global	runselftest 0}
+%{!?runselftest:%global	runselftest 1}
 
 # rhbz#1503454
 %global _smp_mflags	-j1
