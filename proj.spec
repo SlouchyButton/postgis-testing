@@ -2,7 +2,7 @@
 %global datumgrid_version 1.8
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 3
+%global baserelease 4
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
@@ -69,7 +69,11 @@ tar xvf %{SOURCE1} -C nad | \
 
 
 %build
+%if 0%{?rhel} > 7
+%configure
+%else
 %configure --with-external-gtest
+%endif
 sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
 %make_build
@@ -143,6 +147,9 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 
 
 %changelog
+* Tue May 12 2020 Markus Neteler <neteler@mundialis.de> - 6.3.2-2
+- disable gtest external on EPEL8 due to compilation error
+
 * Sat May 02 2020 Sandro Mani <manisandro@gmail.com> - 6.3.2-1
 - Update to 6.3.2
 
