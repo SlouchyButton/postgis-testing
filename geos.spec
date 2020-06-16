@@ -1,6 +1,6 @@
 Name:          geos
 Version:       3.8.1
-Release:       1%{?dist}
+Release:       2%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
 License:       LGPLv2
@@ -13,6 +13,11 @@ Source1:       http://git.osgeo.org/gitea/geos/geos/raw/tag/%{version}/doc/check
 Patch1:        geos_libsuffix.patch
 # Install libgeos.so symlink (some packages still use the C++ API)
 Patch2:        geos_libgeos.patch
+# remove ttmath in favour of DD
+# backported from upstream: https://git.osgeo.org/gitea/geos/geos/commit/bed36f15
+# simplified to drop the rm diffs for easier rebasing
+# fixes https://bugzilla.redhat.com/show_bug.cgi?id=1841335
+Patch3:        geos_remove_ttmath.patch
 
 BuildRequires: cmake
 BuildRequires: doxygen
@@ -47,6 +52,9 @@ use GEOS.
 %prep
 %autosetup -p1
 cp -a %{SOURCE1} doc/check_doxygen_errors.cmake
+
+# Goes together with Patch3:
+rm -r include/geos/algorithm/ttmath
 
 
 %build
@@ -91,6 +99,9 @@ make test
 
 
 %changelog
+* Tue Jun 16 2020 Miro Hrončok <mhroncok@redhat.com> - 3.8.1-2
+- Remove ttmath in favour of DD (#1841335)
+
 * Wed Mar 11 2020 Sandro Mani <manisandro@gmail.com> - 3.8.1-1
 - Update to 3.8.1
 
