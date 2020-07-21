@@ -63,11 +63,11 @@ rm -r include/geos/algorithm/ttmath
   -DDISABLE_GEOS_INLINE=ON \
 %endif
   -DBUILD_DOCUMENTATION=ON
-%make_build
+%cmake_build
 
 
 %install
-%make_install
+%cmake_install
 make docs
 
 
