@@ -68,14 +68,14 @@ rm -r include/geos/algorithm/ttmath
 
 %install
 %cmake_install
-make docs
+make docs -C %{__cmake_builddir}
 
 
 %check
 %ifarch armv7hl aarch64 s390x ppc64le
-make test || :
+%ctest || :
 %else
-make test
+%ctest
 %endif
 
 
@@ -89,7 +89,7 @@ make test
 %{_libdir}/libgeos_c.so.1*
 
 %files devel
-%doc doc/doxygen_docs
+%doc %{__cmake_builddir}/doc/doxygen_docs
 %{_bindir}/geos-config
 %{_includedir}/geos/
 %{_includedir}/geos_c.h
