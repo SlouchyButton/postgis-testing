@@ -135,6 +135,9 @@ cp -p %{SOURCE2} .
 
 
 %build
+# Disable LTO for now, causes test failures
+%define _lto_cflags %{nil}
+
 %configure %configure_opts --with-gui --with-pgconfig=%{_bindir}/pg_server_config
 sed -i 's| -fstack-clash-protection | |' postgis/Makefile
 sed -i 's| -fstack-clash-protection | |' raster/rt_pg/Makefile
