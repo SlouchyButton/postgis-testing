@@ -37,6 +37,10 @@ Source3:	http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
 Source4:	filter-requires-perl-Pg.sh
 URL:		http://www.postgis.net
 
+# From debian
+# This should increase chances of tests passing even on busy or slow systems.
+Patch0:         relax-test-timing-constraints.patch
+
 BuildRequires:	perl-generators
 BuildRequires:	postgresql-server-devel >= %{pg_version_minimum}
 BuildRequires:	libpq-devel, json-c-devel, gcc-c++, pcre-devel, autoconf
@@ -123,7 +127,7 @@ necessary for correct dump of schema from previous version of PostgreSQL.
 
 
 %prep
-%setup -q -n %{name}-%{version} -a 3
+%autosetup -p1 -n %{name}-%{version} -a 3
 
 %if %upgrade
 (
