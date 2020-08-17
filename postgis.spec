@@ -18,7 +18,7 @@
 %global		majorversion 3.0
 %global		soversion 3
 %global		prevmajorversion 2.5
-%global		prevversion %{prevmajorversion}.4
+%global		prevversion %{prevmajorversion}.5
 %global		so_files	postgis postgis_topology rtpostgis address_standardizer
 %global		configure_opts	--disable-rpath --enable-raster
 
@@ -28,8 +28,8 @@
 
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
-Version:	%majorversion.1
-Release:	10%{?dist}
+Version:	%majorversion.2
+Release:	1%{?dist}
 License:	GPLv2+
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
@@ -351,6 +351,9 @@ fi
 
 
 %changelog
+* Mon Aug 17 2020 Sandro Mani <manisandro@gmail.com> - 3.0.2-1
+- Update to 3.0.2
+
 * Sat Aug 01 2020 Fedora Release Engineering <releng@fedoraproject.org> - 3.0.1-10
 - Second attempt - Rebuilt for
   https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild

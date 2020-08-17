@@ -1,23 +1,6 @@
-Description: Relax timing constraints for some tests.
- With a statement_timeout of 100ms, increase the allowed _timecheck interval
- from 200ms or 250ms to 750ms. This should increase chances of tests passing
- even on busy or slow systems.
-Author: Markus Wanner <markus@bluegap.ch>
-Forwarded: not-needed
-
---- a/regress/core/interrupt.sql
-+++ b/regress/core/interrupt.sql
-@@ -24,7 +24,7 @@ $$ LANGUAGE 'plpgsql' VOLATILE;
- SET statement_timeout TO 100;
- -- would run for many seconds if uninterruptible...
- SELECT ST_Segmentize(ST_MakeLine(ST_Point(4,39), ST_Point(1,41)), 1e-100);
--SELECT _timecheck('segmentize', '250ms');
-+SELECT _timecheck('segmentize', '750ms');
- SET statement_timeout TO 0;
- -- Not affected by old timeout
- SELECT '1',ST_AsText(ST_Segmentize('LINESTRING(0 0,4 0)'::geometry, 2));
---- a/regress/core/interrupt_buffer.sql
-+++ b/regress/core/interrupt_buffer.sql
+diff -rupN --no-dereference postgis-3.0.2/regress/core/interrupt_buffer.sql postgis-3.0.2-new/regress/core/interrupt_buffer.sql
+--- postgis-3.0.2/regress/core/interrupt_buffer.sql	2020-08-15 21:33:47.000000000 +0200
++++ postgis-3.0.2-new/regress/core/interrupt_buffer.sql	2020-08-17 10:32:17.196901029 +0200
 @@ -36,7 +36,7 @@ select ST_Buffer(g,100) from _inputs WHE
  --( select (st_dumppoints(st_buffer(st_makepoint(0,0),10000,100000))).geom g) foo;
  -- it may take some more to interrupt st_buffer, see
@@ -27,8 +10,9 @@ Forwarded: not-needed
  
  -- Not affected by old timeout
  SELECT '1', ST_NPoints(ST_Buffer('POINT(4 0)'::geometry, 2, 1));
---- a/regress/core/interrupt_relate.sql
-+++ b/regress/core/interrupt_relate.sql
+diff -rupN --no-dereference postgis-3.0.2/regress/core/interrupt_relate.sql postgis-3.0.2-new/regress/core/interrupt_relate.sql
+--- postgis-3.0.2/regress/core/interrupt_relate.sql	2020-08-15 21:33:47.000000000 +0200
++++ postgis-3.0.2-new/regress/core/interrupt_relate.sql	2020-08-17 10:32:17.196901029 +0200
 @@ -34,29 +34,29 @@ UPDATE _time SET t = now(); -- reset tim
  SET statement_timeout TO 100;
  
@@ -67,3 +51,15 @@ Forwarded: not-needed
 +SELECT _timecheck('relate', '750ms');
  
  DROP FUNCTION _timecheck(text, interval);
+diff -rupN --no-dereference postgis-3.0.2/regress/core/interrupt.sql postgis-3.0.2-new/regress/core/interrupt.sql
+--- postgis-3.0.2/regress/core/interrupt.sql	2020-08-15 21:33:47.000000000 +0200
++++ postgis-3.0.2-new/regress/core/interrupt.sql	2020-08-17 10:32:17.195901005 +0200
+@@ -24,7 +24,7 @@ $$ LANGUAGE 'plpgsql' VOLATILE;
+ SET statement_timeout TO 100;
+ -- would run for many seconds if uninterruptible...
+ SELECT ST_Segmentize(ST_MakeLine(ST_Point(4,39), ST_Point(1,41)), 1e-100);
+-SELECT _timecheck('segmentize', '250ms');
++SELECT _timecheck('segmentize', '750ms');
+ SET statement_timeout TO 0;
+ -- Not affected by old timeout
+ SELECT '1',ST_AsText(ST_Segmentize('LINESTRING(0 0,4 0)'::geometry, 2));
