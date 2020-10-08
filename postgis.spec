@@ -29,7 +29,7 @@
 Summary:	Geographic Information Systems Extensions to PostgreSQL
 Name:		postgis
 Version:	%majorversion.2
-Release:	1%{?dist}
+Release:	2%{?dist}
 License:	GPLv2+
 Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
 Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
@@ -139,9 +139,6 @@ cp -p %{SOURCE2} .
 
 
 %build
-# Disable LTO for now, causes test failures
-%define _lto_cflags %{nil}
-
 %configure %configure_opts --with-gui --with-pgconfig=%{_bindir}/pg_server_config
 sed -i 's| -fstack-clash-protection | |' postgis/Makefile
 sed -i 's| -fstack-clash-protection | |' raster/rt_pg/Makefile
@@ -351,6 +348,9 @@ fi
 
 
 %changelog
+* Thu Oct 08 2020 Jeff Law <law@redhat.com> - 3.0.2-2
+- Re-enable LTO
+
 * Mon Aug 17 2020 Sandro Mani <manisandro@gmail.com> - 3.0.2-1
 - Update to 3.0.2
 
