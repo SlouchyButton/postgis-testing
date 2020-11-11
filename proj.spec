@@ -2,7 +2,7 @@
 %global data_version 1.3
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 1
+%global baserelease 2
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
@@ -53,6 +53,7 @@ This package contains libproj and the appropriate header files and man pages.
 Summary:        Compat package for old proj-datumgrid-europe
 BuildArch:      noarch
 Obsoletes:      proj-datumgrid-europe < 1.6-3
+Provides:       deprecated()
 Requires:       proj-data-at
 Requires:       proj-data-be
 Requires:       proj-data-ch
@@ -81,6 +82,7 @@ Please do not depend on this package, it will get removed!
 Summary:        Compat package for old proj-datumgrid-north-america
 BuildArch:      noarch
 Obsoletes:      proj-datumgrid-north-america < 1.4-3
+Provides:       deprecated()
 Requires:       proj-data-ca
 Requires:       proj-data-us
 
@@ -95,6 +97,7 @@ Please do not depend on this package, it will get removed!
 Summary:        Compat package for old proj-datumgrid-oceania
 BuildArch:      noarch
 Obsoletes:      proj-datumgrid-oceania < 1.2-3
+Provides:       deprecated()
 Requires:       proj-data-au
 Requires:       proj-data-nc
 Requires:       proj-data-nz
@@ -110,6 +113,7 @@ Please do not depend on this package, it will get removed!
 Summary:        Compat package for old proj-datumgrid-world
 BuildArch:      noarch
 Obsoletes:      proj-datumgrid-world < 1.0-5
+Provides:       deprecated()
 Requires:       proj-data-br
 Requires:       proj-data-jp
 
@@ -227,6 +231,9 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 
 
 %changelog
+* Thu Nov 12 2020 Sandro Mani <manisandro@gmail.com> - 7.2.0-2
+- Add Provides: deprecated() to compat packages
+
 * Thu Nov 05 2020 Sandro Mani <manisandro@gmail.com> - 7.2.0-1
 - Update to 7.2.0
 
