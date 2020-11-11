@@ -32,6 +32,7 @@ BuildRequires:  make
 BuildRequires:  libtiff-devel
 BuildRequires:  sqlite-devel
 
+Obsoletes:      proj-datumgrid < 1.8-6.3.2.6
 
 %description
 Proj and invproj perform respective forward and inverse transformation of
