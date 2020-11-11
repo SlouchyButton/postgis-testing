@@ -1,29 +1,37 @@
-%global proj_version 6.3.2
-%global datumgrid_version 1.8
+%global proj_version 7.2.0
+%global data_version 1.3
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 5
+%global baserelease 1
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
 # to increment safely. Changing this can only be done during an update when the
 # base proj version number is increasing.
-%global datumgrid_release %{proj_version}.%{baserelease}%{?dist}
+%global data_release %{proj_version}.%{baserelease}%{?dist}
 
-Name:		proj
-Version:	%{proj_version}
-Release:	%{baserelease}%{?dist}
-Summary:	Cartographic projection software (PROJ)
+Name:           proj
+Version:        %{proj_version}
+Release:        %{baserelease}%{?dist}
+Summary:        Cartographic projection software (PROJ)
 
-License:	MIT
-URL:		https://proj.org
-Source0:	https://download.osgeo.org/%{name}/%{name}-%{version}.tar.gz
-Source1:	https://download.osgeo.org/%{name}/%{name}-datumgrid-%{datumgrid_version}.tar.gz
+License:        MIT
+URL:            https://proj.org
+Source0:        https://download.osgeo.org/%{name}/%{name}-%{version}.tar.gz
+Source1:        https://download.osgeo.org/%{name}/%{name}-data-%{data_version}.tar.gz
 
-BuildRequires:	gcc-c++ sqlite-devel
-BuildRequires:	gtest-devel >= 1.8.0
+# Ship a pkgconfig file
+Patch0:         proj_pkgconfig.patch
 
-Requires:	proj-datumgrid = %{datumgrid_version}-%{datumgrid_release}
+BuildRequires:  cmake
+BuildRequires:  curl-devel
+BuildRequires:  gcc-c++
+BuildRequires:  gmock-devel
+BuildRequires:  gtest-devel >= 1.8.0
+BuildRequires:  make
+BuildRequires:  libtiff-devel
+BuildRequires:  sqlite-devel
+
 
 %description
 Proj and invproj perform respective forward and inverse transformation of
@@ -32,87 +40,166 @@ projection functions.
 
 
 %package devel
-Summary:	Development files for PROJ
-Requires:	%{name}%{?_isa} = %{version}-%{release}
+Summary:        Development files for PROJ
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+Obsoletes:      %{name}-static < 7.2.0
 
 %description devel
 This package contains libproj and the appropriate header files and man pages.
 
 
-%package static
-Summary:	Development files for PROJ
-Requires:	%{name}-devel%{?_isa} = %{version}-%{release}
+%package data-europe
+Summary:        Compat package for old proj-datumgrid-europe
+BuildArch:      noarch
+Obsoletes:      proj-datumgrid-europe < 1.6-3
+Requires:       proj-data-at
+Requires:       proj-data-be
+Requires:       proj-data-ch
+Requires:       proj-data-de
+Requires:       proj-data-dk
+Requires:       proj-data-es
+Requires:       proj-data-eur
+Requires:       proj-data-fi
+Requires:       proj-data-fo
+Requires:       proj-data-fr
+Requires:       proj-data-is
+Requires:       proj-data-nl
+Requires:       proj-data-pt
+Requires:       proj-data-se
+Requires:       proj-data-sk
+Requires:       proj-data-uk
 
-%description static
-This package contains libproj static library.
+%description data-europe
+Compat package for old proj-datumgrid-europe.
+Please do not depend on this package, it will get removed!
+
+%files data-europe
 
 
-%package datumgrid
-Summary:	Additional datum shift grids for PROJ
-Version:	%{datumgrid_version}
-Release:        %{datumgrid_release}
-# See README.DATUMGRID
-License:	CC-BY and Freely Distributable and Ouverte and Public Domain
-BuildArch:	noarch
+%package data-north-america
+Summary:        Compat package for old proj-datumgrid-north-america
+BuildArch:      noarch
+Obsoletes:      proj-datumgrid-north-america < 1.4-3
+Requires:       proj-data-ca
+Requires:       proj-data-us
 
-%description datumgrid
-This package contains additional datum shift grids.
+%description data-north-america
+Compat package for old proj-datumgrid-north-america.
+Please do not depend on this package, it will get removed!
+
+%files data-north-america
+
+
+%package data-oceania
+Summary:        Compat package for old proj-datumgrid-oceania
+BuildArch:      noarch
+Obsoletes:      proj-datumgrid-oceania < 1.2-3
+Requires:       proj-data-au
+Requires:       proj-data-nc
+Requires:       proj-data-nz
+
+%description data-oceania
+Compat package for old proj-datumgrid-oceania.
+Please do not depend on this package, it will get removed!
+
+%files data-oceania
+
+
+%package data-world
+Summary:        Compat package for old proj-datumgrid-world
+BuildArch:      noarch
+Obsoletes:      proj-datumgrid-world < 1.0-5
+Requires:       proj-data-br
+Requires:       proj-data-jp
+
+%description data-world
+Compat package for old proj-datumgrid-world.
+Please do not depend on this package, it will get removed!
+
+%files data-world
+
+
+
+%define data_subpkg(c:n:e:s:) \
+%define countrycode %{-c:%{-c*}}%{!-c:%{error:Country code not defined}} \
+%define countryname %{-n:%{-n*}}%{!-n:%{error:Country name not defined}} \
+%define extrafile %{-e:%{_datadir}/%{name}/%{-e*}} \
+%define wildcard %{!-s:%{_datadir}/%{name}/%{countrycode}_*} \
+\
+%package data-%{countrycode}\
+Summary:      %{countryname} datum grids for Proj\
+BuildArch:    noarch\
+# See README.DATA \
+License:      CC-BY and MIT and BSD and Public Domain \
+Supplements:  proj\
+\
+%description data-%{countrycode}\
+%{countryname} datum grids for Proj.\
+\
+%files data-%{countrycode}\
+%{wildcard}\
+%{extrafile}
+
+
+%data_subpkg -c at -n Austria
+%data_subpkg -c au -n Australia
+%data_subpkg -c be -n Belgium
+%data_subpkg -c br -n Brasil
+%data_subpkg -c ca -n Canada
+%data_subpkg -c ch -n Switzerland
+%data_subpkg -c de -n Germany
+%data_subpkg -c dk -n Denmark -e DK
+%data_subpkg -c es -n Spain
+%data_subpkg -c eur -n %{quote:Nordic + Baltic} -e NKG
+%data_subpkg -c fi -n Finland
+%data_subpkg -c fo -n %{quote:Faroe Island} -e FO -s 1
+%data_subpkg -c fr -n France
+%data_subpkg -c is -n Island -e ISL
+%data_subpkg -c jp -n Japan
+%data_subpkg -c nc -n %{quote:New Caledonia}
+%data_subpkg -c nl -n Netherlands
+%data_subpkg -c nz -n %{quote:New Zealand}
+%data_subpkg -c pt -n Portugal
+%data_subpkg -c se -n Sweden
+%data_subpkg -c sk -n Slovakia
+%data_subpkg -c uk -n %{quote:United Kingdom}
+%data_subpkg -c us -n %{quote:United States}
 
 
 %prep
 %autosetup -p1
 
-# Prepare datumgrid and file list (in {datadir}/proj and README marked as doc)
-mkdir nad
-tar xvf %{SOURCE1} -C nad | \
-    sed -e 's!^!%{_datadir}/%{name}/!' -e '/README/s!^!%%doc !' > datumgrid.files
-
 
 %build
-%if 0%{?rhel} > 7
-%configure
-%else
-%configure --with-external-gtest
-%endif
-sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
-sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
-%make_build
+%cmake -DUSE_EXTERNAL_GTEST=ON
+%cmake_build
 
 
 %install
-%make_install
-chmod -x %{buildroot}%{_libdir}/libproj.la
-install -p -m 0644 nad/* %{buildroot}%{_datadir}/%{name}/
+%cmake_install
 
-# Install cmake config manually because we use autotools for building
-mkdir -p %{buildroot}%{_datadir}/cmake/Modules/
-
-cat << EOF > %{buildroot}%{_datadir}/cmake/Modules/FindPROJ4.cmake
-set(PROJ4_FOUND 1)
-set(PROJ4_INCLUDE_DIRS %{_includedir})
-set(PROJ4_LIBRARIES proj)
-if(\${LIB_SUFFIX} MATCHES 64)
-set(PROJ4_LIBRARY_DIRS /usr/lib64)
-else()
-set(PROJ4_LIBRARY_DIRS /usr/lib)
-endif()
-set(PROJ4_BINARY_DIRS %{_bindir})
-set(PROJ4_VERSION %{proj_version})
-message(STATUS "Found PROJ4: version \${PROJ4_VERSION}")
-EOF
+# Install data
+mkdir -p %{buildroot}%{_datadir}/%{name}
+tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 
 
 %check
-LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
-    make PROJ_LIB=%{buildroot}%{_datadir}/%{name} check || ( cat src/test-suite.log; exit 1 )
+%ctest
 
 
 %files
 %license COPYING
-%doc NEWS AUTHORS README ChangeLog
-%{_bindir}/*
+%doc NEWS AUTHORS README.md
+%{_bindir}/cct
+%{_bindir}/cs2cs
+%{_bindir}/geod
+%{_bindir}/gie
+%{_bindir}/proj
+%{_bindir}/projinfo
+%{_bindir}/projsync
+%{_libdir}/libproj.so.21*
+%{_libdir}/libproj.so.19
 %{_mandir}/man1/*.1*
-%{_libdir}/libproj.so.15*
 %dir %{_datadir}/%{name}
 %{_datadir}/%{name}/CH
 %{_datadir}/%{name}/GL27
@@ -122,31 +209,26 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} \
 %{_datadir}/%{name}/nad.lst
 %{_datadir}/%{name}/nad27
 %{_datadir}/%{name}/nad83
-%{_datadir}/%{name}/null
 %{_datadir}/%{name}/other.extra
 %{_datadir}/%{name}/proj.db
+%{_datadir}/%{name}/proj.ini
 %{_datadir}/%{name}/world
+%{_datadir}/%{name}/README.DATA
+%{_datadir}/%{name}/copyright_and_licenses.csv
 
 %files devel
-%{_mandir}/man3/*.3*
 %{_includedir}/*.h
 %{_includedir}/proj/
-%{_datadir}/proj/projjson.schema.json
 %{_libdir}/libproj.so
+%{_libdir}/cmake/proj/
+%{_libdir}/cmake/proj4/
 %{_libdir}/pkgconfig/%{name}.pc
-%{_datadir}/cmake/Modules/FindPROJ4.cmake
-%exclude %{_libdir}/libproj.a
-%exclude %{_libdir}/libproj.la
-
-%files static
-%{_libdir}/libproj.a
-%{_libdir}/libproj.la
-
-%files datumgrid -f datumgrid.files
-%dir %{_datadir}/%{name}
 
 
 %changelog
+* Thu Nov 05 2020 Sandro Mani <manisandro@gmail.com> - 7.2.0-1
+- Update to 7.2.0
+
 * Tue Jul 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 6.3.2-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 
