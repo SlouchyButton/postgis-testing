@@ -1,60 +1,50 @@
-%{!?javabuild:%global	javabuild 0}
-%{!?utils:%global	utils 1}
-%{!?gcj_support:%global	gcj_support 0}
-%{!?upgrade:%global	upgrade 1}
-%{!?runselftest:%global	runselftest 1}
+%{!?javabuild:%global javabuild 0}
+%{!?utils:%global utils 1}
+%{!?gcj_support:%global gcj_support 0}
+%{!?upgrade:%global upgrade 1}
+%{!?runselftest:%global runselftest 1}
 
-# rhbz#1503454
-%global _smp_mflags	-j1
+%global        majorversion 3.0
+%global        soversion 3
+%global        prevmajorversion 2.5
+%global        prevversion %{prevmajorversion}.5
+%global        so_files postgis postgis_topology rtpostgis address_standardizer
+%global        configure_opts --disable-rpath --enable-raster
 
-%ifarch s390x
-# rhbz#1503476
-%undefine	_hardened_build
-%endif
-%if 0%{?fedora} == 26
-%undefine	_hardened_build
-%endif
+%global        __provides_exclude_from %{_libdir}/pgsql
 
-%global		majorversion 3.0
-%global		soversion 3
-%global		prevmajorversion 2.5
-%global		prevversion %{prevmajorversion}.5
-%global		so_files	postgis postgis_topology rtpostgis address_standardizer
-%global		configure_opts	--disable-rpath --enable-raster
+Name:          postgis
+Version:       %majorversion.2
+Release:       3%{?commit:.git%shortcommit}%{?dist}
+Summary:       Geographic Information Systems Extensions to PostgreSQL
+License:       GPLv2+
 
-%global		pg_version_minimum 9.4
-
-%global		__provides_exclude_from %{_libdir}/pgsql
-
-Summary:	Geographic Information Systems Extensions to PostgreSQL
-Name:		postgis
-Version:	%majorversion.2
-Release:	2%{?dist}
-License:	GPLv2+
-Source0:	http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
-Source2:	http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
-Source3:	http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
-Source4:	filter-requires-perl-Pg.sh
-URL:		http://www.postgis.net
+URL:           http://www.postgis.net
+Source0:       http://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
+Source2:       http://download.osgeo.org/%{name}/docs/%{name}-%{version}.pdf
+Source3:       http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
 
 # From debian
 # This should increase chances of tests passing even on busy or slow systems.
-Patch0:         relax-test-timing-constraints.patch
+Patch0:        relax-test-timing-constraints.patch
+# rt_gdalwarp: Disable test that change under GDAL 3.1
+# https://github.com/postgis/postgis/commit/28d3e83bcb1820bb4752d38530cd319c9424003e
+Patch1:        postgis-disable-rt_gdalwarp.patch
 
-BuildRequires:	perl-generators
-BuildRequires:	postgresql-server-devel >= %{pg_version_minimum}
-BuildRequires:	libpq-devel, json-c-devel, gcc-c++, pcre-devel, autoconf
-BuildRequires:	proj-devel >= 5.2.0, geos-devel >= 3.7.1 byacc, automake
-BuildRequires:	flex, java, java-devel, gtk2-devel, ant, libtool
-BuildRequires:	libxml2-devel, gdal-devel >= 1.10.0, desktop-file-utils
-BuildRequires:  clang llvm
-BuildRequires:  libxslt docbook-dtds
+BuildRequires: perl-generators
+BuildRequires: postgresql-server-devel
+BuildRequires: libpq-devel, json-c-devel, gcc-c++, pcre-devel, autoconf
+BuildRequires: proj-devel >= 5.2.0, geos-devel >= 3.7.1 byacc, automake
+BuildRequires: flex, java, java-devel, gtk2-devel, ant, libtool
+BuildRequires: libxml2-devel, gdal-devel >= 1.10.0, desktop-file-utils
+BuildRequires: clang llvm
+BuildRequires: libxslt docbook-dtds
 %if %upgrade
-BuildRequires:	postgresql-upgrade-devel
+BuildRequires: postgresql-upgrade-devel
 %endif
 %{?postgresql_module_requires}
 %if %runselftest
-BuildRequires:	postgresql-test-rpm-macros
+BuildRequires: postgresql-test-rpm-macros
 %endif
 
 
@@ -68,31 +58,35 @@ certified as compliant with the "Types and Functions" profile.
 
 
 %package llvmjit
-Summary:	Just-in-time compilation support for PostGIS
-Requires:	%{name}%{?_isa} = %{version}-%{release}
+Summary:       Just-in-time compilation support for PostGIS
+Requires:      %{name}%{?_isa} = %{version}-%{release}
 
 %description llvmjit
 Just-in-time compilation support for PostGIS.
 
 
 %package docs
-Summary:	Extra documentation for PostGIS
+Summary:       Extra documentation for PostGIS
+
 %description docs
 The postgis-docs package includes PDF documentation of PostGIS.
 
 
 %if %javabuild
 %package jdbc
-Summary:	The JDBC driver for PostGIS
-License:	LGPLv2+
-Requires:	%{name} = %{version}-%{release}, postgresql-jdbc
-BuildRequires:	ant >= 0:1.6.2, junit >= 0:3.7, postgresql-jdbc
+Summary:       The JDBC driver for PostGIS
+License:       LGPLv2+
+Requires:      %{name}%{?_isa} = %{version}-%{release}
+Requires:      postgresql-jdbc
+BuildRequires: ant >= 0:1.6.2
+BuildRequires: junit >= 0:3.7
+BuildRequires: postgresql-jdbc
 
 %if %{gcj_support}
-BuildRequires:		gcc-java
-BuildRequires:		java-1.5.0-gcj-devel
-Requires(post):		%{_bindir}/rebuild-gcj-db
-Requires(postun):	%{_bindir}/rebuild-gcj-db
+BuildRequires: gcc-java
+BuildRequires: java-1.5.0-gcj-devel
+Requires(post): %{_bindir}/rebuild-gcj-db
+Requires(postun): %{_bindir}/rebuild-gcj-db
 %endif
 
 %description jdbc
@@ -102,9 +96,9 @@ The postgis-jdbc package provides the essential jdbc driver for PostGIS.
 
 %if %utils
 %package utils
-Summary:	The utils for PostGIS
-Requires:	%{name}%{?_isa} = %{version}-%{release}
-Requires:	perl-DBD-Pg
+Summary:       The utils for PostGIS
+Requires:      %{name}%{?_isa} = %{version}-%{release}
+Requires:      perl-DBD-Pg
 
 %description utils
 The postgis-utils package provides the utilities for PostGIS.
@@ -113,17 +107,15 @@ The postgis-utils package provides the utilities for PostGIS.
 
 %if %upgrade
 %package upgrade
-Summary:	Support for upgrading from the previous major release of Postgis
-Requires:	%{name}%{?_isa} = %{version}-%{release}
-Requires:	postgresql-upgrade
-Provides:	bundled(postgis) = %prevversion
+Summary:       Support for upgrading from the previous major release of Postgis
+Requires:      %{name}%{?_isa} = %{version}-%{release}
+Requires:      postgresql-upgrade
+Provides:      bundled(postgis) = %prevversion
 
 %description upgrade
 The postgis-upgrade package contains the previous version of postgis
 necessary for correct dump of schema from previous version of PostgreSQL.
 %endif
-
-%define __perl_requires %{SOURCE4}
 
 
 %prep
@@ -146,7 +138,7 @@ sed -i 's| -fstack-clash-protection | |' topology/Makefile
 sed -i 's| -fstack-clash-protection | |' extensions/address_standardizer/Makefile
 sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
-make %{?_smp_mflags}
+%make_build
 
 %if %javabuild
 export BUILDXML_DIR=%{_builddir}/%{name}-%{version}/java/jdbc
@@ -159,7 +151,7 @@ popd
 %endif
 
 %if %utils
-make %{?_smp_mflags} -C utils
+%make_build -C utils
 %endif
 
 %if %upgrade
@@ -174,7 +166,7 @@ sed -i 's| -fstack-clash-protection | |' postgis/Makefile
 sed -i 's| -fstack-clash-protection | |' raster/rt_pg/Makefile
 sed -i 's| -fstack-clash-protection | |' topology/Makefile
 sed -i 's| -fstack-clash-protection | |' extensions/address_standardizer/Makefile
-make %{?_smp_mflags}
+%make_build
 mkdir ../compat-build
 for so in %so_files; do
     find -name $so.so -exec cp {} ../compat-build/$so-%{prevmajorversion}.so \;
@@ -193,24 +185,22 @@ sed -i 's| -fstack-clash-protection | |' postgis/Makefile
 sed -i 's| -fstack-clash-protection | |' raster/rt_pg/Makefile
 sed -i 's| -fstack-clash-protection | |' topology/Makefile
 sed -i 's| -fstack-clash-protection | |' extensions/address_standardizer/Makefile
-make %{?_smp_mflags}
+%make_build
 )
 %endif
 
 
 %install
-make install DESTDIR=%{buildroot}
-make %{?_smp_mflags}  -C utils install DESTDIR=%{buildroot}
-make %{?_smp_mflags}  -C extensions install DESTDIR=%{buildroot}
+%make_install
+%make_install -C utils
+%make_install -C extensions
 
 # move application metadata to correct location
 mv %{buildroot}/%{_datadir}/pgsql/applications %{buildroot}/%{_datadir}
 mv %{buildroot}/%{_datadir}/pgsql/icons %{buildroot}/%{_datadir}
 
 %if %upgrade
-cd %{name}-%{prevversion}
-make install DESTDIR=%{buildroot}
-cd ..
+(cd %{name}-%{prevversion} && %make_install)
 
 # drop unused stuff from upgrade-only installation
 /bin/rm -rf %buildroot%postgresql_upgrade_prefix/bin
@@ -251,10 +241,6 @@ if ! LD_LIBRARY_PATH=%{buildroot}%_libdir make check %{_smp_mflags} ; then
 	echo "== $file =="
 	cat "$file"
     done
-%ifnarch %ix86 ppc64 s390x
-    # rhbz#1503453
-    false
-%endif
 fi
 %endif
 
@@ -270,12 +256,9 @@ fi
 %files
 %license COPYING
 %doc CREDITS NEWS TODO README.%{name} loader/README.* doc/%{name}.xml doc/ZMSgeoms.txt
-%attr(755,root,root) %{_bindir}/*
-%attr(755,root,root) %{_libdir}/pgsql/%{name}-%{soversion}.so
+%{_bindir}/*
+%{_libdir}/pgsql/%{name}-%{soversion}.so
 %{_datadir}/pgsql/contrib/postgis-%{majorversion}/*.sql
-#if {_lib} == lib64
-#{_datadir}/pgsql/contrib/postgis*.sql
-#endif
 %{_datadir}/pgsql/extension/address_standardizer*.sql
 %{_datadir}/pgsql/extension/address_standardizer*.control
 %{_datadir}/pgsql/extension/postgis-*.sql
@@ -307,8 +290,9 @@ fi
 
 %if %javabuild
 %files jdbc
-%doc java/jdbc/COPYING_LGPL java/jdbc/README
-%attr(755,root,root) %{_javadir}/%{name}.jar
+%license java/jdbc/COPYING_LGPL
+%doc java/jdbc/README
+%{_javadir}/%{name}.jar
 %if %{gcj_support}
 %dir %{_libdir}/gcj/%{name}
 %{_libdir}/gcj/%{name}/*.jar.so
@@ -348,6 +332,10 @@ fi
 
 
 %changelog
+* Wed Nov 11 2020 Sandro Mani <manisandro@gmail.com> - 3.0.2-3
+- Rebuild (proj, gdal)
+- Cleanup spec
+
 * Thu Oct 08 2020 Jeff Law <law@redhat.com> - 3.0.2-2
 - Re-enable LTO
 
