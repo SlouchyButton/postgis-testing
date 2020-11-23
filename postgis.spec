@@ -14,8 +14,8 @@
 %global        __provides_exclude_from %{_libdir}/pgsql
 
 Name:          postgis
-Version:       %majorversion.2
-Release:       3%{?commit:.git%shortcommit}%{?dist}
+Version:       %majorversion.3
+Release:       1%{?commit:.git%shortcommit}%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
 
@@ -27,9 +27,6 @@ Source3:       http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.t
 # From debian
 # This should increase chances of tests passing even on busy or slow systems.
 Patch0:        relax-test-timing-constraints.patch
-# rt_gdalwarp: Disable test that change under GDAL 3.1
-# https://github.com/postgis/postgis/commit/28d3e83bcb1820bb4752d38530cd319c9424003e
-Patch1:        postgis-disable-rt_gdalwarp.patch
 
 BuildRequires: perl-generators
 BuildRequires: postgresql-server-devel
@@ -332,6 +329,9 @@ fi
 
 
 %changelog
+* Mon Nov 23 2020 Sandro Mani <manisandro@gmail.com> - 3.0.3-1
+- Update to 3.0.3
+
 * Wed Nov 11 2020 Sandro Mani <manisandro@gmail.com> - 3.0.2-3
 - Rebuild (proj, gdal)
 - Cleanup spec
