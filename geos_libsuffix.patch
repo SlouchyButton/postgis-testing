@@ -1,13 +1,13 @@
-diff -rupN --no-dereference geos-3.8.1/CMakeLists.txt geos-3.8.1-new/CMakeLists.txt
---- geos-3.8.1/CMakeLists.txt	2020-01-05 17:44:53.000000000 +0100
-+++ geos-3.8.1-new/CMakeLists.txt	2020-03-11 14:56:49.760174088 +0100
-@@ -281,16 +281,16 @@ configure_file(cmake/geos-config.cmake
+diff -rupN --no-dereference geos-3.9.0/CMakeLists.txt geos-3.9.0-new/CMakeLists.txt
+--- geos-3.9.0/CMakeLists.txt	2020-12-09 01:07:19.000000000 +0100
++++ geos-3.9.0-new/CMakeLists.txt	2020-12-10 12:23:21.466732306 +0100
+@@ -300,16 +300,16 @@ configure_file(cmake/geos-config.cmake
  
  install(TARGETS geos geos_cxx_flags
    EXPORT geos-targets
--  LIBRARY DESTINATION lib NAMELINK_SKIP
+-  LIBRARY DESTINATION lib
 -  ARCHIVE DESTINATION lib
-+  LIBRARY DESTINATION lib${LIB_SUFFIX} NAMELINK_SKIP
++  LIBRARY DESTINATION lib${LIB_SUFFIX}
 +  ARCHIVE DESTINATION lib${LIB_SUFFIX}
    RUNTIME DESTINATION bin
    INCLUDES DESTINATION include
@@ -22,7 +22,7 @@ diff -rupN --no-dereference geos-3.8.1/CMakeLists.txt geos-3.8.1-new/CMakeLists.
    RUNTIME DESTINATION bin
    INCLUDES DESTINATION include
    )
-@@ -298,12 +298,12 @@ install(TARGETS geos_c
+@@ -317,12 +317,12 @@ install(TARGETS geos_c
  install(EXPORT geos-targets
    FILE geos-targets.cmake
    NAMESPACE GEOS::
@@ -37,44 +37,27 @@ diff -rupN --no-dereference geos-3.8.1/CMakeLists.txt geos-3.8.1-new/CMakeLists.
  install(DIRECTORY
    "${CMAKE_CURRENT_LIST_DIR}/include/geos"
    "${CMAKE_CURRENT_BINARY_DIR}/include/geos"
-diff -rupN --no-dereference geos-3.8.1/tools/geos-config.cmake geos-3.8.1-new/tools/geos-config.cmake
---- geos-3.8.1/tools/geos-config.cmake	2019-10-29 23:44:33.000000000 +0100
-+++ geos-3.8.1-new/tools/geos-config.cmake	2020-03-11 14:56:49.760174088 +0100
-@@ -2,7 +2,7 @@
+diff -rupN --no-dereference geos-3.9.0/tools/CMakeLists.txt geos-3.9.0-new/tools/CMakeLists.txt
+--- geos-3.9.0/tools/CMakeLists.txt	2020-11-30 20:08:53.000000000 +0100
++++ geos-3.9.0-new/tools/CMakeLists.txt	2020-12-10 12:23:21.466732306 +0100
+@@ -36,7 +36,7 @@ if(NOT MSVC)
  
- prefix=@CMAKE_INSTALL_PREFIX@
- exec_prefix=@CMAKE_INSTALL_PREFIX@/bin
--libdir=@CMAKE_INSTALL_PREFIX@/lib
-+libdir=@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@@LIB_SUFFIX@
+   install(FILES
+     ${CMAKE_CURRENT_BINARY_DIR}/geos.pc
+-    DESTINATION lib/pkgconfig)
++    DESTINATION lib${LIB_SUFFIX}/pkgconfig)
+ 
+ endif()
+ 
+diff -rupN --no-dereference geos-3.9.0/tools/geos-config.cmake geos-3.9.0-new/tools/geos-config.cmake
+--- geos-3.9.0/tools/geos-config.cmake	2020-11-30 20:08:53.000000000 +0100
++++ geos-3.9.0-new/tools/geos-config.cmake	2020-12-10 12:23:21.466732306 +0100
+@@ -1,7 +1,7 @@
+ #!/bin/sh
+ 
+ prefix=@ESCAPED_INSTALL_PREFIX@
+-libdir=${prefix}/lib
++libdir=${prefix}/lib@LIB_SUFFIX
  
  usage()
  {
-@@ -44,22 +44,22 @@ case $1 in
-       echo -I@CMAKE_INSTALL_PREFIX@/include
-       ;;
-     --libs)
--      echo -L@CMAKE_INSTALL_PREFIX@/lib -lgeos-@GEOS_VERSION_MAJOR@
-+      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos-@GEOS_VERSION_MAJOR@
-       ;;
-     --clibs)
--      echo -L@CMAKE_INSTALL_PREFIX@/lib -lgeos_c
-+      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos_c
-       ;;
-     --cclibs)
--      echo -L@CMAKE_INSTALL_PREFIX@/lib -lgeos
-+      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos
-       ;;
-     --static-clibs)
--      echo -L@CMAKE_INSTALL_PREFIX@/lib -lgeos_c -lgeos -lm
-+      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos_c -lgeos -lm
-       ;;
-     --static-cclibs)
--      echo -L@CMAKE_INSTALL_PREFIX@/lib -lgeos -lm
-+      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@ -lgeos -lm
-       ;;
-     --ldflags)
--      echo -L@CMAKE_INSTALL_PREFIX@/lib 
-+      echo -L@CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@
-       ;;
-     --includes)
-       echo @CMAKE_INSTALL_PREFIX@/include

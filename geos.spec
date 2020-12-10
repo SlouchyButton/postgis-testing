@@ -1,6 +1,6 @@
 Name:          geos
-Version:       3.8.1
-Release:       3%{?dist}
+Version:       3.9.0
+Release:       1%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
 License:       LGPLv2
@@ -11,13 +11,6 @@ Source1:       http://git.osgeo.org/gitea/geos/geos/raw/tag/%{version}/doc/check
 
 # Honour libsuffix
 Patch1:        geos_libsuffix.patch
-# Install libgeos.so symlink (some packages still use the C++ API)
-Patch2:        geos_libgeos.patch
-# remove ttmath in favour of DD
-# backported from upstream: https://git.osgeo.org/gitea/geos/geos/commit/bed36f15
-# simplified to drop the rm diffs for easier rebasing
-# fixes https://bugzilla.redhat.com/show_bug.cgi?id=1841335
-Patch3:        geos_remove_ttmath.patch
 
 BuildRequires: cmake
 BuildRequires: doxygen
@@ -53,16 +46,13 @@ use GEOS.
 %autosetup -p1
 cp -a %{SOURCE1} doc/check_doxygen_errors.cmake
 
-# Goes together with Patch3:
-rm -r include/geos/algorithm/ttmath
-
 
 %build
 %cmake \
-%ifarch armv7hl aarch64 s390x
-  -DDISABLE_GEOS_INLINE=ON \
+%ifarch armv7hl
+    -DDISABLE_GEOS_INLINE=ON \
 %endif
-  -DBUILD_DOCUMENTATION=ON
+    -DBUILD_DOCUMENTATION=ON
 %cmake_build
 
 
@@ -72,11 +62,7 @@ make docs -C %{__cmake_builddir}
 
 
 %check
-%ifarch armv7hl aarch64 s390x ppc64le
-%ctest || :
-%else
 %ctest
-%endif
 
 
 %ldconfig_scriptlets
@@ -85,7 +71,7 @@ make docs -C %{__cmake_builddir}
 %files
 %doc AUTHORS NEWS README.md
 %license COPYING
-%{_libdir}/libgeos.so.%{version}
+%{_libdir}/libgeos.so.3.9.0
 %{_libdir}/libgeos_c.so.1*
 
 %files devel
@@ -96,9 +82,13 @@ make docs -C %{__cmake_builddir}
 %{_libdir}/libgeos_c.so
 %{_libdir}/libgeos.so
 %{_libdir}/cmake/GEOS/
+%{_libdir}/pkgconfig/%{name}.pc
 
 
 %changelog
+* Thu Dec 10 2020 Sandro Mani <manisandro@gmail.com> - 3.9.0-1
+- Update to 3.9.0
+
 * Mon Jul 27 2020 Fedora Release Engineering <releng@fedoraproject.org> - 3.8.1-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 
