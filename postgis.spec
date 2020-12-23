@@ -4,7 +4,7 @@
 %{!?upgrade:%global upgrade 1}
 %{!?runselftest:%global runselftest 1}
 
-%global        majorversion 3.0
+%global        majorversion 3.1
 %global        soversion 3
 %global        prevmajorversion 2.5
 %global        prevversion %{prevmajorversion}.5
@@ -14,7 +14,7 @@
 %global        __provides_exclude_from %{_libdir}/pgsql
 
 Name:          postgis
-Version:       %majorversion.3
+Version:       %majorversion.0
 Release:       1%{?commit:.git%shortcommit}%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
@@ -28,14 +28,28 @@ Source3:       http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.t
 # This should increase chances of tests passing even on busy or slow systems.
 Patch0:        relax-test-timing-constraints.patch
 
+BuildRequires: autoconf
+BuildRequires: automake
+BuildRequires: byacc
+BuildRequires: clang
+BuildRequires: desktop-file-utils
+BuildRequires: docbook-dtds
+BuildRequires: flex
+BuildRequires: gcc-c++
+BuildRequires: gdal-devel >= 1.10.0
+BuildRequires: geos-devel >= 3.7.1
+BuildRequires: gtk2-devel
+BuildRequires: json-c-devel
+BuildRequires: libpq-devel
+BuildRequires: libtool
+BuildRequires: libxml2-devel
+BuildRequires: libxslt
+BuildRequires: llvm
+BuildRequires: pcre-devel
 BuildRequires: perl-generators
 BuildRequires: postgresql-server-devel
-BuildRequires: libpq-devel, json-c-devel, gcc-c++, pcre-devel, autoconf
-BuildRequires: proj-devel >= 5.2.0, geos-devel >= 3.7.1 byacc, automake
-BuildRequires: flex, java, java-devel, gtk2-devel, ant, libtool
-BuildRequires: libxml2-devel, gdal-devel >= 1.10.0, desktop-file-utils
-BuildRequires: clang llvm
-BuildRequires: libxslt docbook-dtds
+BuildRequires: proj-devel >= 5.2.0
+BuildRequires: protobuf-c-devel
 %if %upgrade
 BuildRequires: postgresql-upgrade-devel
 %endif
@@ -76,6 +90,7 @@ License:       LGPLv2+
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 Requires:      postgresql-jdbc
 BuildRequires: ant >= 0:1.6.2
+BuildRequires: java-devel
 BuildRequires: junit >= 0:3.7
 BuildRequires: postgresql-jdbc
 
@@ -269,7 +284,6 @@ fi
 %{_datadir}/postgis/create_unpackaged.pl
 %{_datadir}/postgis/create_spatial_ref_sys_config_dump.pl
 %{_datadir}/postgis/repo_revision.pl
-%{_datadir}/postgis/postgis_proc_set_search_path.pl
 %{_libdir}/pgsql/address_standardizer-%{soversion}.so
 %{_libdir}/pgsql/postgis_raster-%{soversion}.so
 %{_libdir}/pgsql/postgis_topology-%{soversion}.so
@@ -329,6 +343,9 @@ fi
 
 
 %changelog
+* Sat Dec 19 2020 Sandro Mani <manisandro@gmail.com> - 3.1.0-1
+- Update to 3.1.0
+
 * Mon Nov 23 2020 Sandro Mani <manisandro@gmail.com> - 3.0.3-1
 - Update to 3.0.3
 
