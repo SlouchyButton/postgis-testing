@@ -1,8 +1,8 @@
-%global proj_version 7.2.0
-%global data_version 1.3
+%global proj_version 7.2.1
+%global data_version 1.4
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 2
+%global baserelease 1
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
@@ -11,6 +11,7 @@
 %global data_release %{proj_version}.%{baserelease}%{?dist}
 
 Name:           proj
+# Also check whether there is a new proj-data release when upgrading!
 Version:        %{proj_version}
 Release:        %{baserelease}%{?dist}
 Summary:        Cartographic projection software (PROJ)
@@ -220,6 +221,9 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 %{_datadir}/%{name}/world
 %{_datadir}/%{name}/README.DATA
 %{_datadir}/%{name}/copyright_and_licenses.csv
+%{_datadir}/%{name}/deformation_model.schema.json
+%{_datadir}/%{name}/projjson.schema.json
+%{_datadir}/%{name}/triangulation.schema.json
 
 %files devel
 %{_includedir}/*.h
@@ -231,6 +235,9 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 
 
 %changelog
+* Sun Jan 03 2021 Sandro Mani <manisandro@gmail.com> - 7.2.1-1
+- Update to 7.2.1
+
 * Thu Nov 12 2020 Sandro Mani <manisandro@gmail.com> - 7.2.0-2
 - Add Provides: deprecated() to compat packages
 
