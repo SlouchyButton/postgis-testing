@@ -28,6 +28,7 @@ Source3:       http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.t
 # This should increase chances of tests passing even on busy or slow systems.
 Patch0:        relax-test-timing-constraints.patch
 
+BuildRequires: make
 BuildRequires: autoconf
 BuildRequires: automake
 BuildRequires: byacc
