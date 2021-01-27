@@ -15,7 +15,7 @@
 
 Name:          postgis
 Version:       %majorversion.0
-Release:       2%{?commit:.git%shortcommit}%{?dist}
+Release:       3%{?commit:.git%shortcommit}%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
 
@@ -344,6 +344,9 @@ fi
 
 
 %changelog
+* Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 3.1.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+
 * Wed Jan 13 16:41:55 CET 2021 Adrian Reber <adrian@lisas.de> - 3.1.0-2
 - Rebuilt for protobuf 3.14
 
