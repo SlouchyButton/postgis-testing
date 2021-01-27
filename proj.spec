@@ -2,7 +2,7 @@
 %global data_version 1.4
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 1
+%global baserelease 2
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
@@ -235,6 +235,9 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 
 
 %changelog
+* Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 7.2.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+
 * Sun Jan 03 2021 Sandro Mani <manisandro@gmail.com> - 7.2.1-1
 - Update to 7.2.1
 
