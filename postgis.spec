@@ -15,7 +15,7 @@
 
 Name:          postgis
 Version:       %majorversion.1
-Release:       1%{?commit:.git%shortcommit}%{?dist}
+Release:       2%{?commit:.git%shortcommit}%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
 
@@ -344,6 +344,9 @@ fi
 
 
 %changelog
+* Mon Feb 08 2021 Pavel Raiskup <praiskup@redhat.com> - 3.1.1-2
+- rebuild for libpq ABI fix rhbz#1908268
+
 * Fri Jan 29 2021 Sandro Mani <manisandro@gmail.com> - 3.1.1-1
 - Update to 3.1.1
 
