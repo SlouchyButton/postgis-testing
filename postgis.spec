@@ -15,7 +15,7 @@
 
 Name:          postgis
 Version:       %majorversion.1
-Release:       2%{?commit:.git%shortcommit}%{?dist}
+Release:       3%{?commit:.git%shortcommit}%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
 
@@ -120,13 +120,14 @@ The postgis-utils package provides the utilities for PostGIS.
 
 %if %upgrade
 %package upgrade
-Summary:       Support for upgrading from the previous major release of Postgis
+Summary:       Support for upgrading Postgis
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 Requires:      postgresql-upgrade
 Provides:      bundled(postgis) = %prevversion
 
 %description upgrade
-The postgis-upgrade package contains the previous version of postgis
+The postgis-upgrade package contains the previous version of Postgis as well as
+the current version of Postgis built against the previous version of PostgreSQL
 necessary for correct dump of schema from previous version of PostgreSQL.
 %endif
 
@@ -135,10 +136,17 @@ necessary for correct dump of schema from previous version of PostgreSQL.
 %autosetup -p1 -n %{name}-%{version} -a 3
 
 %if %upgrade
+# postgis-upgrade
 (
 cd %{name}-%{prevversion}
 ./autogen.sh
 )
+tar xf %{SOURCE0}
+(
+cd %{name}-%{version}
+./autogen.sh
+)
+
 %endif
 cp -p %{SOURCE2} .
 
@@ -170,10 +178,28 @@ popd
 %if %upgrade
 (
 # TODO: report that out-of-tree (VPATH) build is broken
+cd %{name}-%{version}
+
+# Build current Postgis version against the previous PostgreSQL version.  We need only the so names.
+# We intentionally don't use %%configure here since there is too many
+# pre-defined directories, and not everything from postgis-%%prevversion
+# directory respects the `pg_config` output (liblwgeom especially).
+./configure %configure_opts \
+	--with-pgconfig=%postgresql_upgrade_prefix/bin/pg_config \
+	--libdir=%postgresql_upgrade_prefix/lib \
+	--includedir=%postgresql_upgrade_prefix/include
+sed -i 's| -fstack-clash-protection | |' postgis/Makefile
+sed -i 's| -fstack-clash-protection | |' raster/rt_pg/Makefile
+sed -i 's| -fstack-clash-protection | |' topology/Makefile
+sed -i 's| -fstack-clash-protection | |' extensions/address_standardizer/Makefile
+%make_build
+)
+
+(
+# TODO: report that out-of-tree (VPATH) build is broken
 cd %{name}-%{prevversion}
 
-# first perform compat-build (against the actual PostgreSQL version).  We need
-# only the so names.
+# Build previous Postgis version against the current PostgreSQL version.  We need only the so names.
 %configure %configure_opts
 sed -i 's| -fstack-clash-protection | |' postgis/Makefile
 sed -i 's| -fstack-clash-protection | |' raster/rt_pg/Makefile
@@ -186,10 +212,10 @@ for so in %so_files; do
     find -name $so-%{prevmajorversion}.so -exec cp -t ../compat-build/ {} +
 done
 
-# Second, build feature-full build against previous PostgreSQL version.  We
-# intentionally don't use %%configure here since there is too many pre-defined
-# directories, and not everything from postgis-%%prevversion directory respects
-# the `pg_config` output (liblwgeom especially).
+# Full build of previous Postgis version against previous PostgreSQL version
+# We intentionally don't use %%configure here since there is too many
+# pre-defined directories, and not everything from postgis-%%prevversion
+# directory respects the `pg_config` output (liblwgeom especially).
 ./configure %configure_opts \
 	--with-pgconfig=%postgresql_upgrade_prefix/bin/pg_config \
 	--libdir=%postgresql_upgrade_prefix/lib \
@@ -213,6 +239,7 @@ mv %{buildroot}/%{_datadir}/pgsql/applications %{buildroot}/%{_datadir}
 mv %{buildroot}/%{_datadir}/pgsql/icons %{buildroot}/%{_datadir}
 
 %if %upgrade
+(cd %{name}-%{version} && %make_install)
 (cd %{name}-%{prevversion} && %make_install)
 
 # drop unused stuff from upgrade-only installation
@@ -344,6 +371,10 @@ fi
 
 
 %changelog
+* Tue Feb 09 2021 Sandro Mani <manisandro@gmail.com> - 3.1.1-3
+- Also ship current version of Postgis against previous version of PostgreSQL in
+  postgis-upgrade
+
 * Mon Feb 08 2021 Pavel Raiskup <praiskup@redhat.com> - 3.1.1-2
 - rebuild for libpq ABI fix rhbz#1908268
 
