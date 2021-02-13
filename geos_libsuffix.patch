@@ -1,7 +1,7 @@
-diff -rupN --no-dereference geos-3.9.0/CMakeLists.txt geos-3.9.0-new/CMakeLists.txt
---- geos-3.9.0/CMakeLists.txt	2020-12-09 01:07:19.000000000 +0100
-+++ geos-3.9.0-new/CMakeLists.txt	2020-12-10 12:23:21.466732306 +0100
-@@ -300,16 +300,16 @@ configure_file(cmake/geos-config.cmake
+diff -rupN --no-dereference geos-3.9.1/CMakeLists.txt geos-3.9.1-new/CMakeLists.txt
+--- geos-3.9.1/CMakeLists.txt	2021-02-10 19:10:27.000000000 +0100
++++ geos-3.9.1-new/CMakeLists.txt	2021-02-11 15:26:25.358373951 +0100
+@@ -308,16 +308,16 @@ configure_file(cmake/geos-config.cmake
  
  install(TARGETS geos geos_cxx_flags
    EXPORT geos-targets
@@ -22,7 +22,7 @@ diff -rupN --no-dereference geos-3.9.0/CMakeLists.txt geos-3.9.0-new/CMakeLists.
    RUNTIME DESTINATION bin
    INCLUDES DESTINATION include
    )
-@@ -317,12 +317,12 @@ install(TARGETS geos_c
+@@ -325,12 +325,12 @@ install(TARGETS geos_c
  install(EXPORT geos-targets
    FILE geos-targets.cmake
    NAMESPACE GEOS::
@@ -37,9 +37,9 @@ diff -rupN --no-dereference geos-3.9.0/CMakeLists.txt geos-3.9.0-new/CMakeLists.
  install(DIRECTORY
    "${CMAKE_CURRENT_LIST_DIR}/include/geos"
    "${CMAKE_CURRENT_BINARY_DIR}/include/geos"
-diff -rupN --no-dereference geos-3.9.0/tools/CMakeLists.txt geos-3.9.0-new/tools/CMakeLists.txt
---- geos-3.9.0/tools/CMakeLists.txt	2020-11-30 20:08:53.000000000 +0100
-+++ geos-3.9.0-new/tools/CMakeLists.txt	2020-12-10 12:23:21.466732306 +0100
+diff -rupN --no-dereference geos-3.9.1/tools/CMakeLists.txt geos-3.9.1-new/tools/CMakeLists.txt
+--- geos-3.9.1/tools/CMakeLists.txt	2021-02-10 19:10:27.000000000 +0100
++++ geos-3.9.1-new/tools/CMakeLists.txt	2021-02-11 15:26:25.358373951 +0100
 @@ -36,7 +36,7 @@ if(NOT MSVC)
  
    install(FILES
@@ -49,9 +49,9 @@ diff -rupN --no-dereference geos-3.9.0/tools/CMakeLists.txt geos-3.9.0-new/tools
  
  endif()
  
-diff -rupN --no-dereference geos-3.9.0/tools/geos-config.cmake geos-3.9.0-new/tools/geos-config.cmake
---- geos-3.9.0/tools/geos-config.cmake	2020-11-30 20:08:53.000000000 +0100
-+++ geos-3.9.0-new/tools/geos-config.cmake	2020-12-10 12:23:21.466732306 +0100
+diff -rupN --no-dereference geos-3.9.1/tools/geos-config.cmake geos-3.9.1-new/tools/geos-config.cmake
+--- geos-3.9.1/tools/geos-config.cmake	2021-02-04 00:19:53.000000000 +0100
++++ geos-3.9.1-new/tools/geos-config.cmake	2021-02-11 15:26:25.359373949 +0100
 @@ -1,7 +1,7 @@
  #!/bin/sh
  

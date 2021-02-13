@@ -1,6 +1,6 @@
 Name:          geos
-Version:       3.9.0
-Release:       2%{?dist}
+Version:       3.9.1
+Release:       1%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
 License:       LGPLv2
@@ -71,7 +71,7 @@ make docs -C %{__cmake_builddir}
 %files
 %doc AUTHORS NEWS README.md
 %license COPYING
-%{_libdir}/libgeos.so.3.9.0
+%{_libdir}/libgeos.so.3.9.1
 %{_libdir}/libgeos_c.so.1*
 
 %files devel
@@ -86,6 +86,9 @@ make docs -C %{__cmake_builddir}
 
 
 %changelog
+* Thu Feb 11 2021 Sandro Mani <manisandro@gmail.com> - 3.9.1-1
+- Update to 3.9.1
+
 * Tue Jan 26 2021 Fedora Release Engineering <releng@fedoraproject.org> - 3.9.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
 
