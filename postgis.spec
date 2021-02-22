@@ -15,7 +15,7 @@
 
 Name:          postgis
 Version:       %majorversion.1
-Release:       4%{?commit:.git%shortcommit}%{?dist}
+Release:       5%{?commit:.git%shortcommit}%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
 
@@ -131,6 +131,19 @@ the current version of Postgis built against the previous version of PostgreSQL
 necessary for correct dump of schema from previous version of PostgreSQL.
 %endif
 
+%package gui
+Summary:       The shp2pgsql-gui utility for PostGIS
+Requires:      %{name}%{?_isa} = %{version}-%{release}
+
+%description gui
+The gui package provides shp2pgsql-gui for PostGIS.
+
+%package client
+Summary:       The CLI clients for PostGIS
+Requires:      %{name}%{?_isa} = %{version}-%{release}
+
+%description client
+The client package provides shp2pgsql, raster2pgsql and pgsql2shp for PostGIS.
 
 %prep
 %autosetup -p1 -n %{name}-%{version} -a 3
@@ -296,7 +309,7 @@ fi
 %files
 %license COPYING
 %doc CREDITS NEWS TODO README.%{name} loader/README.* doc/%{name}.xml doc/ZMSgeoms.txt
-%{_bindir}/*
+
 %{_libdir}/pgsql/%{name}-%{soversion}.so
 %{_datadir}/pgsql/contrib/postgis-%{majorversion}/*.sql
 %{_datadir}/pgsql/extension/address_standardizer*.sql
@@ -316,6 +329,13 @@ fi
 %{_libdir}/pgsql/postgis_raster-%{soversion}.so
 %{_libdir}/pgsql/postgis_topology-%{soversion}.so
 
+%files client
+%{_bindir}/pgsql2shp
+%{_bindir}/raster2pgsql
+%{_bindir}/shp2pgsql
+
+%files gui
+%{_bindir}/shp2pgsql-gui
 %{_datadir}/applications/shp2pgsql-gui.desktop
 %{_datadir}/icons/hicolor/*/apps/shp2pgsql-gui.png
 
@@ -371,6 +391,9 @@ fi
 
 
 %changelog
+* Mon Feb 22 2021 Michael Scherer <misc@fedoraproject.org> - 3.1.1-5
+- split various utilities subpackages, to not pull gtk in the main rpm
+
 * Sat Feb 13 2021 Sandro Mani <manisandro@gmail.com> - 3.1.1-4
 - Rebuild (geos)
 
