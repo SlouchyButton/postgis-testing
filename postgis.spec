@@ -15,7 +15,7 @@
 
 Name:          postgis
 Version:       %majorversion.1
-Release:       5%{?commit:.git%shortcommit}%{?dist}
+Release:       6%{?commit:.git%shortcommit}%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
 
@@ -391,6 +391,9 @@ fi
 
 
 %changelog
+* Sun Mar 07 2021 Sandro Mani <manisandro@gmail.com> - 3.1.1-6
+- Rebuild (proj)
+
 * Mon Feb 22 2021 Michael Scherer <misc@fedoraproject.org> - 3.1.1-5
 - split various utilities subpackages, to not pull gtk in the main rpm
 
