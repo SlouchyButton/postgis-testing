@@ -1,8 +1,8 @@
-%global proj_version 7.2.1
-%global data_version 1.4
+%global proj_version 8.0.0
+%global data_version 1.5
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 2
+%global baserelease 1
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
@@ -20,9 +20,9 @@ License:        MIT
 URL:            https://proj.org
 Source0:        https://download.osgeo.org/%{name}/%{name}-%{version}.tar.gz
 Source1:        https://download.osgeo.org/%{name}/%{name}-data-%{data_version}.tar.gz
-
-# Ship a pkgconfig file
-Patch0:         proj_pkgconfig.patch
+# Backport fix for test failure
+# https://github.com/rouault/PROJ/commit/27e1f4076ceb5c38e27371fbd75b548c652c0fcf
+Patch0:         27e1f4076ceb5c38e27371fbd75b548c652c0fcf.patch
 
 BuildRequires:  cmake
 BuildRequires:  curl-devel
@@ -162,6 +162,7 @@ Supplements:  proj\
 %data_subpkg -c fr -n France
 %data_subpkg -c is -n Island -e ISL
 %data_subpkg -c jp -n Japan
+%data_subpkg -c no -n Norway
 %data_subpkg -c nc -n %{quote:New Caledonia}
 %data_subpkg -c nl -n Netherlands
 %data_subpkg -c nz -n %{quote:New Zealand}
@@ -189,13 +190,16 @@ mkdir -p %{buildroot}%{_datadir}/%{name}
 tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 
 
+
 %check
 %ctest
 
 
 %files
-%license COPYING
-%doc NEWS AUTHORS README.md
+%doc README.md
+%doc %{_docdir}/%{name}/AUTHORS
+%doc %{_docdir}/%{name}/NEWS
+%license %{_docdir}/%{name}/COPYING
 %{_bindir}/cct
 %{_bindir}/cs2cs
 %{_bindir}/geod
@@ -203,8 +207,7 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 %{_bindir}/proj
 %{_bindir}/projinfo
 %{_bindir}/projsync
-%{_libdir}/libproj.so.21*
-%{_libdir}/libproj.so.19
+%{_libdir}/libproj.so.22*
 %{_mandir}/man1/*.1*
 %dir %{_datadir}/%{name}
 %{_datadir}/%{name}/CH
@@ -235,6 +238,9 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 
 
 %changelog
+* Sat Mar 06 2021 Sandro Mani <manisandro@gmail.com> - 8.0.0-1
+- Update to 8.0.0
+
 * Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 7.2.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
 
