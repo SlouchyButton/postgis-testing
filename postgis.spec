@@ -1,9 +1,10 @@
 %{!?javabuild:%global javabuild 0}
 %{!?utils:%global utils 1}
 %{!?gcj_support:%global gcj_support 0}
-%{!?upgrade:%global upgrade 1}
+%{!?upgrade:%global upgrade 0}
 %{!?runselftest:%global runselftest 1}
 
+# Re-enable upgrade packages on next major version bump!
 %global        majorversion 3.1
 %global        soversion 3
 %global        prevmajorversion 2.5
@@ -27,6 +28,8 @@ Source3:       http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.t
 # From debian
 # This should increase chances of tests passing even on busy or slow systems.
 Patch0:        relax-test-timing-constraints.patch
+# Fix proj8 detection
+Patch1:        postgis_proj8.patch
 
 BuildRequires: make
 BuildRequires: autoconf
@@ -147,6 +150,8 @@ The client package provides shp2pgsql, raster2pgsql and pgsql2shp for PostGIS.
 
 %prep
 %autosetup -p1 -n %{name}-%{version} -a 3
+# For patch1
+./autogen.sh
 
 %if %upgrade
 # postgis-upgrade
@@ -157,6 +162,7 @@ cd %{name}-%{prevversion}
 tar xf %{SOURCE0}
 (
 cd %{name}-%{version}
+%patch1 -p1
 ./autogen.sh
 )
 
@@ -393,6 +399,7 @@ fi
 %changelog
 * Sun Mar 07 2021 Sandro Mani <manisandro@gmail.com> - 3.1.1-6
 - Rebuild (proj)
+- Disable upgrade packages for now (not compatible with proj8)
 
 * Mon Feb 22 2021 Michael Scherer <misc@fedoraproject.org> - 3.1.1-5
 - split various utilities subpackages, to not pull gtk in the main rpm
