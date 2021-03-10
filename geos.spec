@@ -88,6 +88,7 @@ make docs -C %{__cmake_builddir}
 %changelog
 * Wed Mar 10 2021 Benjamin A. Beasley <code@musicinmybrain.net> - 3.9.1-2
 - Fix RHBZ#1937424 (Wrong output from geos-config --libs etc.)
+- Fix RHBZ#1937443 (Wrong output from pkgconf geos --libs etc.)
 
 * Thu Feb 11 2021 Sandro Mani <manisandro@gmail.com> - 3.9.1-1
 - Update to 3.9.1
