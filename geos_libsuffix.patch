@@ -57,7 +57,7 @@ diff -rupN --no-dereference geos-3.9.1/tools/geos-config.cmake geos-3.9.1-new/to
  
  prefix=@ESCAPED_INSTALL_PREFIX@
 -libdir=${prefix}/lib
-+libdir=${prefix}/lib@LIB_SUFFIX
++libdir=${prefix}/lib@LIB_SUFFIX@
  
  usage()
  {
