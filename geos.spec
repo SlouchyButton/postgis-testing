@@ -1,6 +1,6 @@
 Name:          geos
 Version:       3.9.1
-Release:       2%{?dist}
+Release:       3%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
 License:       LGPLv2
@@ -86,6 +86,9 @@ make docs -C %{__cmake_builddir}
 
 
 %changelog
+* Tue Mar 23 2021 Sandro Mani <manisandro@gmail.com> - 3.9.1-3
+- Bump
+
 * Wed Mar 10 2021 Benjamin A. Beasley <code@musicinmybrain.net> - 3.9.1-2
 - Fix RHBZ#1937424 (Wrong output from geos-config --libs etc.)
 - Fix RHBZ#1937443 (Wrong output from pkgconf geos --libs etc.)
