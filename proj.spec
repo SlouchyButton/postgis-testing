@@ -1,4 +1,4 @@
-%global proj_version 8.0.0
+%global proj_version 8.0.1
 %global data_version 1.5
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
@@ -20,9 +20,6 @@ License:        MIT
 URL:            https://proj.org
 Source0:        https://download.osgeo.org/%{name}/%{name}-%{version}.tar.gz
 Source1:        https://download.osgeo.org/%{name}/%{name}-data-%{data_version}.tar.gz
-# Backport fix for test failure
-# https://github.com/rouault/PROJ/commit/27e1f4076ceb5c38e27371fbd75b548c652c0fcf
-Patch0:         27e1f4076ceb5c38e27371fbd75b548c652c0fcf.patch
 
 BuildRequires:  cmake
 BuildRequires:  curl-devel
@@ -238,6 +235,9 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 
 
 %changelog
+* Thu May 06 2021 Sandro Mani <manisandro@gmail.com> - 8.0.1-1
+- Update to 8.0.1
+
 * Sat Mar 06 2021 Sandro Mani <manisandro@gmail.com> - 8.0.0-1
 - Update to 8.0.0
 
