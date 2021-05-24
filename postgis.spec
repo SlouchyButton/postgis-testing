@@ -15,8 +15,8 @@
 %global        __provides_exclude_from %{_libdir}/pgsql
 
 Name:          postgis
-Version:       %majorversion.1
-Release:       8%{?commit:.git%shortcommit}%{?dist}
+Version:       %majorversion.2
+Release:       1%{?commit:.git%shortcommit}%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
 
@@ -28,8 +28,6 @@ Source3:       http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.t
 # From debian
 # This should increase chances of tests passing even on busy or slow systems.
 Patch0:        relax-test-timing-constraints.patch
-# Fix proj8 detection
-Patch1:        postgis_proj8.patch
 
 BuildRequires: make
 BuildRequires: autoconf
@@ -397,6 +395,9 @@ fi
 
 
 %changelog
+* Mon May 24 2021 Sandro Mani <manisandro@gmail.com> - 3.1.2-1
+- Update to 3.1.2
+
 * Fri May 07 2021 Sandro Mani <manisandro@gmail.com> - 3.1.1-8
 - Rebuild (gdal)
 
