@@ -1,6 +1,6 @@
 Name:          geos
 Version:       3.9.1
-Release:       3%{?dist}
+Release:       4%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
 License:       LGPLv2
@@ -11,6 +11,8 @@ Source1:       http://git.osgeo.org/gitea/geos/geos/raw/tag/%{version}/doc/check
 
 # Honour libsuffix
 Patch1:        geos_libsuffix.patch
+# Backport fix for performance regression
+Patch2:        https://github.com/libgeos/geos/commit/e615f6ca286cb15bad3f919e066b4b3bbd8cad58.patch
 
 BuildRequires: cmake
 BuildRequires: doxygen
@@ -86,6 +88,9 @@ make docs -C %{__cmake_builddir}
 
 
 %changelog
+* Thu Jun 17 2021 Sandro Mani <manisandro@gmail.com> - 3.9.1-4
+- Backport fix for performance regression (#1972892)
+
 * Tue Mar 23 2021 Sandro Mani <manisandro@gmail.com> - 3.9.1-3
 - Bump
 

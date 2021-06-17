@@ -1,6 +1,6 @@
 diff -rupN --no-dereference geos-3.9.1/CMakeLists.txt geos-3.9.1-new/CMakeLists.txt
---- geos-3.9.1/CMakeLists.txt	2021-02-10 13:10:27.000000000 -0500
-+++ geos-3.9.1-new/CMakeLists.txt	2021-03-10 11:38:06.200581963 -0500
+--- geos-3.9.1/CMakeLists.txt	2021-02-10 19:10:27.000000000 +0100
++++ geos-3.9.1-new/CMakeLists.txt	2021-06-17 11:44:40.776229757 +0200
 @@ -308,16 +308,16 @@ configure_file(cmake/geos-config.cmake
  
  install(TARGETS geos geos_cxx_flags
@@ -38,8 +38,8 @@ diff -rupN --no-dereference geos-3.9.1/CMakeLists.txt geos-3.9.1-new/CMakeLists.
    "${CMAKE_CURRENT_LIST_DIR}/include/geos"
    "${CMAKE_CURRENT_BINARY_DIR}/include/geos"
 diff -rupN --no-dereference geos-3.9.1/tools/CMakeLists.txt geos-3.9.1-new/tools/CMakeLists.txt
---- geos-3.9.1/tools/CMakeLists.txt	2021-02-10 13:10:27.000000000 -0500
-+++ geos-3.9.1-new/tools/CMakeLists.txt	2021-03-10 11:38:06.200581963 -0500
+--- geos-3.9.1/tools/CMakeLists.txt	2021-02-10 19:10:27.000000000 +0100
++++ geos-3.9.1-new/tools/CMakeLists.txt	2021-06-17 11:44:40.776229757 +0200
 @@ -36,7 +36,7 @@ if(NOT MSVC)
  
    install(FILES
@@ -50,8 +50,8 @@ diff -rupN --no-dereference geos-3.9.1/tools/CMakeLists.txt geos-3.9.1-new/tools
  endif()
  
 diff -rupN --no-dereference geos-3.9.1/tools/geos-config.cmake geos-3.9.1-new/tools/geos-config.cmake
---- geos-3.9.1/tools/geos-config.cmake	2021-02-03 18:19:53.000000000 -0500
-+++ geos-3.9.1-new/tools/geos-config.cmake	2021-03-10 11:38:06.201581969 -0500
+--- geos-3.9.1/tools/geos-config.cmake	2021-02-04 00:19:53.000000000 +0100
++++ geos-3.9.1-new/tools/geos-config.cmake	2021-06-17 11:44:40.776229757 +0200
 @@ -1,7 +1,7 @@
  #!/bin/sh
  
@@ -62,8 +62,8 @@ diff -rupN --no-dereference geos-3.9.1/tools/geos-config.cmake geos-3.9.1-new/to
  usage()
  {
 diff -rupN --no-dereference geos-3.9.1/tools/geos.pc.cmake geos-3.9.1-new/tools/geos.pc.cmake
---- geos-3.9.1/tools/geos.pc.cmake	2021-02-03 18:19:53.000000000 -0500
-+++ geos-3.9.1-new/tools/geos.pc.cmake	2021-03-10 11:40:18.802433179 -0500
+--- geos-3.9.1/tools/geos.pc.cmake	2021-02-04 00:19:53.000000000 +0100
++++ geos-3.9.1-new/tools/geos.pc.cmake	2021-06-17 11:44:40.776229757 +0200
 @@ -8,4 +8,4 @@ Description: Geometry Engine, Open Sourc
  Requires:
  Version: @GEOS_VERSION@
