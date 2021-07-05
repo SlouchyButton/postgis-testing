@@ -1,5 +1,5 @@
-%global proj_version 8.0.1
-%global data_version 1.5
+%global proj_version 8.1.0
+%global data_version 1.7
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
 %global baserelease 1
@@ -235,6 +235,10 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 
 
 %changelog
+* Mon Jul 05 2021 Sandro Mani <manisandro@gmail.com> - 8.1.0-1
+- Update to 8.1.0
+- Update proj-data to 1.7
+
 * Thu May 06 2021 Sandro Mani <manisandro@gmail.com> - 8.0.1-1
 - Update to 8.0.1
 
