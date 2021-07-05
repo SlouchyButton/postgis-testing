@@ -15,8 +15,8 @@
 %global        __provides_exclude_from %{_libdir}/pgsql
 
 Name:          postgis
-Version:       %majorversion.2
-Release:       2%{?commit:.git%shortcommit}%{?dist}
+Version:       %majorversion.3
+Release:       1%{?commit:.git%shortcommit}%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
 
@@ -29,7 +29,9 @@ Source3:       http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.t
 # This should increase chances of tests passing even on busy or slow systems.
 Patch0:        relax-test-timing-constraints.patch
 
+%ifnarch armv7hl
 BuildRequires: SFCGAL-devel
+%endif
 BuildRequires: make
 BuildRequires: autoconf
 BuildRequires: automake
@@ -170,7 +172,11 @@ cp -p %{SOURCE2} .
 
 
 %build
+%ifnarch armv7hl
 %configure %configure_opts --with-gui --with-pgconfig=%{_bindir}/pg_server_config --with-sfcgal
+%else
+%configure %configure_opts --with-gui --with-pgconfig=%{_bindir}/pg_server_config
+%endif
 sed -i 's| -fstack-clash-protection | |' postgis/Makefile
 sed -i 's| -fstack-clash-protection | |' raster/rt_pg/Makefile
 sed -i 's| -fstack-clash-protection | |' topology/Makefile
@@ -321,11 +327,15 @@ fi
 %{_datadir}/pgsql/extension/address_standardizer*.control
 %{_datadir}/pgsql/extension/postgis-*.sql
 %{_datadir}/pgsql/extension/postgis_raster*.sql
+%ifnarch armv7hl
 %{_datadir}/pgsql/extension/postgis_sfcgal*.sql
+%endif
 %{_datadir}/pgsql/extension/postgis_topology*.sql
 %{_datadir}/pgsql/extension/postgis.control
 %{_datadir}/pgsql/extension/postgis_raster.control
+%ifnarch armv7hl
 %{_datadir}/pgsql/extension/postgis_sfcgal.control
+%endif
 %{_datadir}/pgsql/extension/postgis_topology.control
 %{_datadir}/pgsql/extension/postgis_tiger_geocoder*.sql
 %{_datadir}/pgsql/extension/postgis_tiger_geocoder.control
@@ -334,7 +344,9 @@ fi
 %{_datadir}/postgis/repo_revision.pl
 %{_libdir}/pgsql/address_standardizer-%{soversion}.so
 %{_libdir}/pgsql/postgis_raster-%{soversion}.so
+%ifnarch armv7hl
 %{_libdir}/pgsql/postgis_sfcgal-%{soversion}.so
+%endif
 %{_libdir}/pgsql/postgis_topology-%{soversion}.so
 
 %files client
@@ -352,7 +364,9 @@ fi
 %{_libdir}/pgsql/bitcode/address_standardizer-*
 %{_libdir}/pgsql/bitcode/postgis-*
 %{_libdir}/pgsql/bitcode/postgis_raster-*
+%ifnarch armv7hl
 %{_libdir}/pgsql/bitcode/postgis_sfcgal-*
+%endif
 %{_libdir}/pgsql/bitcode/postgis_topology-*
 
 
@@ -400,6 +414,9 @@ fi
 
 
 %changelog
+* Mon Jul 05 2021 Sandro Mani <manisandro@gmail.com> - 3.1.3-1
+- Update to 3.1.3
+
 * Mon Jul 5 2021 Basil Eric Rabi <ericbasil.rabi@gmail.com> - 3.1.2-2
 - Build with SFCGAL
 
