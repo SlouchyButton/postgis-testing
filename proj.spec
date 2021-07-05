@@ -189,7 +189,8 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 
 
 %check
-%ctest
+# nkg test requires internet connection
+%ctest -- -E nkg
 
 
 %files
@@ -205,6 +206,7 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 %{_bindir}/projinfo
 %{_bindir}/projsync
 %{_libdir}/libproj.so.22*
+%{_libdir}/libproj.so.23*
 %{_mandir}/man1/*.1*
 %dir %{_datadir}/%{name}
 %{_datadir}/%{name}/CH
