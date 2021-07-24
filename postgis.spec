@@ -45,7 +45,6 @@ BuildRequires: gdal-devel >= 1.10.0
 BuildRequires: geos-devel >= 3.7.1
 BuildRequires: gtk2-devel
 BuildRequires: json-c-devel
-BuildRequires: libpq-devel
 BuildRequires: libtool
 BuildRequires: libxml2-devel
 BuildRequires: libxslt
