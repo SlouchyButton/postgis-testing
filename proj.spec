@@ -1,8 +1,8 @@
-%global proj_version 8.1.0
+%global proj_version 8.1.1
 %global data_version 1.7
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 2
+%global baserelease 1
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
@@ -237,6 +237,9 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 
 
 %changelog
+* Wed Sep 01 2021 Sandro Mani <manisandro@gmail.com> - 8.1.1-1
+- Update to 8.1.1
+
 * Fri Jul 23 2021 Fedora Release Engineering <releng@fedoraproject.org> - 8.1.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
 
