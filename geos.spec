@@ -1,18 +1,11 @@
 Name:          geos
-Version:       3.9.1
-Release:       5%{?dist}
+Version:       3.10.0
+Release:       1%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
 License:       LGPLv2
 URL:           http://trac.osgeo.org/geos/
 Source0:       http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
-# File missing in tarball
-Source1:       http://git.osgeo.org/gitea/geos/geos/raw/tag/%{version}/doc/check_doxygen_errors.cmake
-
-# Honour libsuffix
-Patch1:        geos_libsuffix.patch
-# Backport fix for performance regression
-Patch2:        https://github.com/libgeos/geos/commit/e615f6ca286cb15bad3f919e066b4b3bbd8cad58.patch
 
 BuildRequires: cmake
 BuildRequires: doxygen
@@ -46,15 +39,10 @@ use GEOS.
 
 %prep
 %autosetup -p1
-cp -a %{SOURCE1} doc/check_doxygen_errors.cmake
 
 
 %build
-%cmake \
-%ifarch armv7hl
-    -DDISABLE_GEOS_INLINE=ON \
-%endif
-    -DBUILD_DOCUMENTATION=ON
+%cmake -DBUILD_DOCUMENTATION=ON
 %cmake_build
 
 
@@ -67,13 +55,11 @@ make docs -C %{__cmake_builddir}
 %ctest
 
 
-%ldconfig_scriptlets
-
-
 %files
 %doc AUTHORS NEWS README.md
 %license COPYING
-%{_libdir}/libgeos.so.3.9.1
+%{_bindir}/geosop
+%{_libdir}/libgeos.so.3.10.0
 %{_libdir}/libgeos_c.so.1*
 
 %files devel
@@ -88,6 +74,9 @@ make docs -C %{__cmake_builddir}
 
 
 %changelog
+* Thu Oct 21 2021 Sandro Mani <manisandro@gmail.com> - 3.10.0-1
+- Update to 3.10.0
+
 * Thu Jul 22 2021 Fedora Release Engineering <releng@fedoraproject.org> - 3.9.1-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
 
