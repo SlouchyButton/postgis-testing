@@ -16,7 +16,7 @@
 
 Name:          postgis
 Version:       %majorversion.4
-Release:       1%{?commit:.git%shortcommit}%{?dist}
+Release:       2%{?commit:.git%shortcommit}%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
 
@@ -413,6 +413,9 @@ fi
 
 
 %changelog
+* Thu Oct 21 2021 Sandro Mani <manisandro@gmail.com> - 3.1.4-2
+- Rebuild (geos)
+
 * Sat Sep 04 2021 Sandro Mani <manisandro@gmail.com> - 3.1.4-1
 - Update to 3.1.4
 
