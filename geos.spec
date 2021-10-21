@@ -1,6 +1,6 @@
 Name:          geos
 Version:       3.10.0
-Release:       1%{?dist}
+Release:       2%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
 License:       LGPLv2
@@ -42,7 +42,7 @@ use GEOS.
 
 
 %build
-%cmake -DBUILD_DOCUMENTATION=ON
+%cmake -DDISABLE_GEOS_INLINE=ON -DBUILD_DOCUMENTATION=ON
 %cmake_build
 
 
@@ -74,6 +74,9 @@ make docs -C %{__cmake_builddir}
 
 
 %changelog
+* Thu Oct 21 2021 Sandro Mani <manisandro@gmail.com> - 3.10.0-2
+- Disable inline
+
 * Thu Oct 21 2021 Sandro Mani <manisandro@gmail.com> - 3.10.0-1
 - Update to 3.10.0
 
