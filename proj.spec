@@ -1,5 +1,5 @@
-%global proj_version 8.1.1
-%global data_version 1.7
+%global proj_version 8.2.0
+%global data_version 1.8
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
 %global baserelease 1
@@ -159,6 +159,7 @@ Supplements:  proj\
 %data_subpkg -c fr -n France
 %data_subpkg -c is -n Island -e ISL
 %data_subpkg -c jp -n Japan
+%data_subpkg -c mx -n Mexico
 %data_subpkg -c no -n Norway
 %data_subpkg -c nc -n %{quote:New Caledonia}
 %data_subpkg -c nl -n Netherlands
@@ -168,6 +169,7 @@ Supplements:  proj\
 %data_subpkg -c sk -n Slovakia
 %data_subpkg -c uk -n %{quote:United Kingdom}
 %data_subpkg -c us -n %{quote:United States}
+%data_subpkg -c za -n %{quote:South Africa}
 
 
 %prep
@@ -202,6 +204,8 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 %{_bindir}/cs2cs
 %{_bindir}/geod
 %{_bindir}/gie
+%{_bindir}/invgeod
+%{_bindir}/invproj
 %{_bindir}/proj
 %{_bindir}/projinfo
 %{_bindir}/projsync
@@ -236,6 +240,9 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 
 
 %changelog
+* Mon Nov 01 2021 Sandro Mani <manisandro@gmail.com> - 8.2.0-1
+- Update to 8.2.0
+
 * Wed Sep 01 2021 Sandro Mani <manisandro@gmail.com> - 8.1.1-1
 - Update to 8.1.1
 
