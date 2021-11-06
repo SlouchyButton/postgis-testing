@@ -16,7 +16,7 @@
 
 Name:          postgis
 Version:       %majorversion.4
-Release:       3%{?commit:.git%shortcommit}%{?dist}
+Release:       4%{?commit:.git%shortcommit}%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
 
@@ -413,6 +413,9 @@ fi
 
 
 %changelog
+* Sat Nov 06 2021 Adrian Reber <adrian@lisas.de> - 3.1.4-4
+- Rebuilt for protobuf 3.19.0
+
 * Tue Oct 26 2021 Adrian Reber <adrian@lisas.de> - 3.1.4-3
 - Rebuilt for protobuf 3.18.1
 
