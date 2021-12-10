@@ -2,7 +2,7 @@
 %global data_version 1.8
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 1
+%global baserelease 2
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
@@ -32,6 +32,8 @@ BuildRequires:  sqlite-devel
 
 Obsoletes:      proj-datumgrid < 1.8-6.3.2.6
 
+Requires:       proj-data = %{version}-%{release}
+
 %description
 Proj and invproj perform respective forward and inverse transformation of
 cartographic data to or from cartesian data with a wide range of selectable
@@ -45,6 +47,14 @@ Obsoletes:      %{name}-static < 7.2.0
 
 %description devel
 This package contains libproj and the appropriate header files and man pages.
+
+
+%package data
+Summary:        Proj data files
+BuildArch:      noarch
+
+%description data
+Proj arch independent data files.
 
 
 %package data-europe
@@ -134,6 +144,7 @@ Summary:      %{countryname} datum grids for Proj\
 BuildArch:    noarch\
 # See README.DATA \
 License:      CC-BY and MIT and BSD and Public Domain \
+Requires:     proj-data = %{version}-%{release} \
 Supplements:  proj\
 \
 %description data-%{countrycode}\
@@ -196,10 +207,6 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 
 
 %files
-%doc README.md
-%doc %{_docdir}/%{name}/AUTHORS
-%doc %{_docdir}/%{name}/NEWS
-%license %{_docdir}/%{name}/COPYING
 %{_bindir}/cct
 %{_bindir}/cs2cs
 %{_bindir}/geod
@@ -210,7 +217,20 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 %{_bindir}/projinfo
 %{_bindir}/projsync
 %{_libdir}/libproj.so.22*
-%{_mandir}/man1/*.1*
+
+%files devel
+%{_includedir}/*.h
+%{_includedir}/proj/
+%{_libdir}/libproj.so
+%{_libdir}/cmake/proj/
+%{_libdir}/cmake/proj4/
+%{_libdir}/pkgconfig/%{name}.pc
+
+%files data
+%doc README.md
+%doc %{_docdir}/%{name}/AUTHORS
+%doc %{_docdir}/%{name}/NEWS
+%license %{_docdir}/%{name}/COPYING
 %dir %{_datadir}/%{name}
 %{_datadir}/%{name}/CH
 %{_datadir}/%{name}/GL27
@@ -229,17 +249,12 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 %{_datadir}/%{name}/deformation_model.schema.json
 %{_datadir}/%{name}/projjson.schema.json
 %{_datadir}/%{name}/triangulation.schema.json
-
-%files devel
-%{_includedir}/*.h
-%{_includedir}/proj/
-%{_libdir}/libproj.so
-%{_libdir}/cmake/proj/
-%{_libdir}/cmake/proj4/
-%{_libdir}/pkgconfig/%{name}.pc
-
+%{_mandir}/man1/*.1*
 
 %changelog
+* Fri Dec 10 2021 Sandro Mani <manisandro@gmail.com> - 8.2.0-2
+- Split off -data subpackage (#2030978)
+
 * Mon Nov 01 2021 Sandro Mani <manisandro@gmail.com> - 8.2.0-1
 - Update to 8.2.0
 
