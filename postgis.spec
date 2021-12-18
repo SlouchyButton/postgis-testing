@@ -5,7 +5,7 @@
 %{!?runselftest:%global runselftest 1}
 
 # Re-enable upgrade packages on next major version bump!
-%global        majorversion 3.1
+%global        majorversion 3.2
 %global        soversion 3
 %global        prevmajorversion 2.5
 %global        prevversion %{prevmajorversion}.5
@@ -15,8 +15,8 @@
 %global        __provides_exclude_from %{_libdir}/pgsql
 
 Name:          postgis
-Version:       %majorversion.4
-Release:       5%{?commit:.git%shortcommit}%{?dist}
+Version:       %majorversion.0
+Release:       1%{?commit:.git%shortcommit}%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
 
@@ -57,7 +57,6 @@ BuildRequires: protobuf-c-devel
 %if %upgrade
 BuildRequires: postgresql-upgrade-devel
 %endif
-%{?postgresql_module_requires}
 %if %runselftest
 BuildRequires: postgresql-test-rpm-macros
 %endif
@@ -413,6 +412,9 @@ fi
 
 
 %changelog
+* Sat Dec 18 2021 Sandro Mani <manisandro@gmail.com> - 3.2.0-1
+- Update to 3.2.0
+
 * Thu Nov 11 2021 Sandro Mani <manisandro@gmail.com> - 3.1.4-5
 - Rebuild (gdal)
 
