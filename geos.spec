@@ -1,5 +1,5 @@
 Name:          geos
-Version:       3.10.1
+Version:       3.10.2
 Release:       1%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
@@ -59,7 +59,7 @@ make docs -C %{__cmake_builddir}
 %doc AUTHORS NEWS README.md
 %license COPYING
 %{_bindir}/geosop
-%{_libdir}/libgeos.so.3.10.1
+%{_libdir}/libgeos.so.3.10.2
 %{_libdir}/libgeos_c.so.1*
 
 %files devel
@@ -74,6 +74,9 @@ make docs -C %{__cmake_builddir}
 
 
 %changelog
+* Mon Jan 17 2022 Sandro Mani <manisandro@gmail.com> - 3.10.2-1
+- Update to 3.10.2
+
 * Tue Nov 02 2021 Sandro Mani <manisandro@gmail.com> - 3.10.1-1
 - Update to 3.10.1
 
