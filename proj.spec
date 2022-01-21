@@ -2,7 +2,7 @@
 %global data_version 1.8
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 3
+%global baserelease 4
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
@@ -252,6 +252,9 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 %{_mandir}/man1/*.1*
 
 %changelog
+* Fri Jan 21 2022 Fedora Release Engineering <releng@fedoraproject.org> - 8.2.1-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
+
 * Sun Jan 02 2022 Sandro Mani <manisandro@gmail.com> - 8.2.1-1
 - Update to 8.2.1
 
