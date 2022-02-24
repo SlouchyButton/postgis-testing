@@ -2,7 +2,7 @@
 %global data_version 1.8
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 5
+%global baserelease 6
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
@@ -198,6 +198,7 @@ Supplements:  proj\
 %package -n mingw32-%{name}
 Summary:       Cartographic projection software (PROJ.4)
 Obsoletes:     mingw32-%{name}-static < 6.3.2-3
+BuildArch:     noarch
 
 %description -n mingw32-%{name}
 Proj and invproj perform respective forward and inverse transformation of
@@ -208,6 +209,7 @@ projection functions. Proj docs: http://www.remotesensing.org/dl/new_docs/
 %package -n mingw64-%{name}
 Summary:       Cartographic projection software (PROJ.4)
 Obsoletes:     mingw64-%{name}-static < 6.3.2-3
+BuildArch:     noarch
 
 
 %description -n mingw64-%{name}
@@ -326,6 +328,9 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 
 %changelog
+* Thu Feb 24 2022 Sandro Mani <manisandro@gmail.com> - 8.2.1-6
+- Make mingw subpackages noarch
+
 * Thu Feb 24 2022 Sandro Mani <manisandro@gmail.com> - 8.2.1-5
 - Add mingw subpackages
 
