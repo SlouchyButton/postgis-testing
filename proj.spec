@@ -2,7 +2,7 @@
 %global data_version 1.8
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 4
+%global baserelease 5
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
@@ -29,6 +29,18 @@ BuildRequires:  gtest-devel >= 1.8.0
 BuildRequires:  make
 BuildRequires:  libtiff-devel
 BuildRequires:  sqlite-devel
+
+BuildRequires: mingw32-curl
+BuildRequires: mingw32-filesystem >= 95
+BuildRequires: mingw32-gcc-c++
+BuildRequires: mingw32-libtiff
+BuildRequires: mingw32-sqlite
+
+BuildRequires: mingw64-curl
+BuildRequires: mingw64-filesystem >= 95
+BuildRequires: mingw64-gcc-c++
+BuildRequires: mingw64-libtiff
+BuildRequires: mingw64-sqlite
 
 Obsoletes:      proj-datumgrid < 1.8-6.3.2.6
 
@@ -183,22 +195,59 @@ Supplements:  proj\
 %data_subpkg -c za -n %{quote:South Africa}
 
 
+%package -n mingw32-%{name}
+Summary:       Cartographic projection software (PROJ.4)
+Obsoletes:     mingw32-%{name}-static < 6.3.2-3
+
+%description -n mingw32-%{name}
+Proj and invproj perform respective forward and inverse transformation of
+cartographic data to or from cartesian data with a wide range of selectable
+projection functions. Proj docs: http://www.remotesensing.org/dl/new_docs/
+
+
+%package -n mingw64-%{name}
+Summary:       Cartographic projection software (PROJ.4)
+Obsoletes:     mingw64-%{name}-static < 6.3.2-3
+
+
+%description -n mingw64-%{name}
+Proj and invproj perform respective forward and inverse transformation of
+cartographic data to or from cartesian data with a wide range of selectable
+projection functions. Proj docs: http://www.remotesensing.org/dl/new_docs/
+
+
+%{?mingw_debug_package}
+
+
 %prep
 %autosetup -p1
 
 
 %build
+# Native build
 %cmake -DUSE_EXTERNAL_GTEST=ON
 %cmake_build
+
+# MinGW build
+%mingw_cmake -DBUILD_TESTING=OFF
+%mingw_make_build
 
 
 %install
 %cmake_install
+%mingw_make_install
 
 # Install data
 mkdir -p %{buildroot}%{_datadir}/%{name}
 tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 
+rm -rf %{buildroot}%{mingw32_docdir}
+rm -rf %{buildroot}%{mingw32_mandir}
+rm -rf %{buildroot}%{mingw64_docdir}
+rm -rf %{buildroot}%{mingw64_mandir}
+
+
+%mingw_debug_install_post
 
 
 %check
@@ -251,7 +300,35 @@ tar -xf %{SOURCE1} --directory %{buildroot}%{_datadir}/%{name}
 %{_datadir}/%{name}/triangulation.schema.json
 %{_mandir}/man1/*.1*
 
+%files -n mingw32-%{name}
+%license COPYING
+%{mingw32_bindir}/libproj_8_2.dll
+%{mingw32_bindir}/*.exe
+%{mingw32_libdir}/libproj.dll.a
+%{mingw32_libdir}/cmake/proj/
+%{mingw32_libdir}/cmake/proj4/
+%{mingw32_libdir}/pkgconfig/proj.pc
+%{mingw32_includedir}/*.h
+%{mingw32_includedir}/proj/
+%{mingw32_datadir}/%{name}/
+
+%files -n mingw64-%{name}
+%license COPYING
+%{mingw64_bindir}/libproj_8_2.dll
+%{mingw64_bindir}/*.exe
+%{mingw64_libdir}/libproj.dll.a
+%{mingw64_libdir}/cmake/proj/
+%{mingw64_libdir}/cmake/proj4/
+%{mingw64_libdir}/pkgconfig/proj.pc
+%{mingw64_includedir}/*.h
+%{mingw64_includedir}/proj/
+%{mingw64_datadir}/%{name}/
+
+
 %changelog
+* Thu Feb 24 2022 Sandro Mani <manisandro@gmail.com> - 8.2.1-5
+- Add mingw subpackages
+
 * Fri Jan 21 2022 Fedora Release Engineering <releng@fedoraproject.org> - 8.2.1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
