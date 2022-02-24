@@ -1,17 +1,23 @@
 Name:          geos
 Version:       3.10.2
-Release:       2%{?dist}
+Release:       3%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
 License:       LGPLv2
 URL:           http://trac.osgeo.org/geos/
 Source0:       http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
+# Add library version suffix also when building with cmake for mingw
+Patch0:        geos_version-suffix.patch
 
 BuildRequires: cmake
 BuildRequires: doxygen
-BuildRequires: gcc
 BuildRequires: gcc-c++
-BuildRequires: make
+
+BuildRequires: mingw32-filesystem >= 95
+BuildRequires: mingw32-gcc-c++
+
+BuildRequires: mingw64-filesystem >= 95
+BuildRequires: mingw64-gcc-c++
 
 
 %description
@@ -37,18 +43,49 @@ This package contains the development files to build applications that
 use GEOS.
 
 
+%package -n mingw32-%{name}
+Summary:       MinGW Windows GEOS library
+
+%description -n mingw32-%{name}
+MinGW Windows GEOS library.
+
+
+%package -n mingw64-%{name}
+Summary:       MinGW Windows GEOS library
+
+%description -n mingw64-%{name}
+MinGW Windows GEOS library.
+
+
+%{?mingw_debug_package}
+
+
 %prep
 %autosetup -p1
 
 
 %build
+# Native build
 %cmake -DDISABLE_GEOS_INLINE=ON -DBUILD_DOCUMENTATION=ON
 %cmake_build
+
+# MinGW build
+%mingw_cmake -DDISABLE_GEOS_INLINE=ON
+%mingw_make_build
 
 
 %install
 %cmake_install
 make docs -C %{__cmake_builddir}
+
+%mingw_make_install
+
+# Drop cross-compiled geos-config which is not useful
+rm -f %{buildroot}%{mingw32_bindir}/geos-config
+rm -f %{buildroot}%{mingw64_bindir}/geos-config
+
+
+%mingw_debug_install_post
 
 
 %check
@@ -72,8 +109,35 @@ make docs -C %{__cmake_builddir}
 %{_libdir}/cmake/GEOS/
 %{_libdir}/pkgconfig/%{name}.pc
 
+%files -n mingw32-%{name}
+%license COPYING
+%{mingw32_bindir}/geosop.exe
+%{mingw32_bindir}/libgeos-3.10.2.dll
+%{mingw32_bindir}/libgeos_c-1.dll
+%{mingw32_includedir}/geos/
+%{mingw32_includedir}/geos_c.h
+%{mingw32_libdir}/libgeos.dll.a
+%{mingw32_libdir}/libgeos_c.dll.a
+%{mingw32_libdir}/cmake/GEOS/
+%{mingw32_libdir}/pkgconfig/%{name}.pc
+
+%files -n mingw64-%{name}
+%license COPYING
+%{mingw64_bindir}/geosop.exe
+%{mingw64_bindir}/libgeos-3.10.2.dll
+%{mingw64_bindir}/libgeos_c-1.dll
+%{mingw64_includedir}/geos/
+%{mingw64_includedir}/geos_c.h
+%{mingw64_libdir}/libgeos.dll.a
+%{mingw64_libdir}/libgeos_c.dll.a
+%{mingw64_libdir}/cmake/GEOS/
+%{mingw64_libdir}/pkgconfig/%{name}.pc
+
 
 %changelog
+* Thu Feb 24 2022 Sandro Mani <manisandro@gmail.com> - 3.10.2-3
+- Add mingw subpackages
+
 * Thu Jan 20 2022 Fedora Release Engineering <releng@fedoraproject.org> - 3.10.2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
