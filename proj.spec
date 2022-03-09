@@ -1,8 +1,8 @@
-%global proj_version 8.2.1
-%global data_version 1.8
+%global proj_version 9.0.0
+%global data_version 1.9
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 6
+%global baserelease 1
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
@@ -86,6 +86,7 @@ Requires:       proj-data-fo
 Requires:       proj-data-fr
 Requires:       proj-data-is
 Requires:       proj-data-nl
+Requires:       proj-data-pl
 Requires:       proj-data-pt
 Requires:       proj-data-se
 Requires:       proj-data-sk
@@ -187,6 +188,7 @@ Supplements:  proj\
 %data_subpkg -c nc -n %{quote:New Caledonia}
 %data_subpkg -c nl -n Netherlands
 %data_subpkg -c nz -n %{quote:New Zealand}
+%data_subpkg -c pl -n Poland
 %data_subpkg -c pt -n Portugal
 %data_subpkg -c se -n Sweden
 %data_subpkg -c sk -n Slovakia
@@ -267,7 +269,7 @@ rm -rf %{buildroot}%{mingw64_mandir}
 %{_bindir}/proj
 %{_bindir}/projinfo
 %{_bindir}/projsync
-%{_libdir}/libproj.so.22*
+%{_libdir}/libproj.so.25*
 
 %files devel
 %{_includedir}/*.h
@@ -304,7 +306,7 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 %files -n mingw32-%{name}
 %license COPYING
-%{mingw32_bindir}/libproj_8_2.dll
+%{mingw32_bindir}/libproj_9_0.dll
 %{mingw32_bindir}/*.exe
 %{mingw32_libdir}/libproj.dll.a
 %{mingw32_libdir}/cmake/proj/
@@ -316,7 +318,7 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 %files -n mingw64-%{name}
 %license COPYING
-%{mingw64_bindir}/libproj_8_2.dll
+%{mingw64_bindir}/libproj_9_0.dll
 %{mingw64_bindir}/*.exe
 %{mingw64_libdir}/libproj.dll.a
 %{mingw64_libdir}/cmake/proj/
@@ -328,6 +330,9 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 
 %changelog
+* Thu Mar 03 2022 Sandro Mani <manisandro@gmail.com> - 9.0.0-1
+- Update to 9.0.0
+
 * Thu Feb 24 2022 Sandro Mani <manisandro@gmail.com> - 8.2.1-6
 - Make mingw subpackages noarch
 
