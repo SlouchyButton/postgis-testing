@@ -1,6 +1,6 @@
 Name:          geos
 Version:       3.10.2
-Release:       4%{?dist}
+Release:       5%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
 License:       LGPLv2
@@ -137,6 +137,9 @@ rm -f %{buildroot}%{mingw64_bindir}/geos-config
 
 
 %changelog
+* Fri Mar 25 2022 Sandro Mani <manisandro@gmail.com> - 3.10.2-5
+- Rebuild with mingw-gcc-12
+
 * Thu Feb 24 2022 Sandro Mani <manisandro@gmail.com> - 3.10.2-4
 - Make mingw subpackages noarch
 
