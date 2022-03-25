@@ -2,7 +2,7 @@
 %global data_version 1.9
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 1
+%global baserelease 2
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
@@ -330,6 +330,9 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 
 %changelog
+* Fri Mar 25 2022 Sandro Mani <manisandro@gmail.com> - 9.0.0-2
+- Rebuild with mingw-gcc-12
+
 * Thu Mar 03 2022 Sandro Mani <manisandro@gmail.com> - 9.0.0-1
 - Update to 9.0.0
 
