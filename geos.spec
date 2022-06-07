@@ -1,6 +1,6 @@
 Name:          geos
-Version:       3.10.2
-Release:       5%{?dist}
+Version:       3.10.3
+Release:       1%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
 License:       LGPLv2
@@ -8,6 +8,9 @@ URL:           http://trac.osgeo.org/geos/
 Source0:       http://download.osgeo.org/%{name}/%{name}-%{version}.tar.bz2
 # Add library version suffix also when building with cmake for mingw
 Patch0:        geos_version-suffix.patch
+# Fix test failure due to
+# warning: found documented return type for XXX that does not return anything
+Patch1:        geos_docs.patch
 
 BuildRequires: cmake
 BuildRequires: doxygen
@@ -98,7 +101,7 @@ rm -f %{buildroot}%{mingw64_bindir}/geos-config
 %doc AUTHORS NEWS README.md
 %license COPYING
 %{_bindir}/geosop
-%{_libdir}/libgeos.so.3.10.2
+%{_libdir}/libgeos.so.3.10.3
 %{_libdir}/libgeos_c.so.1*
 
 %files devel
@@ -114,7 +117,7 @@ rm -f %{buildroot}%{mingw64_bindir}/geos-config
 %files -n mingw32-%{name}
 %license COPYING
 %{mingw32_bindir}/geosop.exe
-%{mingw32_bindir}/libgeos-3.10.2.dll
+%{mingw32_bindir}/libgeos-3.10.3.dll
 %{mingw32_bindir}/libgeos_c-1.dll
 %{mingw32_includedir}/geos/
 %{mingw32_includedir}/geos_c.h
@@ -126,7 +129,7 @@ rm -f %{buildroot}%{mingw64_bindir}/geos-config
 %files -n mingw64-%{name}
 %license COPYING
 %{mingw64_bindir}/geosop.exe
-%{mingw64_bindir}/libgeos-3.10.2.dll
+%{mingw64_bindir}/libgeos-3.10.3.dll
 %{mingw64_bindir}/libgeos_c-1.dll
 %{mingw64_includedir}/geos/
 %{mingw64_includedir}/geos_c.h
@@ -137,6 +140,9 @@ rm -f %{buildroot}%{mingw64_bindir}/geos-config
 
 
 %changelog
+* Mon Jun 06 2022 Sandro Mani <manisandro@gmail.com> - 3.10.3-1
+- Update to 3.10.3
+
 * Fri Mar 25 2022 Sandro Mani <manisandro@gmail.com> - 3.10.2-5
 - Rebuild with mingw-gcc-12
 
