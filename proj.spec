@@ -12,8 +12,8 @@
 
 Name:           proj
 # Also check whether there is a new proj-data release when upgrading!
-Version:        %{proj_version}
-Release:        %{baserelease}%{?dist}
+Version:        9.0.1
+Release:        1%{?dist}
 Summary:        Cartographic projection software (PROJ)
 
 License:        MIT
@@ -330,6 +330,9 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 
 %changelog
+* Thu Jun 16 2022 Sandro Mani <manisandro@gmail.com> - 9.0.1-1
+- Update to 9.0.1
+
 * Fri Mar 25 2022 Sandro Mani <manisandro@gmail.com> - 9.0.0-2
 - Rebuild with mingw-gcc-12
 
