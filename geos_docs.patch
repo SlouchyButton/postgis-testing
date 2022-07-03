@@ -1,7 +1,29 @@
-diff -rupN geos-3.10.3/include/geos/noding/SegmentNodeList.h geos-3.10.3-new/include/geos/noding/SegmentNodeList.h
---- geos-3.10.3/include/geos/noding/SegmentNodeList.h	2022-06-03 18:04:49.000000000 +0200
-+++ geos-3.10.3-new/include/geos/noding/SegmentNodeList.h	2022-06-06 12:01:08.148151403 +0200
-@@ -157,9 +157,6 @@ public:
+diff -rupN geos-3.11.0/include/geos/index/SpatialIndex.h geos-3.11.0-new/include/geos/index/SpatialIndex.h
+--- geos-3.11.0/include/geos/index/SpatialIndex.h	2022-07-01 18:42:19.000000000 +0200
++++ geos-3.11.0-new/include/geos/index/SpatialIndex.h	2022-07-02 11:07:09.740083703 +0200
+@@ -70,7 +70,6 @@ public:
+      * intersect the query envelope.
+      *
+      * @param searchEnv the envelope to query for
+-     * @return a list of the items found by the query in a newly allocated vector
+      */
+     //virtual std::vector<void*>* query(const geom::Envelope *searchEnv)=0;
+     virtual void query(const geom::Envelope* searchEnv, std::vector<void*>&) = 0;
+diff -rupN geos-3.11.0/include/geos/index/VertexSequencePackedRtree.h geos-3.11.0-new/include/geos/index/VertexSequencePackedRtree.h
+--- geos-3.11.0/include/geos/index/VertexSequencePackedRtree.h	2022-07-01 18:42:19.000000000 +0200
++++ geos-3.11.0-new/include/geos/index/VertexSequencePackedRtree.h	2022-07-02 11:07:44.759084486 +0200
+@@ -136,7 +136,6 @@ public:
+     *
+     * @param queryEnv the query extent
+     * @param result vector to fill with results
+-    * @return
+     */
+     void query(const Envelope& queryEnv, std::vector<std::size_t>& result) const;
+ 
+diff -rupN geos-3.11.0/include/geos/noding/SegmentNodeList.h geos-3.11.0-new/include/geos/noding/SegmentNodeList.h
+--- geos-3.11.0/include/geos/noding/SegmentNodeList.h	2022-07-02 11:06:21.869082632 +0200
++++ geos-3.11.0-new/include/geos/noding/SegmentNodeList.h	2022-07-02 00:22:57.506176063 +0200
+@@ -155,9 +155,6 @@ public:
       * Adds an intersection into the list, if it isn't already there.
       * The input segmentIndex is expected to be normalized.
       *
@@ -11,25 +33,36 @@ diff -rupN geos-3.10.3/include/geos/noding/SegmentNodeList.h geos-3.10.3-new/inc
       * @param intPt the intersection Coordinate, will be copied
       * @param segmentIndex
       */
-diff -rupN geos-3.10.3/include/geos/triangulate/polygon/PolygonEarClipper.h geos-3.10.3-new/include/geos/triangulate/polygon/PolygonEarClipper.h
---- geos-3.10.3/include/geos/triangulate/polygon/PolygonEarClipper.h	2022-06-03 18:04:49.000000000 +0200
-+++ geos-3.10.3-new/include/geos/triangulate/polygon/PolygonEarClipper.h	2022-06-06 12:01:52.576152397 +0200
-@@ -186,7 +186,6 @@ public:
+diff -rupN geos-3.11.0/include/geos/operation/buffer/OffsetCurve.h geos-3.11.0-new/include/geos/operation/buffer/OffsetCurve.h
+--- geos-3.11.0/include/geos/operation/buffer/OffsetCurve.h	2022-07-01 18:42:19.000000000 +0200
++++ geos-3.11.0-new/include/geos/operation/buffer/OffsetCurve.h	2022-07-02 11:09:25.767086746 +0200
+@@ -252,7 +252,6 @@ public:
+     * @param dist the offset distance
+     * @param bufParams the buffer parameters to use
+     * @param lineList the vector to populate with the return value
+-    * @return the raw offset line
+     */
+     static void rawOffset(const LineString& geom, double dist, BufferParameters& bufParams, std::vector<CoordinateSequence*>& lineList);
+     static void rawOffset(const LineString& geom, double dist, std::vector<CoordinateSequence*>& lineList);
+diff -rupN geos-3.11.0/include/geos/precision/CommonBitsRemover.h geos-3.11.0-new/include/geos/precision/CommonBitsRemover.h
+--- geos-3.11.0/include/geos/precision/CommonBitsRemover.h	2022-07-01 18:42:19.000000000 +0200
++++ geos-3.11.0-new/include/geos/precision/CommonBitsRemover.h	2022-07-02 11:59:35.455154073 +0200
+@@ -74,7 +74,6 @@ public:
+      *
+      * @param geom the Geometry from which to remove the common
+      *             coordinate bits
+-     * @return the shifted Geometry
+      */
+     void removeCommonBits(geom::Geometry* geom);
+ 
+diff -rupN geos-3.11.0/include/geos/triangulate/polygon/PolygonEarClipper.h geos-3.11.0-new/include/geos/triangulate/polygon/PolygonEarClipper.h
+--- geos-3.11.0/include/geos/triangulate/polygon/PolygonEarClipper.h	2022-07-02 11:06:21.870082632 +0200
++++ geos-3.11.0-new/include/geos/triangulate/polygon/PolygonEarClipper.h	2022-07-02 00:22:57.507176063 +0200
+@@ -184,7 +184,6 @@ public:
      *
      * @param polyShell the vertices of the polygon
      * @param triListResult vector to fill in with the resultant Tri s
 -    * @return a list of the Tris
      */
-     static void triangulate(std::vector<Coordinate>& polyShell, TriList& triListResult);
- 
-diff -rupN geos-3.10.3/include/geos/triangulate/polygon/VertexSequencePackedRtree.h geos-3.10.3-new/include/geos/triangulate/polygon/VertexSequencePackedRtree.h
---- geos-3.10.3/include/geos/triangulate/polygon/VertexSequencePackedRtree.h	2022-06-03 18:04:49.000000000 +0200
-+++ geos-3.10.3-new/include/geos/triangulate/polygon/VertexSequencePackedRtree.h	2022-06-06 12:02:19.176152992 +0200
-@@ -137,7 +137,6 @@ public:
-     *
-     * @param queryEnv the query extent
-     * @param result vector to fill with results
--    * @return
-     */
-     void query(const Envelope& queryEnv, std::vector<std::size_t>& result) const;
+     static void triangulate(std::vector<Coordinate>& polyShell, TriList<Tri>& triListResult);
  
