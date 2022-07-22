@@ -2,7 +2,7 @@
 %global data_version 1.9
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
-%global baserelease 2
+%global baserelease 3
 
 # In order to avoid needing to keep incrementing the release version for the
 # main package forever, we will just construct one for proj that is guaranteed
@@ -330,6 +330,9 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 
 %changelog
+* Fri Jul 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 9.0.1-1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
+
 * Thu Jun 16 2022 Sandro Mani <manisandro@gmail.com> - 9.0.1-1
 - Update to 9.0.1
 
