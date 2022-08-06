@@ -1,7 +1,7 @@
 %{!?javabuild:%global javabuild 0}
 %{!?utils:%global utils 1}
 %{!?gcj_support:%global gcj_support 0}
-%{!?upgrade:%global upgrade 0}
+%{!?upgrade:%global upgrade 1}
 %{!?runselftest:%global runselftest 1}
 
 # Re-enable upgrade packages on next major version bump!
@@ -15,8 +15,8 @@
 %global        __provides_exclude_from %{_libdir}/pgsql
 
 Name:          postgis
-Version:       %majorversion.1
-Release:       4%{?commit:.git%shortcommit}%{?dist}
+Version:       %majorversion.2
+Release:       1%{?commit:.git%shortcommit}%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
 
@@ -28,6 +28,9 @@ Source3:       http://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.t
 # From debian
 # This should increase chances of tests passing even on busy or slow systems.
 Patch0:        relax-test-timing-constraints.patch
+
+# Add proj8 compatibility to postgis-2.x (needed for upgrade package)
+Patch1:        postgis2-proj8.patch
 
 %ifnarch armv7hl
 BuildRequires: SFCGAL-devel
@@ -148,23 +151,17 @@ Requires:      %{name}%{?_isa} = %{version}-%{release}
 The client package provides shp2pgsql, raster2pgsql and pgsql2shp for PostGIS.
 
 %prep
-%autosetup -p1 -n %{name}-%{version} -a 3
-# For patch1
-./autogen.sh
+%setup -q -n %{name}-%{version} -a 3
+%patch0 -p1
 
 %if %upgrade
-# postgis-upgrade
 (
-cd %{name}-%{prevversion}
-./autogen.sh
-)
 tar xf %{SOURCE0}
-(
-cd %{name}-%{version}
+
+cd %{name}-%{prevversion}
 %patch1 -p1
 ./autogen.sh
 )
-
 %endif
 cp -p %{SOURCE2} .
 
@@ -199,7 +196,6 @@ popd
 
 %if %upgrade
 (
-# TODO: report that out-of-tree (VPATH) build is broken
 cd %{name}-%{version}
 
 # Build current Postgis version against the previous PostgreSQL version.  We need only the so names.
@@ -218,7 +214,6 @@ sed -i 's| -fstack-clash-protection | |' extensions/address_standardizer/Makefil
 )
 
 (
-# TODO: report that out-of-tree (VPATH) build is broken
 cd %{name}-%{prevversion}
 
 # Build previous Postgis version against the current PostgreSQL version.  We need only the so names.
@@ -412,6 +407,10 @@ fi
 
 
 %changelog
+* Sat Aug 06 2022 Sandro Mani <manisandro@gmail.com> - 3.2.2-1
+- Update to 3.2.2
+- Re-enable upgrade subpackages
+
 * Fri Jul 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
 

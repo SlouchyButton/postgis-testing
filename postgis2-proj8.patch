@@ -1,0 +1,3227 @@
+diff -rupN postgis-2.5.5/autogen.sh postgis-2.5.5-new/autogen.sh
+--- postgis-2.5.5/autogen.sh	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/autogen.sh	2022-08-06 12:13:08.260741405 +0200
+@@ -81,6 +81,9 @@ ${ACLOCAL} -I macros || giveup
+ echo "* Running ${AUTOCONF} (${AUTOCONF_VER})"
+ ${AUTOCONF} || giveup
+ 
++# Work around an autoconf bug insisting in having this file
++touch build-aux/config.rpath
++
+ if test -f "${PWD}/configure"; then
+     echo "======================================"
+     echo "Now you are ready to run './configure'"
+diff -rupN postgis-2.5.5/configure.ac postgis-2.5.5-new/configure.ac
+--- postgis-2.5.5/configure.ac	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/configure.ac	2022-08-06 12:15:04.877744014 +0200
+@@ -851,42 +851,64 @@ if test ! "x$PROJDIR" = "x"; then
+ 			AC_MSG_RESULT([Using user-specified proj directory: $PROJDIR])
+ 
+ 			dnl Add the include directory to PROJ_CPPFLAGS
+-			PROJ_CPPFLAGS="-I$PROJDIR/include -DACCEPT_USE_OF_DEPRECATED_PROJ_API_H=1"
+-			PROJ_LDFLAGS="-L$PROJDIR/lib"
++			PROJ_CPPFLAGS="-I$PROJDIR/include"
++			PROJ_LDFLAGS="-L$PROJDIR/lib -lproj"
+ 		else
+ 			AC_MSG_ERROR([the --with-projdir directory "$PROJDIR" cannot be found])
+ 		fi
+ 	fi
++elif test ! -z "$PKG_CONFIG"; then
++	dnl To keep compatibility with PROJ pre 4.8, default to lproj if not found
++	PKG_CHECK_MODULES([PROJ], [proj],
++		[
++			PROJ_CPPFLAGS="$PROJ_CFLAGS"
++			PROJ_LDFLAGS="$PROJ_LIBS"
++			POSTGIS_PROJ_VERSION=`$PKG_CONFIG proj --modversion | sed 's/\([[0-9]]\).*\([[0-9]]\).*\([[0-9]]\)/\1\2/'`
++		],
++		[
++			PROJ_LDFLAGS="-lproj"
++		])
++else
++	dnl To keep compatibility with PROJ pre 4.8, default to lproj
++	PROJ_LDFLAGS="-lproj"
+ fi
+ 
++
+ dnl Check that we can find the proj_api.h header file
+ CPPFLAGS_SAVE="$CPPFLAGS"
+ CPPFLAGS="$PROJ_CPPFLAGS"
+-AC_CHECK_HEADER([proj_api.h], [], [AC_MSG_ERROR([could not find proj_api.h - you may need to specify the directory of a PROJ.4 installation using --with-projdir])],
+-[
+-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
+-])
+-
+-dnl Return the PROJ.4 version number
+-AC_PROJ_VERSION([POSTGIS_PROJ_VERSION])
++AC_CHECK_HEADER([proj_api.h],
++	[],
++	[AC_CHECK_HEADER([proj.h],
++		[],
++		[AC_MSG_ERROR([could not find proj.h or proj_api.h - you may need to specify the directory of a PROJ installation using --with-projdir])]
++		)]
++	)
++
++dnl Return the PROJ.4 version number if not detected by pkg-config
++if test "x$POSTGIS_PROJ_VERSION" = "x"; then
++	AC_PROJ_VERSION([POSTGIS_PROJ_VERSION])
++fi
+ AC_DEFINE_UNQUOTED([POSTGIS_PROJ_VERSION], [$POSTGIS_PROJ_VERSION], [PROJ library version])
+ AC_SUBST([POSTGIS_PROJ_VERSION])
+ CPPFLAGS="$CPPFLAGS_SAVE"
+ 
++dnl Ensure that we are using PROJ >= 4.9.0 (requires pj_set_searchpath)
++if test ! "$POSTGIS_PROJ_VERSION" -ge 49; then
++	AC_MSG_ERROR([PostGIS requires PROJ >= 4.9.0])
++fi
++
+ AC_SUBST([PROJ_CPPFLAGS])
+ AC_SUBST([PROJ_LDFLAGS])
+ 
+-dnl Ensure that we are using PROJ >= 4.6.0 (requires pj_set_searchpath)
+-if test ! "$POSTGIS_PROJ_VERSION" -ge 46; then
+-	AC_MSG_ERROR([PostGIS requires PROJ >= 4.6.0])
+-fi
+-
+ dnl Ensure we can link against libproj
+ LIBS_SAVE="$LIBS"
+ LIBS="$PROJ_LDFLAGS"
+-AC_CHECK_LIB([proj], [pj_get_release],
+-	[],
+-	[AC_MSG_ERROR([could not find libproj - you may need to specify the directory of a PROJ.4 installation using --with-projdir])],
++AC_CHECK_LIB([proj], [pj_get_release], [],
++	[AC_CHECK_LIB([proj], [proj_info], [],
++		[AC_MSG_ERROR([could not find libproj - you may need to specify the directory of a PROJ installation using --with-projdir])],
++		[]
++		)],
+ 	[])
+ LIBS="$LIBS_SAVE"
+ 
+diff -rupN postgis-2.5.5/liblwgeom/cunit/cu_geodetic.c postgis-2.5.5-new/liblwgeom/cunit/cu_geodetic.c
+--- postgis-2.5.5/liblwgeom/cunit/cu_geodetic.c	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/liblwgeom/cunit/cu_geodetic.c	2022-08-06 11:49:41.821709943 +0200
+@@ -1276,7 +1276,7 @@ static void test_spheroid_distance(void)
+ {
+ 	GEOGRAPHIC_POINT g1, g2;
+ 	double d;
+-#if ! PROJ_GEODESIC
++#ifndef PROJ_GEODESIC
+ 	double epsilon; /* irregular */
+ #else
+ 	const double epsilon = 1e-8; /* at least 10 nm precision */
+@@ -1291,7 +1291,7 @@ static void test_spheroid_distance(void)
+ 	point_set(0.0, 0.0, &g1);
+ 	point_set(0.0, 1.0, &g2);
+ 	d = spheroid_distance(&g1, &g2, &s);
+-#if ! PROJ_GEODESIC
++#ifndef PROJ_GEODESIC
+ 	epsilon = 1e-6;
+ #endif
+ 	CU_ASSERT_DOUBLE_EQUAL(d, 110574.3885577987957342, epsilon);
+@@ -1301,7 +1301,7 @@ static void test_spheroid_distance(void)
+ 	point_set(-10.0, 0.0, &g1);
+ 	point_set(0.0, 0.0, &g2);
+ 	d = spheroid_distance(&g1, &g2, &s);
+-#if ! PROJ_GEODESIC
++#ifndef PROJ_GEODESIC
+ 	epsilon = 1e-3;
+ #endif
+ 	CU_ASSERT_DOUBLE_EQUAL(d, 1113194.9079327357264771, epsilon);
+@@ -1311,7 +1311,7 @@ static void test_spheroid_distance(void)
+ 	point_set(-1.0, 0.0, &g1);
+ 	point_set(0.0, 0.0, &g2);
+ 	d = spheroid_distance(&g1, &g2, &s);
+-#if ! PROJ_GEODESIC
++#ifndef PROJ_GEODESIC
+ 	epsilon = 1e-4;
+ #endif
+ 	CU_ASSERT_DOUBLE_EQUAL(d, 111319.4907932735726477, epsilon);
+@@ -1321,7 +1321,7 @@ static void test_spheroid_distance(void)
+ 	point_set(-180.0, 0.0, &g1);
+ 	point_set(0.0, 1.0, &g2);
+ 	d = spheroid_distance(&g1, &g2, &s);
+-#if ! PROJ_GEODESIC
++#ifndef PROJ_GEODESIC
+ 	epsilon = 1e-5;
+ #endif
+ 	CU_ASSERT_DOUBLE_EQUAL(d, 19893357.0700676468277450, epsilon);
+@@ -1331,7 +1331,7 @@ static void test_spheroid_distance(void)
+ 	point_set(-180.0, 0.0, &g1);
+ 	point_set(0.0, 90.0, &g2);
+ 	d = spheroid_distance(&g1, &g2, &s);
+-#if ! PROJ_GEODESIC
++#ifndef PROJ_GEODESIC
+ 	epsilon = 1e-6;
+ #endif
+ 	CU_ASSERT_DOUBLE_EQUAL(d, 10001965.7293127228117396, epsilon);
+@@ -1372,7 +1372,7 @@ static void test_spheroid_area(void)
+ 	a1 = lwgeom_area_sphere(lwg, &s);
+ 	CU_ASSERT_DOUBLE_EQUAL(a1, 12341436880.106982993974659, 0.1);
+ 	/* spheroid: Planimeter -E -p 20 -r --input-string "3 -2;4 -2;4 -1;3 -1" */
+-#if PROJ_GEODESIC
++#ifdef PROJ_GEODESIC
+ 	// printf("XXXXX %d\n", PJ_VERSION);
+ 	a2 = lwgeom_area_spheroid(lwg, &s);
+ 	CU_ASSERT_DOUBLE_EQUAL(a2, 12286884908.946891319597874, 0.1);
+@@ -1386,7 +1386,7 @@ static void test_spheroid_area(void)
+ 	a1 = lwgeom_area_sphere(lwg, &s);
+ 	CU_ASSERT_DOUBLE_EQUAL(a1, 12360265021.368023059138681, 0.1);
+ 	/* spheroid: Planimeter -E -p 20 --input-string "2 8.5;1 8.5;1 9.5;2 9.5" */
+-#if PROJ_GEODESIC
++#ifdef PROJ_GEODESIC
+ 	a2 = lwgeom_area_spheroid(lwg, &s);
+ 	CU_ASSERT_DOUBLE_EQUAL(a2, 12305128751.042900673161556, 0.1);
+ #endif
+@@ -1399,7 +1399,7 @@ static void test_spheroid_area(void)
+ 	a1 = lwgeom_area_sphere(lwg, &s);
+ 	CU_ASSERT_DOUBLE_EQUAL(a1, 12360265021.368023059138681, 0.1);
+ 	/* spheroid: Planimeter -E -p 20 -r --input-string "2 179.5;1 179.5;1 178.5;2 178.5" */
+-#if PROJ_GEODESIC
++#ifdef PROJ_GEODESIC
+ 	a2 = lwgeom_area_spheroid(lwg, &s);
+ 	CU_ASSERT_DOUBLE_EQUAL(a2, 12305128751.042900673161556, 0.1);
+ #endif
+@@ -1412,7 +1412,7 @@ static void test_spheroid_area(void)
+ 	a1 = lwgeom_area_sphere(lwg, &s);
+ 	CU_ASSERT_DOUBLE_EQUAL(a1, 12360265021.368023059138681, 0.1);
+ 	/* spheroid: Planimeter -E -p 20 --input-string "2 179.5;1 179.5;1 -179.5;2 -179.5" */
+-#if PROJ_GEODESIC
++#ifdef PROJ_GEODESIC
+ 	a2 = lwgeom_area_spheroid(lwg, &s);
+ 	CU_ASSERT_DOUBLE_EQUAL(a2, 12305128751.042900673161556, 0.1);
+ #endif
+diff -rupN postgis-2.5.5/liblwgeom/cunit/cu_geos_cluster.c postgis-2.5.5-new/liblwgeom/cunit/cu_geos_cluster.c
+--- postgis-2.5.5/liblwgeom/cunit/cu_geos_cluster.c	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/liblwgeom/cunit/cu_geos_cluster.c	2022-08-06 11:48:23.729708197 +0200
+@@ -10,6 +10,8 @@
+  *
+  **********************************************************************/
+ 
++#include <stdlib.h>
++
+ #include "CUnit/Basic.h"
+ 
+ #include "../lwgeom_log.h"
+diff -rupN postgis-2.5.5/liblwgeom/g_box.c postgis-2.5.5-new/liblwgeom/g_box.c
+--- postgis-2.5.5/liblwgeom/g_box.c	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/liblwgeom/g_box.c	2022-08-06 11:48:23.730708197 +0200
+@@ -398,11 +398,11 @@ GBOX* gbox_from_string(const char *str)
+ 
+ char* gbox_to_string(const GBOX *gbox)
+ {
+-	static int sz = 138;
++	const size_t sz = 138;
+ 	char *str = NULL;
+ 
+ 	if ( ! gbox )
+-		return strdup("NULL POINTER");
++		return lwstrdup("NULL POINTER");
+ 
+ 	str = (char*)lwalloc(sz);
+ 
+diff -rupN postgis-2.5.5/liblwgeom/liblwgeom.h.in postgis-2.5.5-new/liblwgeom/liblwgeom.h.in
+--- postgis-2.5.5/liblwgeom/liblwgeom.h.in	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/liblwgeom/liblwgeom.h.in	2022-08-06 12:19:54.803750500 +0200
+@@ -32,15 +32,25 @@
+ #include <stdarg.h>
+ #include <stdio.h>
+ #include <stdint.h>
+-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
++
++#include "../postgis_config.h"
++
++#if POSTGIS_PROJ_VERSION < 60
+ #include "proj_api.h"
++typedef struct PJ
++{
++    projPJ pj_from;
++    projPJ pj_to;
++} PJ;
++#else
++#include "proj.h"
++#endif
+ 
+-#if defined(PJ_VERSION) && PJ_VERSION >= 490
+-/* Enable new geodesic functions */
+-#define PROJ_GEODESIC 1
++#if POSTGIS_PROJ_VERSION < 49
++#undef PROJ_GEODESIC
+ #else
+-/* Use the old (pre-2.2) geodesic functions */
+-#define PROJ_GEODESIC 0
++/* Enable new geodesic functions API */
++#define PROJ_GEODESIC
+ #endif
+ 
+ /**
+@@ -82,13 +92,13 @@ const char* lwgeom_version(void);
+ /**
+ * LWTYPE numbers, used internally by PostGIS
+ */
+-#define	POINTTYPE                1
+-#define	LINETYPE                 2
+-#define	POLYGONTYPE              3
+-#define	MULTIPOINTTYPE           4
+-#define	MULTILINETYPE            5
+-#define	MULTIPOLYGONTYPE         6
+-#define	COLLECTIONTYPE           7
++#define POINTTYPE                1
++#define LINETYPE                 2
++#define POLYGONTYPE              3
++#define MULTIPOINTTYPE           4
++#define MULTILINETYPE            5
++#define MULTIPOLYGONTYPE         6
++#define COLLECTIONTYPE           7
+ #define CIRCSTRINGTYPE           8
+ #define COMPOUNDTYPE             9
+ #define CURVEPOLYTYPE           10
+@@ -270,16 +280,16 @@ extern lwinterrupt_callback *lwgeom_regi
+ /******************************************************************/
+ 
+ typedef struct {
+-	double afac, bfac, cfac, dfac, efac, ffac, gfac, hfac, ifac, xoff, yoff, zoff;
++    double afac, bfac, cfac, dfac, efac, ffac, gfac, hfac, ifac, xoff, yoff, zoff;
+ } AFFINE;
+ 
+ /******************************************************************/
+ 
+ typedef struct
+ {
+-	double xmin, ymin, zmin;
+-	double xmax, ymax, zmax;
+-	int32_t srid;
++    double xmin, ymin, zmin;
++    double xmax, ymax, zmax;
++    int32_t srid;
+ }
+ BOX3D;
+ 
+@@ -291,15 +301,15 @@ BOX3D;
+ */
+ typedef struct
+ {
+-	uint8_t flags;
+-	double xmin;
+-	double xmax;
+-	double ymin;
+-	double ymax;
+-	double zmin;
+-	double zmax;
+-	double mmin;
+-	double mmax;
++    uint8_t flags;
++    double xmin;
++    double xmax;
++    double ymin;
++    double ymax;
++    double zmin;
++    double zmax;
++    double mmin;
++    double mmax;
+ } GBOX;
+ 
+ 
+@@ -313,13 +323,13 @@ typedef struct
+ */
+ typedef struct
+ {
+-	double	a;	/* semimajor axis */
+-	double	b; 	/* semiminor axis b = (a - fa) */
+-	double	f;	/* flattening f = (a-b)/a */
+-	double	e;	/* eccentricity (first) */
+-	double	e_sq;	/* eccentricity squared (first) e_sq = (a*a-b*b)/(a*a) */
+-	double  radius;  /* spherical average radius = (2*a+b)/3 */
+-	char	name[20];  /* name of ellipse */
++    double  a;  /* semimajor axis */
++    double  b;  /* semiminor axis b = (a - fa) */
++    double  f;  /* flattening f = (a-b)/a */
++    double  e;  /* eccentricity (first) */
++    double  e_sq;   /* eccentricity squared (first) e_sq = (a*a-b*b)/(a*a) */
++    double  radius;  /* spherical average radius = (2*a+b)/3 */
++    char    name[20];  /* name of ellipse */
+ }
+ SPHEROID;
+ 
+@@ -328,31 +338,31 @@ SPHEROID;
+ */
+ typedef struct
+ {
+-	double x, y;
++    double x, y;
+ }
+ POINT2D;
+ 
+ typedef struct
+ {
+-	double x, y, z;
++    double x, y, z;
+ }
+ POINT3DZ;
+ 
+ typedef struct
+ {
+-	double x, y, z;
++    double x, y, z;
+ }
+ POINT3D;
+ 
+ typedef struct
+ {
+-	double x, y, m;
++    double x, y, m;
+ }
+ POINT3DM;
+ 
+ typedef struct
+ {
+-	double x, y, z, m;
++    double x, y, z, m;
+ }
+ POINT4D;
+ 
+@@ -365,14 +375,14 @@ POINT4D;
+ */
+ typedef struct
+ {
+-	/* Array of POINT 2D, 3D or 4D, possibly misaligned. */
+-	uint8_t *serialized_pointlist;
++    /* Array of POINT 2D, 3D or 4D, possibly misaligned. */
++    uint8_t *serialized_pointlist;
+ 
+-	/* Use FLAGS_* macros to handle */
+-	uint8_t  flags;
++    /* Use FLAGS_* macros to handle */
++    uint8_t  flags;
+ 
+-	uint32_t npoints;   /* how many points we are currently storing */
+-	uint32_t maxpoints; /* how many points we have space for in serialized_pointlist */
++    uint32_t npoints;   /* how many points we are currently storing */
++    uint32_t maxpoints; /* how many points we have space for in serialized_pointlist */
+ }
+ POINTARRAY;
+ 
+@@ -381,10 +391,10 @@ POINTARRAY;
+ */
+ typedef struct
+ {
+-	uint32_t size; /* For PgSQL use only, use VAR* macros to manipulate. */
+-	uint8_t srid[3]; /* 24 bits of SRID */
+-	uint8_t flags; /* HasZ, HasM, HasBBox, IsGeodetic, IsReadOnly */
+-	uint8_t data[1]; /* See gserialized.txt */
++    uint32_t size; /* For PgSQL use only, use VAR* macros to manipulate. */
++    uint8_t srid[3]; /* 24 bits of SRID */
++    uint8_t flags; /* HasZ, HasM, HasBBox, IsGeodetic, IsReadOnly */
++    uint8_t data[1]; /* See gserialized.txt */
+ } GSERIALIZED;
+ 
+ 
+@@ -396,198 +406,198 @@ typedef struct
+ */
+ typedef struct
+ {
+-	uint8_t type;
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	void *data;
++    uint8_t type;
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    void *data;
+ }
+ LWGEOM;
+ 
+ /* POINTYPE */
+ typedef struct
+ {
+-	uint8_t type; /* POINTTYPE */
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	POINTARRAY *point;  /* hide 2d/3d (this will be an array of 1 point) */
++    uint8_t type; /* POINTTYPE */
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    POINTARRAY *point;  /* hide 2d/3d (this will be an array of 1 point) */
+ }
+ LWPOINT; /* "light-weight point" */
+ 
+ /* LINETYPE */
+ typedef struct
+ {
+-	uint8_t type; /* LINETYPE */
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	POINTARRAY *points; /* array of POINT3D */
++    uint8_t type; /* LINETYPE */
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    POINTARRAY *points; /* array of POINT3D */
+ }
+ LWLINE; /* "light-weight line" */
+ 
+ /* TRIANGLE */
+ typedef struct
+ {
+-	uint8_t type;
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	POINTARRAY *points;
++    uint8_t type;
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    POINTARRAY *points;
+ }
+ LWTRIANGLE;
+ 
+ /* CIRCSTRINGTYPE */
+ typedef struct
+ {
+-	uint8_t type; /* CIRCSTRINGTYPE */
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	POINTARRAY *points; /* array of POINT(3D/3DM) */
++    uint8_t type; /* CIRCSTRINGTYPE */
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    POINTARRAY *points; /* array of POINT(3D/3DM) */
+ }
+ LWCIRCSTRING; /* "light-weight circularstring" */
+ 
+ /* POLYGONTYPE */
+ typedef struct
+ {
+-	uint8_t type; /* POLYGONTYPE */
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	uint32_t nrings;   /* how many rings we are currently storing */
+-	uint32_t maxrings; /* how many rings we have space for in **rings */
+-	POINTARRAY **rings; /* list of rings (list of points) */
++    uint8_t type; /* POLYGONTYPE */
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    uint32_t nrings;   /* how many rings we are currently storing */
++    uint32_t maxrings; /* how many rings we have space for in **rings */
++    POINTARRAY **rings; /* list of rings (list of points) */
+ }
+ LWPOLY; /* "light-weight polygon" */
+ 
+ /* MULTIPOINTTYPE */
+ typedef struct
+ {
+-	uint8_t type;
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	uint32_t ngeoms;   /* how many geometries we are currently storing */
+-	uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
+-	LWPOINT **geoms;
++    uint8_t type;
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    uint32_t ngeoms;   /* how many geometries we are currently storing */
++    uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
++    LWPOINT **geoms;
+ }
+ LWMPOINT;
+ 
+ /* MULTILINETYPE */
+ typedef struct
+ {
+-	uint8_t type;
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	uint32_t ngeoms;   /* how many geometries we are currently storing */
+-	uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
+-	LWLINE **geoms;
++    uint8_t type;
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    uint32_t ngeoms;   /* how many geometries we are currently storing */
++    uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
++    LWLINE **geoms;
+ }
+ LWMLINE;
+ 
+ /* MULTIPOLYGONTYPE */
+ typedef struct
+ {
+-	uint8_t type;
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	uint32_t ngeoms;   /* how many geometries we are currently storing */
+-	uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
+-	LWPOLY **geoms;
++    uint8_t type;
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    uint32_t ngeoms;   /* how many geometries we are currently storing */
++    uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
++    LWPOLY **geoms;
+ }
+ LWMPOLY;
+ 
+ /* COLLECTIONTYPE */
+ typedef struct
+ {
+-	uint8_t type;
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	uint32_t ngeoms;   /* how many geometries we are currently storing */
+-	uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
+-	LWGEOM **geoms;
++    uint8_t type;
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    uint32_t ngeoms;   /* how many geometries we are currently storing */
++    uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
++    LWGEOM **geoms;
+ }
+ LWCOLLECTION;
+ 
+ /* COMPOUNDTYPE */
+ typedef struct
+ {
+-	uint8_t type; /* COMPOUNDTYPE */
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	uint32_t ngeoms;   /* how many geometries we are currently storing */
+-	uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
+-	LWGEOM **geoms;
++    uint8_t type; /* COMPOUNDTYPE */
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    uint32_t ngeoms;   /* how many geometries we are currently storing */
++    uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
++    LWGEOM **geoms;
+ }
+ LWCOMPOUND; /* "light-weight compound line" */
+ 
+ /* CURVEPOLYTYPE */
+ typedef struct
+ {
+-	uint8_t type; /* CURVEPOLYTYPE */
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	uint32_t nrings;    /* how many rings we are currently storing */
+-	uint32_t maxrings;  /* how many rings we have space for in **rings */
+-	LWGEOM **rings; /* list of rings (list of points) */
++    uint8_t type; /* CURVEPOLYTYPE */
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    uint32_t nrings;    /* how many rings we are currently storing */
++    uint32_t maxrings;  /* how many rings we have space for in **rings */
++    LWGEOM **rings; /* list of rings (list of points) */
+ }
+ LWCURVEPOLY; /* "light-weight polygon" */
+ 
+ /* MULTICURVE */
+ typedef struct
+ {
+-	uint8_t type;
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	uint32_t ngeoms;   /* how many geometries we are currently storing */
+-	uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
+-	LWGEOM **geoms;
++    uint8_t type;
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    uint32_t ngeoms;   /* how many geometries we are currently storing */
++    uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
++    LWGEOM **geoms;
+ }
+ LWMCURVE;
+ 
+ /* MULTISURFACETYPE */
+ typedef struct
+ {
+-	uint8_t type;
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	uint32_t ngeoms;   /* how many geometries we are currently storing */
+-	uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
+-	LWGEOM **geoms;
++    uint8_t type;
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    uint32_t ngeoms;   /* how many geometries we are currently storing */
++    uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
++    LWGEOM **geoms;
+ }
+ LWMSURFACE;
+ 
+ /* POLYHEDRALSURFACETYPE */
+ typedef struct
+ {
+-	uint8_t type;
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	uint32_t ngeoms;   /* how many geometries we are currently storing */
+-	uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
+-	LWPOLY **geoms;
++    uint8_t type;
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    uint32_t ngeoms;   /* how many geometries we are currently storing */
++    uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
++    LWPOLY **geoms;
+ }
+ LWPSURFACE;
+ 
+ /* TINTYPE */
+ typedef struct
+ {
+-	uint8_t type;
+-	uint8_t flags;
+-	GBOX *bbox;
+-	int32_t srid;
+-	uint32_t ngeoms;   /* how many geometries we are currently storing */
+-	uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
+-	LWTRIANGLE **geoms;
++    uint8_t type;
++    uint8_t flags;
++    GBOX *bbox;
++    int32_t srid;
++    uint32_t ngeoms;   /* how many geometries we are currently storing */
++    uint32_t maxgeoms; /* how many geometries we have space for in **geoms */
++    LWTRIANGLE **geoms;
+ }
+ LWTIN;
+ 
+@@ -954,7 +964,7 @@ extern POINTARRAY *ptarray_addPoint(cons
+ 
+ /**
+  * @brief Remove a point from a pointarray.
+- * 	@param which -  is the offset (starting at 0)
++ *  @param which -  is the offset (starting at 0)
+  * @return #POINTARRAY is newly allocated
+  */
+ extern POINTARRAY *ptarray_removePoint(POINTARRAY *pa, uint32_t where);
+@@ -1647,8 +1657,8 @@ extern double lwgeom_length_spheroid(con
+ extern int lwgeom_covers_lwgeom_sphere(const LWGEOM *lwgeom1, const LWGEOM *lwgeom2);
+ 
+ typedef struct {
+-	POINT2D* center;
+-	double radius;
++    POINT2D* center;
++    double radius;
+ } LWBOUNDINGCIRCLE;
+ 
+ extern void lwboundingcircle_destroy(LWBOUNDINGCIRCLE* c);
+@@ -2003,7 +2013,7 @@ extern int gserialized_get_gbox_p(const
+ #define LW_PARSER_CHECK_ZCLOSURE   8
+ 
+ #define LW_PARSER_CHECK_NONE   0
+-#define LW_PARSER_CHECK_ALL	(LW_PARSER_CHECK_MINPOINTS | LW_PARSER_CHECK_ODD | LW_PARSER_CHECK_CLOSURE)
++#define LW_PARSER_CHECK_ALL (LW_PARSER_CHECK_MINPOINTS | LW_PARSER_CHECK_ODD | LW_PARSER_CHECK_CLOSURE)
+ 
+ /**
+  * Parser result structure: returns the result of attempting to convert
+@@ -2011,14 +2021,14 @@ extern int gserialized_get_gbox_p(const
+  */
+ typedef struct struct_lwgeom_parser_result
+ {
+-	const char *wkinput;        /* Copy of pointer to input WKT/WKB */
+-	uint8_t *serialized_lwgeom; /* Pointer to serialized LWGEOM */
+-	size_t size;                /* Size of serialized LWGEOM in bytes */
+-	LWGEOM *geom;               /* Pointer to LWGEOM struct */
+-	const char *message;        /* Error/warning message */
+-	int errcode;                /* Error/warning number */
+-	int errlocation;            /* Location of error */
+-	int parser_check_flags;     /* Bitmask of validity checks run during this parse */
++    const char *wkinput;        /* Copy of pointer to input WKT/WKB */
++    uint8_t *serialized_lwgeom; /* Pointer to serialized LWGEOM */
++    size_t size;                /* Size of serialized LWGEOM in bytes */
++    LWGEOM *geom;               /* Pointer to LWGEOM struct */
++    const char *message;        /* Error/warning message */
++    int errcode;                /* Error/warning number */
++    int errlocation;            /* Location of error */
++    int parser_check_flags;     /* Bitmask of validity checks run during this parse */
+ }
+ LWGEOM_PARSER_RESULT;
+ 
+@@ -2043,20 +2053,20 @@ LWGEOM_PARSER_RESULT;
+  */
+ typedef struct struct_lwgeom_unparser_result
+ {
+-	uint8_t *serialized_lwgeom;	/* Copy of pointer to input serialized LWGEOM */
+-	char *wkoutput;			/* Pointer to WKT or WKB output */
+-	size_t size;			/* Size of serialized LWGEOM in bytes */
+-	const char *message;		/* Error/warning message */
+-	int errlocation;		/* Location of error */
++    uint8_t *serialized_lwgeom; /* Copy of pointer to input serialized LWGEOM */
++    char *wkoutput;         /* Pointer to WKT or WKB output */
++    size_t size;            /* Size of serialized LWGEOM in bytes */
++    const char *message;        /* Error/warning message */
++    int errlocation;        /* Location of error */
+ }
+ LWGEOM_UNPARSER_RESULT;
+ 
+ /*
+  * Unparser error messages (these must match the message array in lwgunparse.c)
+  */
+-#define UNPARSER_ERROR_MOREPOINTS 	1
+-#define UNPARSER_ERROR_ODDPOINTS	2
+-#define UNPARSER_ERROR_UNCLOSED		3
++#define UNPARSER_ERROR_MOREPOINTS   1
++#define UNPARSER_ERROR_ODDPOINTS    2
++#define UNPARSER_ERROR_UNCLOSED     3
+ 
+ 
+ /*
+@@ -2200,27 +2210,27 @@ LWGEOM *lwgeom_unstroke(const LWGEOM *ge
+  * lwcurve_linearize
+  */
+ typedef enum {
+-	/**
+-	 * Tolerance expresses the number of segments to use
+-	 * for each quarter of circle (quadrant). Must be
+-	 * an integer.
+-	 */
+-	LW_LINEARIZE_TOLERANCE_TYPE_SEGS_PER_QUAD = 0,
+-	/**
+-	 * Tolerance expresses the maximum distance between
+-	 * an arbitrary point on the curve and the closest
+-	 * point to it on the resulting approximation, in
+-	 * cartesian units.
+-	 */
+-	LW_LINEARIZE_TOLERANCE_TYPE_MAX_DEVIATION = 1,
+-	/**
+-	 * Tolerance expresses the maximum angle between
+-	 * the radii generating approximation line vertices,
+-	 * given in radiuses. A value of 1 would result
+-	 * in an approximation of a semicircle composed by
+-	 * 180 segments
+-	 */
+-	LW_LINEARIZE_TOLERANCE_TYPE_MAX_ANGLE = 2
++    /**
++     * Tolerance expresses the number of segments to use
++     * for each quarter of circle (quadrant). Must be
++     * an integer.
++     */
++    LW_LINEARIZE_TOLERANCE_TYPE_SEGS_PER_QUAD = 0,
++    /**
++     * Tolerance expresses the maximum distance between
++     * an arbitrary point on the curve and the closest
++     * point to it on the resulting approximation, in
++     * cartesian units.
++     */
++    LW_LINEARIZE_TOLERANCE_TYPE_MAX_DEVIATION = 1,
++    /**
++     * Tolerance expresses the maximum angle between
++     * the radii generating approximation line vertices,
++     * given in radiuses. A value of 1 would result
++     * in an approximation of a semicircle composed by
++     * 180 segments
++     */
++    LW_LINEARIZE_TOLERANCE_TYPE_MAX_ANGLE = 2
+ } LW_LINEARIZE_TOLERANCE_TYPE;
+ 
+ typedef enum {
+@@ -2229,7 +2239,7 @@ typedef enum {
+    * vertices would be the same no matter the order
+    * of the points defining the input curve.
+    */
+-	LW_LINEARIZE_FLAG_SYMMETRIC = 1 << 0,
++    LW_LINEARIZE_FLAG_SYMMETRIC = 1 << 0,
+ 
+   /**
+    * Retain angle instructs the engine to try its best
+@@ -2249,7 +2259,7 @@ typedef enum {
+    * instead be smaller (shorter) than the others.
+    *
+    */
+-	LW_LINEARIZE_FLAG_RETAIN_ANGLE = 1 << 1
++    LW_LINEARIZE_FLAG_RETAIN_ANGLE = 1 << 1
+ } LW_LINEARIZE_FLAGS;
+ 
+ /**
+@@ -2332,6 +2342,9 @@ int lwgeom_is_simple(const LWGEOM *lwgeo
+  * PROJ4-dependent extra functions on LWGEOM
+  ******************************************************************************/
+ 
++int lwgeom_transform_from_str(LWGEOM *geom, const char* instr, const char* outstr);
++
++#if POSTGIS_PROJ_VERSION < 60
+ /**
+  * Get a projection from a string representation
+  *
+@@ -2339,14 +2352,14 @@ int lwgeom_is_simple(const LWGEOM *lwgeo
+  */
+ projPJ lwproj_from_string(const char* txt);
+ 
++#endif
+ /**
+  * Transform (reproject) a geometry in-place.
+  * @param geom the geometry to transform
+- * @param inpj the input (or current, or source) projection
+- * @param outpj the output (or destination) projection
++ * @param PJ the input and output
+  */
+-int lwgeom_transform(LWGEOM *geom, projPJ inpj, projPJ outpj);
+-int ptarray_transform(POINTARRAY *pa, projPJ inpj, projPJ outpj);
++int lwgeom_transform(LWGEOM *geom, PJ* pj);
++int ptarray_transform(POINTARRAY *pa, PJ* pj);
+ 
+ 
+ /*******************************************************************************
+diff -rupN postgis-2.5.5/liblwgeom/liblwgeom_internal.h postgis-2.5.5-new/liblwgeom/liblwgeom_internal.h
+--- postgis-2.5.5/liblwgeom/liblwgeom_internal.h	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/liblwgeom/liblwgeom_internal.h	2022-08-06 11:48:23.733708197 +0200
+@@ -38,13 +38,14 @@
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <string.h>
++#include <stdlib.h>
++#include <float.h>
++#include <math.h>
+ 
+ #if HAVE_IEEEFP_H
+ #include <ieeefp.h>
+ #endif
+ 
+-#include <float.h>
+-
+ #include "liblwgeom.h"
+ 
+ /**
+@@ -363,11 +364,6 @@ char lwcollection_same(const LWCOLLECTIO
+ char lwcircstring_same(const LWCIRCSTRING *p1, const LWCIRCSTRING *p2);
+ 
+ /*
+-* Transform
+-*/
+-int point4d_transform(POINT4D *pt, projPJ srcpj, projPJ dstpj);
+-
+-/*
+ * Shift
+ */
+ void ptarray_longitude_shift(POINTARRAY *pa);
+@@ -502,5 +498,6 @@ int ptarray_npoints_in_rect(const POINTA
+ int gbox_contains_point2d(const GBOX *g, const POINT2D *p);
+ int lwpoly_contains_point(const LWPOLY *poly, const POINT2D *pt);
+ POINT4D* lwmpoint_extract_points_4d(const LWMPOINT* g, uint32_t* npoints, int* input_empty);
++char* lwstrdup(const char* a);
+ 
+ #endif /* _LIBLWGEOM_INTERNAL_H */
+diff -rupN postgis-2.5.5/liblwgeom/lwgeom_transform.c postgis-2.5.5-new/liblwgeom/lwgeom_transform.c
+--- postgis-2.5.5/liblwgeom/lwgeom_transform.c	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/liblwgeom/lwgeom_transform.c	2022-08-06 11:59:22.562722935 +0200
+@@ -45,12 +45,53 @@ to_dec(POINT4D *pt)
+ 	pt->y *= 180.0/M_PI;
+ }
+ 
++/***************************************************************************/
++
++#if POSTGIS_PROJ_VERSION < 60
++
++
++static int
++point4d_transform(POINT4D *pt, PJ* pj)
++{
++	POINT3D orig_pt = {pt->x, pt->y, pt->z}; /* Copy for error report*/
++
++	if (pj_is_latlong(pj->pj_from)) to_rad(pt) ;
++
++	LWDEBUGF(4, "transforming POINT(%f %f) from '%s' to '%s'",
++		 orig_pt.x, orig_pt.y, pj_get_def(pj->pj_from,0), pj_get_def(pj->pj_to,0));
++
++	if (pj_transform(pj->pj_from, pj->pj_to, 1, 0, &(pt->x), &(pt->y), &(pt->z)) != 0)
++	{
++		int pj_errno_val = *pj_get_errno_ref();
++		if (pj_errno_val == -38)
++		{
++			lwnotice("PostGIS was unable to transform the point because either no grid"
++				 " shift files were found, or the point does not lie within the "
++				 "range for which the grid shift is defined. Refer to the "
++				 "ST_Transform() section of the PostGIS manual for details on how "
++				 "to configure PostGIS to alter this behaviour.");
++			lwerror("transform: couldn't project point (%g %g %g): %s (%d)",
++				orig_pt.x, orig_pt.y, orig_pt.z,
++				pj_strerrno(pj_errno_val), pj_errno_val);
++		}
++		else
++		{
++			lwerror("transform: %s (%d)",
++				pj_strerrno(pj_errno_val), pj_errno_val);
++		}
++		return LW_FAILURE;
++	}
++
++	if (pj_is_latlong(pj->pj_to)) to_dec(pt);
++	return LW_SUCCESS;
++}
++
+ /**
+  * Transform given POINTARRAY
+  * from inpj projection to outpj projection
+  */
+ int
+-ptarray_transform(POINTARRAY *pa, projPJ inpj, projPJ outpj)
++ptarray_transform(POINTARRAY *pa, PJ* pj)
+ {
+ 	uint32_t i;
+ 	POINT4D p;
+@@ -58,20 +99,51 @@ ptarray_transform(POINTARRAY *pa, projPJ
+ 	for ( i = 0; i < pa->npoints; i++ )
+ 	{
+ 		getPoint4d_p(pa, i, &p);
+-		if ( ! point4d_transform(&p, inpj, outpj) ) return LW_FAILURE;
++		if ( ! point4d_transform(&p, pj) ) return LW_FAILURE;
+ 		ptarray_set_point4d(pa, i, &p);
+ 	}
+ 
+ 	return LW_SUCCESS;
+ }
+ 
++int
++lwgeom_transform_from_str(LWGEOM *geom, const char* instr, const char* outstr)
++{
++	char *pj_errstr;
++	int rv;
++	PJ pj;
++
++	pj.pj_from = lwproj_from_string(instr);
++	if (!pj.pj_from)
++	{
++		pj_errstr = pj_strerrno(*pj_get_errno_ref());
++		if (!pj_errstr) pj_errstr = "";
++		lwerror("could not parse proj string '%s'", instr);
++		return LW_FAILURE;
++	}
++
++	pj.pj_to = lwproj_from_string(outstr);
++	if (!pj.pj_to)
++	{
++		pj_free(pj.pj_from);
++		pj_errstr = pj_strerrno(*pj_get_errno_ref());
++		if (!pj_errstr) pj_errstr = "";
++		lwerror("could not parse proj string '%s'", outstr);
++		return LW_FAILURE;
++	}
++
++	rv = lwgeom_transform(geom, &pj);
++	pj_free(pj.pj_from);
++	pj_free(pj.pj_to);
++	return rv;
++}
+ 
+ /**
+- * Transform given SERIALIZED geometry
++ * Transform given LWGEOM geometry
+  * from inpj projection to outpj projection
+  */
+ int
+-lwgeom_transform(LWGEOM *geom, projPJ inpj, projPJ outpj)
++lwgeom_transform(LWGEOM *geom, PJ* pj)
+ {
+ 	uint32_t i;
+ 
+@@ -87,7 +159,7 @@ lwgeom_transform(LWGEOM *geom, projPJ in
+ 		case TRIANGLETYPE:
+ 		{
+ 			LWLINE *g = (LWLINE*)geom;
+-			if ( ! ptarray_transform(g->points, inpj, outpj) ) return LW_FAILURE;
++			if ( ! ptarray_transform(g->points, pj) ) return LW_FAILURE;
+ 			break;
+ 		}
+ 		case POLYGONTYPE:
+@@ -95,7 +167,7 @@ lwgeom_transform(LWGEOM *geom, projPJ in
+ 			LWPOLY *g = (LWPOLY*)geom;
+ 			for ( i = 0; i < g->nrings; i++ )
+ 			{
+-				if ( ! ptarray_transform(g->rings[i], inpj, outpj) ) return LW_FAILURE;
++				if ( ! ptarray_transform(g->rings[i], pj) ) return LW_FAILURE;
+ 			}
+ 			break;
+ 		}
+@@ -113,7 +185,7 @@ lwgeom_transform(LWGEOM *geom, projPJ in
+ 			LWCOLLECTION *g = (LWCOLLECTION*)geom;
+ 			for ( i = 0; i < g->ngeoms; i++ )
+ 			{
+-				if ( ! lwgeom_transform(g->geoms[i], inpj, outpj) ) return LW_FAILURE;
++				if ( ! lwgeom_transform(g->geoms[i], pj) ) return LW_FAILURE;
+ 			}
+ 			break;
+ 		}
+@@ -127,52 +199,287 @@ lwgeom_transform(LWGEOM *geom, projPJ in
+ 	return LW_SUCCESS;
+ }
+ 
+-int
+-point4d_transform(POINT4D *pt, projPJ srcpj, projPJ dstpj)
++projPJ
++lwproj_from_string(const char *str1)
+ {
+-	POINT3D orig_pt = {pt->x, pt->y, pt->z}; /* Copy for error report*/
++	if (!str1 || str1[0] == '\0')
++	{
++		return NULL;
++	}
++	return pj_init_plus(str1);
++}
+ 
+-	if (pj_is_latlong(srcpj)) to_rad(pt) ;
++/***************************************************************************/
+ 
+-	LWDEBUGF(4, "transforming POINT(%f %f) from '%s' to '%s'",
+-		 orig_pt.x, orig_pt.y, pj_get_def(srcpj,0), pj_get_def(dstpj,0));
++#else /* POSTGIS_PROJ_VERION >= 60 */
+ 
+-	if (pj_transform(srcpj, dstpj, 1, 0, &(pt->x), &(pt->y), &(pt->z)) != 0)
++int
++lwgeom_transform_from_str(LWGEOM *geom, const char* instr, const char* outstr)
++{
++	PJ *pj = proj_create_crs_to_crs(NULL, instr, outstr, NULL);
++	if (!pj)
+ 	{
+-		int pj_errno_val = *pj_get_errno_ref();
+-		if (pj_errno_val == -38)
++		PJ *pj_in = proj_create(NULL, instr);
++		PJ *pj_out = proj_create(NULL, outstr);
++		if (!pj_in)
+ 		{
+-			lwnotice("PostGIS was unable to transform the point because either no grid"
+-				 " shift files were found, or the point does not lie within the "
+-				 "range for which the grid shift is defined. Refer to the "
+-				 "ST_Transform() section of the PostGIS manual for details on how "
+-				 "to configure PostGIS to alter this behaviour.");
+-			lwerror("transform: couldn't project point (%g %g %g): %s (%d)",
+-				orig_pt.x, orig_pt.y, orig_pt.z,
+-				pj_strerrno(pj_errno_val), pj_errno_val);
++			lwerror("could not parse proj string '%s'", instr);
+ 		}
+-		else
++		if (!pj_out)
+ 		{
+-			lwerror("transform: couldn't project point (%g %g %g): %s (%d)",
+-				orig_pt.x, orig_pt.y, orig_pt.z,
+-				pj_strerrno(pj_errno_val), pj_errno_val);
++			proj_destroy(pj_in);
++			lwerror("could not parse proj string '%s'", outstr);
+ 		}
+ 		return LW_FAILURE;
+ 	}
+ 
+-	if (pj_is_latlong(dstpj)) to_dec(pt);
++	return lwgeom_transform(geom, pj);
++}
++
++int
++lwgeom_transform(LWGEOM* geom, PJ* pj)
++{
++	uint32_t i;
++
++	/* No points to transform in an empty! */
++	if (lwgeom_is_empty(geom))
++		return LW_SUCCESS;
++
++	switch(geom->type)
++	{
++		case POINTTYPE:
++		case LINETYPE:
++		case CIRCSTRINGTYPE:
++		case TRIANGLETYPE:
++		{
++			LWLINE *g = (LWLINE*)geom;
++			if (!ptarray_transform(g->points, pj))
++				return LW_FAILURE;
++			break;
++		}
++		case POLYGONTYPE:
++		{
++			LWPOLY *g = (LWPOLY*)geom;
++			for (i = 0; i < g->nrings; i++)
++			{
++				if (!ptarray_transform(g->rings[i], pj))
++					return LW_FAILURE;
++			}
++			break;
++		}
++		case MULTIPOINTTYPE:
++		case MULTILINETYPE:
++		case MULTIPOLYGONTYPE:
++		case COLLECTIONTYPE:
++		case COMPOUNDTYPE:
++		case CURVEPOLYTYPE:
++		case MULTICURVETYPE:
++		case MULTISURFACETYPE:
++		case POLYHEDRALSURFACETYPE:
++		case TINTYPE:
++		{
++			LWCOLLECTION *g = (LWCOLLECTION*)geom;
++			for (i = 0; i < g->ngeoms; i++)
++			{
++				if (!lwgeom_transform(g->geoms[i], pj))
++					return LW_FAILURE;
++			}
++			break;
++		}
++		default:
++		{
++			lwerror("lwgeom_transform: Cannot handle type '%s'",
++			          lwtype_name(geom->type));
++			return LW_FAILURE;
++		}
++	}
+ 	return LW_SUCCESS;
+ }
+ 
+-projPJ
+-lwproj_from_string(const char *str1)
++static int
++proj_crs_is_swapped(const PJ* pj_crs)
+ {
+-	if (!str1 || str1[0] == '\0')
++	PJ *pj_cs;
++	int rv = LW_FALSE;
++
++	if (proj_get_type(pj_crs) == PJ_TYPE_COMPOUND_CRS)
+ 	{
+-		return NULL;
++		PJ *pj_horiz_crs = proj_crs_get_sub_crs(NULL, pj_crs, 0);
++		pj_cs = proj_crs_get_coordinate_system(NULL, pj_horiz_crs);
++		proj_destroy(pj_horiz_crs);
+ 	}
+-	return pj_init_plus(str1);
++	else if (proj_get_type(pj_crs) == PJ_TYPE_BOUND_CRS)
++	{
++		PJ *pj_bound_crs = proj_get_source_crs(NULL, pj_crs);
++		pj_cs = proj_crs_get_coordinate_system(NULL, pj_bound_crs);
++		proj_destroy(pj_bound_crs);
++	}
++	else
++	{
++		pj_cs = proj_crs_get_coordinate_system(NULL, pj_crs);
++	}
++	int axis_count = proj_cs_get_axis_count(NULL, pj_cs);
++	if (axis_count > 0)
++	{
++		const char *out_name, *out_abbrev, *out_direction;
++		double out_unit_conv_factor;
++		const char *out_unit_name, *out_unit_auth_name, *out_unit_code;
++		/* Read only first axis, see if it is degrees / north */
++		proj_cs_get_axis_info(NULL, pj_cs, 0,
++			&out_name,
++			&out_abbrev,
++			&out_direction,
++			&out_unit_conv_factor,
++			&out_unit_name,
++			&out_unit_auth_name,
++			&out_unit_code
++			);
++		rv = (strcasecmp(out_direction, "north") == 0);
++	}
++	proj_destroy(pj_cs);
++	return rv;
++}
++
++
++int
++ptarray_transform(POINTARRAY* pa, PJ* pj)
++{
++	uint32_t i;
++	POINT4D p;
++	size_t n_converted;
++	size_t n_points = pa->npoints;
++	size_t point_size = ptarray_point_size(pa);
++	int has_z = ptarray_has_z(pa);
++	double *pa_double = (double*)(pa->serialized_pointlist);
++	int input_swapped, output_swapped;
++
++	/* XXXX TODO check that the PJ has decimal degrees as units in input/output */
++
++	PJ* pj_source_crs = proj_get_source_crs(NULL, pj);
++	PJ* pj_target_crs = proj_get_target_crs(NULL, pj);
++
++	if (!(pj_source_crs && pj_source_crs))
++	{
++		lwerror("ptarray_transform: unable to access source and target crs");
++		return LW_FAILURE;
++	}
++
++	input_swapped = proj_crs_is_swapped(pj_source_crs);
++	output_swapped = proj_crs_is_swapped(pj_target_crs);
++	proj_destroy(pj_source_crs);
++	proj_destroy(pj_target_crs);
++
++	/* Convert to radians if necessary */
++	if (proj_angular_input(pj, PJ_FWD))
++	{
++		for (i = 0; i < pa->npoints; i++)
++		{
++			getPoint4d_p(pa, i, &p);
++			to_rad(&p);
++		}
++	}
++
++	if (input_swapped)
++		ptarray_swap_ordinates(pa, LWORD_X, LWORD_Y);
++
++	/*
++	* size_t proj_trans_generic(PJ *P, PJ_DIRECTION direction,
++	* double *x, size_t sx, size_t nx,
++	* double *y, size_t sy, size_t ny,
++	* double *z, size_t sz, size_t nz,
++	* double *t, size_t st, size_t nt)
++	*/
++
++	n_converted = proj_trans_generic(
++		pj, PJ_FWD,
++		pa_double,     point_size, n_points, /* X */
++		pa_double + 1, point_size, n_points, /* Y */
++		has_z ? pa_double + 2 : NULL,
++		has_z ? point_size : 0,
++		has_z ? n_points : 0, /* Z */
++		NULL, 0, 0 /* M */
++		);
++
++	if (n_converted != n_points)
++	{
++		lwerror("ptarray_transform: converted (%d) != input (%d)",
++			n_converted, n_points);
++		return LW_FAILURE;
++	}
++
++	int pj_errno_val = proj_errno(pj);
++	if (pj_errno_val)
++	{
++		lwerror("transform: %s (%d)",
++			proj_errno_string(pj_errno_val), pj_errno_val);
++		return LW_FAILURE;
++	}
++
++	if (output_swapped)
++		ptarray_swap_ordinates(pa, LWORD_X, LWORD_Y);
++
++	/* Convert radians to degrees if necessary */
++	if (proj_angular_output(pj, PJ_FWD))
++	{
++		for (i = 0; i < pa->npoints; i++)
++		{
++			getPoint4d_p(pa, i, &p);
++			to_dec(&p);
++		}
++	}
++
++	return LW_SUCCESS;
+ }
+ 
++#if 0
++int
++point4d_transform(POINT4D *pt, PJ* pj)
++{
++	POINT4D pt_src = *pt; /* Copy for error report*/
++	PJ_COORD pj_coord_src, pj_coord_dst;
++	int input_swapped = proj_crs_is_swapped(proj_get_source_crs(NULL, pj));
++	int output_swapped = proj_crs_is_swapped(proj_get_target_crs(NULL, pj));
++
++	if (proj_angular_input(pj, PJ_FWD))
++		to_rad(pt);
++
++	LWDEBUGF(4, "transforming POINT(%f %f) using '%s'",
++		pt_src.x, pt_src.y, (proj_pj_info(pj)).definition);
++
++	if (input_swapped)
++		pj_coord_src = proj_coord(pt->y, pt->x, pt->z, pt->m);
++	else
++		pj_coord_src = proj_coord(pt->x, pt->y, pt->z, pt->m);
++
++	pj_coord_dst = proj_trans(pj, PJ_FWD, pj_coord_src);
++
++	int pj_errno_val = proj_errno(pj);
++	if (pj_errno_val)
++	{
++		lwerror("point4d_transform: couldn't project point (%g %g %g): %s (%d)",
++			pt_src.x, pt_src.y, pt_src.z,
++			proj_errno_string(pj_errno_val), pj_errno_val);
++		return LW_FAILURE;
++	}
++
++	if (output_swapped)
++	{
++		pt->x = pj_coord_dst.xyzt.x;
++		pt->y = pj_coord_dst.xyzt.y;
++	}
++	else
++	{
++		pt->x = pj_coord_dst.xyzt.x;
++		pt->y = pj_coord_dst.xyzt.y;
++	}
++	pt->z = pj_coord_dst.xyzt.z;
++	pt->m = pt_src.m;
++
++	if (proj_angular_output(pj, PJ_FWD))
++		to_dec(pt);
++	return LW_SUCCESS;
++}
++#endif /* point4d_transform */
+ 
+ 
++#endif
+diff -rupN postgis-2.5.5/liblwgeom/lwin_encoded_polyline.c postgis-2.5.5-new/liblwgeom/lwin_encoded_polyline.c
+--- postgis-2.5.5/liblwgeom/lwin_encoded_polyline.c	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/liblwgeom/lwin_encoded_polyline.c	2022-08-06 11:48:23.734708197 +0200
+@@ -25,6 +25,8 @@
+ 
+ #include <assert.h>
+ #include <string.h>
++#include <math.h>
++
+ #include "liblwgeom.h"
+ #include "../postgis_config.h"
+ 
+diff -rupN postgis-2.5.5/liblwgeom/lwspheroid.c postgis-2.5.5-new/liblwgeom/lwspheroid.c
+--- postgis-2.5.5/liblwgeom/lwspheroid.c	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/liblwgeom/lwspheroid.c	2022-08-06 11:48:23.735708197 +0200
+@@ -28,8 +28,8 @@
+ #include "lwgeodetic.h"
+ #include "lwgeom_log.h"
+ 
+-/* GeographicLib */
+-#if PROJ_GEODESIC
++/* In proj4.9, GeographicLib is in special header */
++#ifdef PROJ_GEODESIC
+ #include <geodesic.h>
+ #endif
+ 
+@@ -45,7 +45,7 @@ void spheroid_init(SPHEROID *s, double a
+ 	s->radius = (2.0 * a + b ) / 3.0;
+ }
+ 
+-#if ! PROJ_GEODESIC
++#ifndef PROJ_GEODESIC
+ static double spheroid_mu2(double alpha, const SPHEROID *s)
+ {
+ 	double b2 = POW2(s->b);
+@@ -64,7 +64,7 @@ static double spheroid_big_b(double u2)
+ #endif /* ! PROJ_GEODESIC */
+ 
+ 
+-#if PROJ_GEODESIC
++#ifdef PROJ_GEODESIC
+ 
+ /**
+ * Computes the shortest distance along the surface of the spheroid
+@@ -165,7 +165,7 @@ static double ptarray_area_spheroid(cons
+ 	return fabs(area);
+ }
+ 
+-/* Above use GeographicLib */
++/* Above use Proj GeographicLib */
+ #else /* ! PROJ_GEODESIC */
+ /* Below use pre-version 2.2 geodesic functions */
+ 
+diff -rupN postgis-2.5.5/liblwgeom/lwunionfind.c postgis-2.5.5-new/liblwgeom/lwunionfind.c
+--- postgis-2.5.5/liblwgeom/lwunionfind.c	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/liblwgeom/lwunionfind.c	2022-08-06 11:48:23.735708197 +0200
+@@ -26,6 +26,7 @@
+ #include "liblwgeom.h"
+ #include "lwunionfind.h"
+ #include <string.h>
++#include <stdlib.h>
+ 
+ static int cmp_int(const void *a, const void *b);
+ static int cmp_int_ptr(const void *a, const void *b);
+diff -rupN postgis-2.5.5/liblwgeom/lwutil.c postgis-2.5.5-new/liblwgeom/lwutil.c
+--- postgis-2.5.5/liblwgeom/lwutil.c	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/liblwgeom/lwutil.c	2022-08-06 11:48:23.735708197 +0200
+@@ -246,6 +246,15 @@ lwfree(void *mem)
+ 	lwfree_var(mem);
+ }
+ 
++char *
++lwstrdup(const char* a)
++{
++	size_t l = strlen(a)+1;
++	char *b = lwalloc(l);
++	strncpy(b, a, l);
++	return b;
++}
++
+ /*
+  * Returns a new string which contains a maximum of maxlength characters starting
+  * from startpos and finishing at endpos (0-based indexing). If the string is
+diff -rupN postgis-2.5.5/liblwgeom/ptarray.c postgis-2.5.5-new/liblwgeom/ptarray.c
+--- postgis-2.5.5/liblwgeom/ptarray.c	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/liblwgeom/ptarray.c	2022-08-06 11:48:23.736708197 +0200
+@@ -26,6 +26,7 @@
+ 
+ #include <stdio.h>
+ #include <string.h>
++#include <stdlib.h>
+ 
+ #include "../postgis_config.h"
+ /*#define POSTGIS_DEBUG_LEVEL 4*/
+@@ -390,8 +391,8 @@ ptarray_swap_ordinates(POINTARRAY *pa, L
+ 	double d, *dp1, *dp2;
+ 	POINT4D p;
+ 
+-  dp1 = ((double*)&p)+(unsigned)o1;
+-  dp2 = ((double*)&p)+(unsigned)o2;
++	dp1 = ((double*)&p)+(unsigned)o1;
++	dp2 = ((double*)&p)+(unsigned)o2;
+ 	for (i=0 ; i < pa->npoints ; i++)
+ 	{
+ 		getPoint4d_p(pa, i, &p);
+diff -rupN postgis-2.5.5/libpgcommon/lwgeom_cache.c postgis-2.5.5-new/libpgcommon/lwgeom_cache.c
+--- postgis-2.5.5/libpgcommon/lwgeom_cache.c	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/libpgcommon/lwgeom_cache.c	2022-08-06 11:48:23.737708197 +0200
+@@ -77,35 +77,36 @@ GetGenericCacheCollection(FunctionCallIn
+ 
+ 
+ /**
+-* Get the Proj4 entry from the generic cache if one exists.
++* Get the Proj entry from the generic cache if one exists.
+ * If it doesn't exist, make a new empty one and return it.
+ */
+-PROJ4PortalCache *
+-GetPROJ4SRSCache(FunctionCallInfo fcinfo)
++PROJPortalCache *
++GetPROJSRSCache(FunctionCallInfo fcinfo)
+ {
+ 	GenericCacheCollection* generic_cache = GetGenericCacheCollection(fcinfo);
+-	PROJ4PortalCache* cache = (PROJ4PortalCache*)(generic_cache->entry[PROJ_CACHE_ENTRY]);
++	PROJPortalCache* cache = (PROJPortalCache*)(generic_cache->entry[PROJ_CACHE_ENTRY]);
+ 
+ 	if ( ! cache )
+ 	{
+ 		/* Allocate in the upper context */
+-		cache = MemoryContextAlloc(FIContext(fcinfo), sizeof(PROJ4PortalCache));
++		cache = MemoryContextAlloc(FIContext(fcinfo), sizeof(PROJPortalCache));
+ 
+ 		if (cache)
+ 		{
+ 			int i;
+ 
+-			POSTGIS_DEBUGF(3, "Allocating PROJ4Cache for portal with transform() MemoryContext %p", FIContext(fcinfo));
++			POSTGIS_DEBUGF(3, "Allocating PROJCache for portal with transform() MemoryContext %p", FIContext(fcinfo));
+ 			/* Put in any required defaults */
+-			for (i = 0; i < PROJ4_CACHE_ITEMS; i++)
++			for (i = 0; i < PROJ_CACHE_ITEMS; i++)
+ 			{
+-				cache->PROJ4SRSCache[i].srid = SRID_UNKNOWN;
+-				cache->PROJ4SRSCache[i].projection = NULL;
+-				cache->PROJ4SRSCache[i].projection_mcxt = NULL;
++				cache->PROJSRSCache[i].srid_from = SRID_UNKNOWN;
++				cache->PROJSRSCache[i].srid_to = SRID_UNKNOWN;
++				cache->PROJSRSCache[i].projection = NULL;
++				cache->PROJSRSCache[i].projection_mcxt = NULL;
+ 			}
+ 			cache->type = PROJ_CACHE_ENTRY;
+-			cache->PROJ4SRSCacheCount = 0;
+-			cache->PROJ4SRSCacheContext = FIContext(fcinfo);
++			cache->PROJSRSCacheCount = 0;
++			cache->PROJSRSCacheContext = FIContext(fcinfo);
+ 
+ 			/* Store the pointer in GenericCache */
+ 			generic_cache->entry[PROJ_CACHE_ENTRY] = (GenericCache*)cache;
+diff -rupN postgis-2.5.5/libpgcommon/lwgeom_cache.h postgis-2.5.5-new/libpgcommon/lwgeom_cache.h
+--- postgis-2.5.5/libpgcommon/lwgeom_cache.h	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/libpgcommon/lwgeom_cache.h	2022-08-06 11:48:23.737708197 +0200
+@@ -62,31 +62,32 @@ typedef struct {
+ * fcinfo->flinfo->fn_extra to avoid collisions.
+ */
+ 
+-/* An entry in the PROJ4 SRS cache */
+-typedef struct struct_PROJ4SRSCacheItem
++/* An entry in the PROJ SRS cache */
++typedef struct struct_PROJSRSCacheItem
+ {
+-	int srid;
+-	projPJ projection;
++	int srid_from;
++	int srid_to;
++	PJ* projection;
+ 	MemoryContext projection_mcxt;
+ }
+-PROJ4SRSCacheItem;
++PROJSRSCacheItem;
+ 
+ /* PROJ 4 lookup transaction cache methods */
+-#define PROJ4_CACHE_ITEMS	8
++#define PROJ_CACHE_ITEMS	8
+ 
+ /*
+ * The proj4 cache holds a fixed number of reprojection
+ * entries. In normal usage we don't expect it to have
+ * many entries, so we always linearly scan the list.
+ */
+-typedef struct struct_PROJ4PortalCache
++typedef struct struct_PROJPortalCache
+ {
+ 	int type;
+-	PROJ4SRSCacheItem PROJ4SRSCache[PROJ4_CACHE_ITEMS];
+-	int PROJ4SRSCacheCount;
+-	MemoryContext PROJ4SRSCacheContext;
++	PROJSRSCacheItem PROJSRSCache[PROJ_CACHE_ITEMS];
++	int PROJSRSCacheCount;
++	MemoryContext PROJSRSCacheContext;
+ }
+-PROJ4PortalCache;
++PROJPortalCache;
+ 
+ /**
+ * Generic signature for functions to manage a geometry
+@@ -103,7 +104,7 @@ typedef struct
+ /*
+ * Cache retrieval functions
+ */
+-PROJ4PortalCache *GetPROJ4SRSCache(FunctionCallInfo fcinfo);
++PROJPortalCache *GetPROJSRSCache(FunctionCallInfo fcinfo);
+ GeomCache *GetGeomCache(FunctionCallInfo fcinfo,
+ 			const GeomCacheMethods *cache_methods,
+ 			const GSERIALIZED *g1,
+diff -rupN postgis-2.5.5/libpgcommon/lwgeom_transform.c postgis-2.5.5-new/libpgcommon/lwgeom_transform.c
+--- postgis-2.5.5/libpgcommon/lwgeom_transform.c	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/libpgcommon/lwgeom_transform.c	2022-08-06 12:22:51.237754447 +0200
+@@ -34,37 +34,51 @@
+ #include <errno.h>
+ 
+ 
++/**
++* Global variable to hold cached information about what
++* schema functions are installed in. Currently used by
++* SetSpatialRefSysSchema and GetProjStringsSPI
++*/
++static char *spatialRefSysSchema = NULL;
+ 
+ 
+-/* Expose an internal Proj function */
+-int pj_transform_nodatum(projPJ srcdefn, projPJ dstdefn, long point_count, int point_offset, double *x, double *y, double *z );
+-
+ /*
+  * PROJ 4 backend hash table initial hash size
+  * (since 16 is the default portal hash table size, and we would
+  * typically have 2 entries per portal
+  * then we shall use a default size of 32)
+  */
+-#define PROJ4_BACKEND_HASH_SIZE	32
++#define PROJ_BACKEND_HASH_SIZE	32
+ 
+ 
+ /**
+- * Backend projPJ hash table
++ * Backend PROJ hash table
+  *
+- * This hash table stores a key/value pair of MemoryContext/projPJ objects.
+- * Whenever we create a projPJ object using pj_init(), we create a separate
++ * This hash table stores a key/value pair of MemoryContext/PJ objects.
++ * Whenever we create a PJ object using pj_init(), we create a separate
+  * MemoryContext as a child context of the current executor context.
+- * The MemoryContext/projPJ object is stored in this hash table so
+- * that when PROJ4SRSCacheDelete() is called during query cleanup, we can
+- * lookup the projPJ object based upon the MemoryContext parameter and hence
++ * The MemoryContext/PJ object is stored in this hash table so
++ * that when PROJSRSCacheDelete() is called during query cleanup, we can
++ * lookup the PJ object based upon the MemoryContext parameter and hence
+  * pj_free() it.
+  */
+ static HTAB *PJHash = NULL;
+ 
++/**
++ * Utility structure to get many potential string representations
++ * from spatial_ref_sys query.
++ */
++typedef struct {
++	char* epsgtext;
++	char* srtext;
++	char* proj4text;
++} PjStrs;
++
++
+ typedef struct struct_PJHashEntry
+ {
+ 	MemoryContext ProjectionContext;
+-	projPJ projection;
++	PJ* projection;
+ }
+ PJHashEntry;
+ 
+@@ -73,42 +87,92 @@ PJHashEntry;
+ uint32 mcxt_ptr_hash(const void *key, Size keysize);
+ 
+ static HTAB *CreatePJHash(void);
+-static void AddPJHashEntry(MemoryContext mcxt, projPJ projection);
+-static projPJ GetPJHashEntry(MemoryContext mcxt);
+ static void DeletePJHashEntry(MemoryContext mcxt);
++static PJ* GetPJHashEntry(MemoryContext mcxt);
++static void AddPJHashEntry(MemoryContext mcxt, PJ* projection);
+ 
+ /* Internal Cache API */
+-/* static PROJ4PortalCache *GetPROJ4SRSCache(FunctionCallInfo fcinfo) ; */
+-static bool IsInPROJ4SRSCache(PROJ4PortalCache *PROJ4Cache, int srid);
+-static projPJ GetProjectionFromPROJ4SRSCache(PROJ4PortalCache *PROJ4Cache, int srid);
+-static void AddToPROJ4SRSCache(PROJ4PortalCache *PROJ4Cache, int srid, int other_srid);
+-static void DeleteFromPROJ4SRSCache(PROJ4PortalCache *PROJ4Cache, int srid);
++/* static PROJPortalCache *GetPROJSRSCache(FunctionCallInfo fcinfo) ; */
++static bool IsInPROJSRSCache(PROJPortalCache *PROJCache, int srid_from, int srid_to);
++static void AddToPROJSRSCache(PROJPortalCache *PROJCache, int srid_from, int srid_to);
++static void DeleteFromPROJSRSCache(PROJPortalCache *PROJCache, int srid_from, int srid_to);
++
+ 
+ /* Search path for PROJ.4 library */
+-static bool IsPROJ4LibPathSet = false;
+-void SetPROJ4LibPath(void);
++static bool IsPROJLibPathSet = false;
++void SetPROJLibPath(void);
++
++
++/*
++* Given a function call context, figure out what namespace the
++* function is being called from, and copy that into a global
++* for use by GetProjStringsSPI
++*/
++static void
++SetSpatialRefSysSchema(FunctionCallInfo fcinfo)
++{
++	char *nsp_name;
++
++	/* Schema info is already cached, we're done here */
++	if (spatialRefSysSchema) return;
++
++	/* For some reason we have a hobbled fcinfo/flinfo */
++	if (!fcinfo || !fcinfo->flinfo) return;
++
++	nsp_name = get_namespace_name(get_func_namespace(fcinfo->flinfo->fn_oid));
++	/* early exit if we cannot lookup nsp_name, cf #4067 */
++	if (!nsp_name) return;
++
++	elog(DEBUG4, "%s located %s in namespace %s", __func__, get_func_name(fcinfo->flinfo->fn_oid), nsp_name);
++	spatialRefSysSchema = MemoryContextStrdup(CacheMemoryContext, nsp_name);
++	return;
++}
++
++static void
++PROJSRSDestroyPJ(PJ* pj)
++{
++#if POSTGIS_PROJ_VERSION < 60
++/* Ape the Proj 6+ API for versions < 6 */
++	if (pj->pj_from)
++		pj_free(pj->pj_from);
++	if (pj->pj_to)
++		pj_free(pj->pj_to);
++	free(pj);
++#else
++	proj_destroy(pj);
++#endif
++}
+ 
++#if 0
++static const char *
++PJErrStr()
++{
++	const char *pj_errstr = pj_strerrno(*pj_get_errno_ref());
++	if (!pj_errstr)
++		return "";
++	return pj_errstr;
++}
++#endif
+ 
+ static void
+ #if POSTGIS_PGSQL_VERSION < 96
+-PROJ4SRSCacheDelete(MemoryContext context)
++PROJSRSCacheDelete(MemoryContext context)
+ {
+ #else
+-PROJ4SRSCacheDelete(void *ptr)
++PROJSRSCacheDelete(void *ptr)
+ {
+ 	MemoryContext context = (MemoryContext)ptr;
+ #endif
+-	projPJ projection;
+ 
+-	/* Lookup the projPJ pointer in the global hash table so we can free it */
+-	projection = GetPJHashEntry(context);
++	/* Lookup the PJ pointer in the global hash table so we can free it */
++	PJ* projection = GetPJHashEntry(context);
+ 
+ 	if (!projection)
+-		elog(ERROR, "PROJ4SRSCacheDelete: Trying to delete non-existant projection object with MemoryContext key (%p)", (void *)context);
++		elog(ERROR, "PROJSRSCacheDelete: Trying to delete non-existant projection object with MemoryContext key (%p)", (void *)context);
+ 
+ 	POSTGIS_DEBUGF(3, "deleting projection object (%p) with MemoryContext key (%p)", projection, context);
+ 	/* Free it */
+-	pj_free(projection);
++	PROJSRSDestroyPJ(projection);
+ 
+ 	/* Remove the hash entry as it is no longer needed */
+ 	DeletePJHashEntry(context);
+@@ -117,7 +181,7 @@ PROJ4SRSCacheDelete(void *ptr)
+ #if POSTGIS_PGSQL_VERSION < 96
+ 
+ static void
+-PROJ4SRSCacheInit(MemoryContext context)
++PROJSRSCacheInit(MemoryContext context)
+ {
+ 	/*
+ 	 * Do nothing as the cache is initialised when the transform()
+@@ -126,7 +190,7 @@ PROJ4SRSCacheInit(MemoryContext context)
+ }
+ 
+ static void
+-PROJ4SRSCacheReset(MemoryContext context)
++PROJSRSCacheReset(MemoryContext context)
+ {
+ 	/*
+ 	 * Do nothing, but we must supply a function since this call is mandatory according to tgl
+@@ -135,7 +199,7 @@ PROJ4SRSCacheReset(MemoryContext context
+ }
+ 
+ static bool
+-PROJ4SRSCacheIsEmpty(MemoryContext context)
++PROJSRSCacheIsEmpty(MemoryContext context)
+ {
+ 	/*
+ 	 * Always return false since this call is mandatory according to tgl
+@@ -145,19 +209,19 @@ PROJ4SRSCacheIsEmpty(MemoryContext conte
+ }
+ 
+ static void
+-PROJ4SRSCacheStats(MemoryContext context, int level)
++PROJSRSCacheStats(MemoryContext context, int level)
+ {
+ 	/*
+ 	 * Simple stats display function - we must supply a function since this call is mandatory according to tgl
+ 	 * (see postgis-devel archives July 2007)
+ 	 */
+ 
+-	fprintf(stderr, "%s: PROJ4 context\n", context->name);
++	fprintf(stderr, "%s: PROJ context\n", context->name);
+ }
+ 
+ #ifdef MEMORY_CONTEXT_CHECKING
+ static void
+-PROJ4SRSCacheCheck(MemoryContext context)
++PROJSRSCacheCheck(MemoryContext context)
+ {
+ 	/*
+ 	 * Do nothing - stub required for when PostgreSQL is compiled
+@@ -167,26 +231,26 @@ PROJ4SRSCacheCheck(MemoryContext context
+ #endif
+ 
+ /* Memory context definition must match the current version of PostgreSQL */
+-static MemoryContextMethods PROJ4SRSCacheContextMethods =
++static MemoryContextMethods PROJSRSCacheContextMethods =
+ {
+ 	NULL,
+ 	NULL,
+ 	NULL,
+-	PROJ4SRSCacheInit,
+-	PROJ4SRSCacheReset,
+-	PROJ4SRSCacheDelete,
++	PROJSRSCacheInit,
++	PROJSRSCacheReset,
++	PROJSRSCacheDelete,
+ 	NULL,
+-	PROJ4SRSCacheIsEmpty,
+-	PROJ4SRSCacheStats
++	PROJSRSCacheIsEmpty,
++	PROJSRSCacheStats
+ #ifdef MEMORY_CONTEXT_CHECKING
+-	,PROJ4SRSCacheCheck
++	,PROJSRSCacheCheck
+ #endif
+ };
+ 
+ #endif /* POSTGIS_PGSQL_VERSION < 96 */
+ 
+ /*
+- * PROJ4 projPJ Hash Table functions
++ * PROJ PJ Hash Table functions
+  */
+ 
+ 
+@@ -213,10 +277,10 @@ static HTAB *CreatePJHash(void)
+ 	ctl.entrysize = sizeof(PJHashEntry);
+ 	ctl.hash = mcxt_ptr_hash;
+ 
+-	return hash_create("PostGIS PROJ4 Backend projPJ MemoryContext Hash", PROJ4_BACKEND_HASH_SIZE, &ctl, (HASH_ELEM | HASH_FUNCTION));
++	return hash_create("PostGIS PROJ Backend MemoryContext Hash", PROJ_BACKEND_HASH_SIZE, &ctl, (HASH_ELEM | HASH_FUNCTION));
+ }
+ 
+-static void AddPJHashEntry(MemoryContext mcxt, projPJ projection)
++static void AddPJHashEntry(MemoryContext mcxt, PJ* projection)
+ {
+ 	bool found;
+ 	void **key;
+@@ -225,7 +289,7 @@ static void AddPJHashEntry(MemoryContext
+ 	/* The hash key is the MemoryContext pointer */
+ 	key = (void *)&mcxt;
+ 
+-	he = (PJHashEntry *) hash_search(PJHash, key, HASH_ENTER, &found);
++	he = (PJHashEntry*) hash_search(PJHash, key, HASH_ENTER, &found);
+ 	if (!found)
+ 	{
+ 		/* Insert the entry into the new hash element */
+@@ -234,12 +298,12 @@ static void AddPJHashEntry(MemoryContext
+ 	}
+ 	else
+ 	{
+-		elog(ERROR, "AddPJHashEntry: PROJ4 projection object already exists for this MemoryContext (%p)",
++		elog(ERROR, "AddPJHashEntry: PROJ projection object already exists for this MemoryContext (%p)",
+ 		     (void *)mcxt);
+ 	}
+ }
+ 
+-static projPJ GetPJHashEntry(MemoryContext mcxt)
++static PJ* GetPJHashEntry(MemoryContext mcxt)
+ {
+ 	void **key;
+ 	PJHashEntry *he;
+@@ -266,118 +330,140 @@ static void DeletePJHashEntry(MemoryCont
+ 	he = (PJHashEntry *) hash_search(PJHash, key, HASH_REMOVE, NULL);
+ 
+ 	if (!he)
+-		elog(ERROR, "DeletePJHashEntry: There was an error removing the PROJ4 projection object from this MemoryContext (%p)", (void *)mcxt);
++		elog(ERROR, "DeletePJHashEntry: There was an error removing the PROJ projection object from this MemoryContext (%p)", (void *)mcxt);
+ 	else
+ 		he->projection = NULL;
+ }
+ 
+-bool
+-IsInPROJ4Cache(Proj4Cache PROJ4Cache, int srid) {
+-	return IsInPROJ4SRSCache((PROJ4PortalCache *)PROJ4Cache, srid) ;
+-}
+-
+-/*
++/*****************************************************************************
+  * Per-cache management functions
+  */
+ 
+ static bool
+-IsInPROJ4SRSCache(PROJ4PortalCache *PROJ4Cache, int srid)
++IsInPROJSRSCache(PROJPortalCache *cache, int srid_from, int srid_to)
+ {
+ 	/*
+ 	 * Return true/false depending upon whether the item
+ 	 * is in the SRS cache.
+ 	 */
+-
+-	int i;
+-
+-	for (i = 0; i < PROJ4_CACHE_ITEMS; i++)
++	uint32_t i;
++	for (i = 0; i < PROJ_CACHE_ITEMS; i++)
+ 	{
+-		if (PROJ4Cache->PROJ4SRSCache[i].srid == srid)
+-			return 1;
++		if (cache->PROJSRSCache[i].srid_from == srid_from &&
++		    cache->PROJSRSCache[i].srid_to == srid_to)
++			return true;
+ 	}
+-
+ 	/* Otherwise not found */
+-	return 0;
++	return false;
+ }
+ 
+-projPJ GetProjectionFromPROJ4Cache(Proj4Cache cache, int srid)
++static PJ*
++GetProjectionFromPROJCache(PROJPortalCache *cache, int srid_from, int srid_to)
+ {
+-	return GetProjectionFromPROJ4SRSCache((PROJ4PortalCache *)cache, srid) ;
++	uint32_t i;
++	for (i = 0; i < PROJ_CACHE_ITEMS; i++)
++	{
++		if (cache->PROJSRSCache[i].srid_from == srid_from &&
++		    cache->PROJSRSCache[i].srid_to == srid_to)
++			return cache->PROJSRSCache[i].projection;
++	}
++
++	return NULL;
+ }
+ 
+-/**
+- * Return the projection object from the cache (we should
+- * already have checked it exists using IsInPROJ4SRSCache first)
+- */
+-static projPJ
+-GetProjectionFromPROJ4SRSCache(PROJ4PortalCache *PROJ4Cache, int srid)
++static char*
++SPI_pstrdup(const char* str)
+ {
+-	int i;
+-
+-	for (i = 0; i < PROJ4_CACHE_ITEMS; i++)
++	char* ostr = NULL;
++	if (str)
+ 	{
+-		if (PROJ4Cache->PROJ4SRSCache[i].srid == srid)
+-			return PROJ4Cache->PROJ4SRSCache[i].projection;
++		ostr = SPI_palloc(strlen(str)+1);
++		strcpy(ostr, str);
+ 	}
+-
+-	return NULL;
++	return ostr;
+ }
+ 
+-char* GetProj4StringSPI(int srid)
++static PjStrs
++GetProjStringsSPI(int srid)
+ {
+-	static int maxproj4len = 512;
++	const int maxprojlen = 512;
++	const int spibufferlen = 512;
+ 	int spi_result;
+-	char *proj_str = palloc(maxproj4len);
+-	char proj4_spi_buffer[256];
++	char proj_spi_buffer[spibufferlen];
++	PjStrs strs;
++	memset(&strs, 0, sizeof(strs));
+ 
+ 	/* Connect */
+ 	spi_result = SPI_connect();
+ 	if (spi_result != SPI_OK_CONNECT)
+ 	{
+-		elog(ERROR, "GetProj4StringSPI: Could not connect to database using SPI");
++		elog(ERROR, "Could not connect to database using SPI");
+ 	}
+ 
+-	static char *proj_str_tmpl =
+-	    "SELECT proj4text, auth_name, auth_srid, srtext "
+-	    "FROM %s "
+-	    "WHERE srid = %d "
+-	    "LIMIT 1";
+-	snprintf(proj4_spi_buffer, 255, proj_str_tmpl, postgis_spatial_ref_sys(), srid);
++	/*
++	* This global is allocated in CacheMemoryContext (lifespan of this backend)
++	* and is set by SetSpatialRefSysSchema the first time
++	* that GetPJUsingFCInfo is called.
++	*/
++	static char *proj_str_tmpl = "SELECT proj4text, auth_name, auth_srid, srtext "
++	                             "FROM %s%sspatial_ref_sys "
++	                             "WHERE srid = %d "
++	                             "LIMIT 1";
++	if (spatialRefSysSchema)
++	{
++		snprintf(proj_spi_buffer, spibufferlen, proj_str_tmpl, spatialRefSysSchema, ".", srid);
++	}
++	else
++	{
++		snprintf(proj_spi_buffer, spibufferlen, proj_str_tmpl, "", "", srid);
++	}
+ 
+ 	/* Execute the query, noting the readonly status of this SQL */
+-	spi_result = SPI_execute(proj4_spi_buffer, true, 1);
++	spi_result = SPI_execute(proj_spi_buffer, true, 1);
+ 
+-	/* Read back the PROJ4 text */
++	/* Read back the PROJ text */
+ 	if (spi_result == SPI_OK_SELECT && SPI_processed > 0)
+ 	{
+ 		/* Select the first (and only tuple) */
+ 		TupleDesc tupdesc = SPI_tuptable->tupdesc;
+ 		SPITupleTable *tuptable = SPI_tuptable;
+ 		HeapTuple tuple = tuptable->vals[0];
+-		char *proj4text = SPI_getvalue(tuple, tupdesc, 1);
+-
+-		if ( proj4text )
+-		{
+-			/* Make a projection object out of it */
+-			strncpy(proj_str, proj4text, maxproj4len - 1);
+-		}
+-		else
+-		{
+-			proj_str[0] = 0;
+-		}
++		/* Always return the proj4text */
++		char* proj4text = SPI_getvalue(tuple, tupdesc, 1);
++		if (proj4text && strlen(proj4text))
++			strs.proj4text = SPI_pstrdup(proj4text);
++
++		/* For Proj >= 6 prefer "EPSG:XXXX" to proj strings */
++		/* as proj_create_crs_to_crs() will give us more consistent */
++		/* results with EPSG numbers than with proj strings */
++		char* authname = SPI_getvalue(tuple, tupdesc, 2);
++		char* authsrid = SPI_getvalue(tuple, tupdesc, 3);
++		if (authname && authsrid &&
++		    strcmp(authname,"EPSG") == 0 &&
++		    strlen(authsrid))
++		{
++			char tmp[maxprojlen];
++			snprintf(tmp, maxprojlen, "EPSG:%s", authsrid);
++			strs.epsgtext = SPI_pstrdup(tmp);
++		}
++
++		/* Proj6+ can parse srtext, so return that too */
++		char* srtext = SPI_getvalue(tuple, tupdesc, 4);
++		if (srtext && strlen(srtext))
++			strs.srtext = SPI_pstrdup(srtext);
+ 	}
+ 	else
+ 	{
+-		elog(ERROR, "GetProj4StringSPI: Cannot find SRID (%d) in spatial_ref_sys", srid);
++		elog(ERROR, "Cannot find SRID (%d) in spatial_ref_sys", srid);
+ 	}
+ 
+ 	spi_result = SPI_finish();
+ 	if (spi_result != SPI_OK_FINISH)
+ 	{
+-		elog(ERROR, "GetProj4StringSPI: Could not disconnect from database using SPI");
++		elog(ERROR, "Could not disconnect from database using SPI");
+ 	}
+ 
+-	return proj_str;
++	return strs;
+ }
+ 
+ 
+@@ -387,29 +473,32 @@ char* GetProj4StringSPI(int srid)
+  *  (WGS84 UTM N/S, Polar Stereographic N/S - see SRID_* macros),
+  *  return the proj4text for those.
+  */
+-static char* GetProj4String(int srid)
++static PjStrs
++GetProjStrings(int srid)
+ {
+-	static int maxproj4len = 512;
++	const int maxprojlen = 512;
++	PjStrs strs;
++	memset(&strs, 0, sizeof(strs));
+ 
+ 	/* SRIDs in SPATIAL_REF_SYS */
+ 	if ( srid < SRID_RESERVE_OFFSET )
+ 	{
+-		return GetProj4StringSPI(srid);
++		return GetProjStringsSPI(srid);
+ 	}
+ 	/* Automagic SRIDs */
+ 	else
+ 	{
+-		char *proj_str = palloc(maxproj4len);
++		strs.proj4text = palloc(maxprojlen);
+ 		int id = srid;
+ 		/* UTM North */
+ 		if ( id >= SRID_NORTH_UTM_START && id <= SRID_NORTH_UTM_END )
+ 		{
+-			snprintf(proj_str, maxproj4len, "+proj=utm +zone=%d +ellps=WGS84 +datum=WGS84 +units=m +no_defs", id - SRID_NORTH_UTM_START + 1);
++			snprintf(strs.proj4text, maxprojlen, "+proj=utm +zone=%d +ellps=WGS84 +datum=WGS84 +units=m +no_defs", id - SRID_NORTH_UTM_START + 1);
+ 		}
+ 		/* UTM South */
+ 		else if ( id >= SRID_SOUTH_UTM_START && id <= SRID_SOUTH_UTM_END )
+ 		{
+-			snprintf(proj_str, maxproj4len, "+proj=utm +zone=%d +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs", id - SRID_SOUTH_UTM_START + 1);
++			snprintf(strs.proj4text, maxprojlen, "+proj=utm +zone=%d +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs", id - SRID_SOUTH_UTM_START + 1);
+ 		}
+ 		/* Lambert zones (about 30x30, larger in higher latitudes) */
+ 		/* There are three latitude zones, divided at -90,-60,-30,0,30,60,90. */
+@@ -434,102 +523,190 @@ static char* GetProj4String(int srid)
+ 			else
+ 				lwerror("Unknown yzone encountered!");
+ 
+-			snprintf(proj_str, maxproj4len, "+proj=laea +ellps=WGS84 +datum=WGS84 +lat_0=%g +lon_0=%g +units=m +no_defs", lat_0, lon_0);
++			snprintf(strs.proj4text, maxprojlen, "+proj=laea +ellps=WGS84 +datum=WGS84 +lat_0=%g +lon_0=%g +units=m +no_defs", lat_0, lon_0);
+ 		}
+ 		/* Lambert Azimuthal Equal Area South Pole */
+ 		else if ( id == SRID_SOUTH_LAMBERT )
+ 		{
+-			strncpy(proj_str, "+proj=laea +lat_0=-90 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs", maxproj4len );
++			strncpy(strs.proj4text, "+proj=laea +lat_0=-90 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs", maxprojlen );
+ 		}
+ 		/* Polar Sterographic South */
+ 		else if ( id == SRID_SOUTH_STEREO )
+ 		{
+-			strncpy(proj_str, "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs", maxproj4len);
++			strncpy(strs.proj4text, "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs", maxprojlen);
+ 		}
+ 		/* Lambert Azimuthal Equal Area North Pole */
+ 		else if ( id == SRID_NORTH_LAMBERT )
+ 		{
+-			strncpy(proj_str, "+proj=laea +lat_0=90 +lon_0=-40 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs", maxproj4len );
++			strncpy(strs.proj4text, "+proj=laea +lat_0=90 +lon_0=-40 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs", maxprojlen );
+ 		}
+ 		/* Polar Stereographic North */
+ 		else if ( id == SRID_NORTH_STEREO )
+ 		{
+-			strncpy(proj_str, "+proj=stere +lat_0=90 +lat_ts=71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs", maxproj4len );
++			strncpy(strs.proj4text, "+proj=stere +lat_0=90 +lat_ts=71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs", maxprojlen );
+ 		}
+ 		/* World Mercator */
+ 		else if ( id == SRID_WORLD_MERCATOR )
+ 		{
+-			strncpy(proj_str, "+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs", maxproj4len );
++			strncpy(strs.proj4text, "+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs", maxprojlen );
+ 		}
+ 		else
+ 		{
+ 			elog(ERROR, "Invalid reserved SRID (%d)", srid);
+-			return NULL;
++			return strs;
+ 		}
+ 
+-		POSTGIS_DEBUGF(3, "returning on SRID=%d: %s", srid, proj_str);
+-		return proj_str;
++		POSTGIS_DEBUGF(3, "returning on SRID=%d: %s", srid, strs.proj4text);
++		return strs;
+ 	}
+ }
+ 
+-void AddToPROJ4Cache(Proj4Cache cache, int srid, int other_srid) {
+-	AddToPROJ4SRSCache((PROJ4PortalCache *)cache, srid, other_srid) ;
++static int
++pjstrs_has_entry(const PjStrs *strs)
++{
++	if ((strs->proj4text && strlen(strs->proj4text)) ||
++		(strs->epsgtext && strlen(strs->epsgtext)) ||
++		(strs->srtext && strlen(strs->srtext)))
++		return 1;
++	else
++		return 0;
+ }
+ 
++static void
++pjstrs_pfree(PjStrs *strs)
++{
++	if (strs->proj4text)
++		pfree(strs->proj4text);
++	if (strs->epsgtext)
++		pfree(strs->epsgtext);
++	if (strs->srtext)
++		pfree(strs->srtext);
++}
++
++#if POSTGIS_PROJ_VERSION >= 60
++static char*
++pgstrs_get_entry(const PjStrs *strs, int n)
++{
++	switch (n)
++	{
++		case 0:
++			return strs->epsgtext;
++		case 1:
++			return strs->srtext;
++		case 2:
++			return strs->proj4text;
++		default:
++			return NULL;
++	}
++}
++#endif
++
++/*
++* Utility function for GML reader that still
++* needs proj4text access
++*/
++char *
++GetProj4String(int srid)
++{
++	PjStrs strs;
++	char *proj4str;
++	memset(&strs, 0, sizeof(strs));
++	strs = GetProjStringsSPI(srid);
++	proj4str = pstrdup(strs.proj4text);
++	pjstrs_pfree(&strs);
++	return proj4str;
++}
+ 
+ /**
+- * Add an entry to the local PROJ4 SRS cache. If we need to wrap around then
++ * Add an entry to the local PROJ SRS cache. If we need to wrap around then
+  * we must make sure the entry we choose to delete does not contain other_srid
+  * which is the definition for the other half of the transformation.
+  */
+ static void
+-AddToPROJ4SRSCache(PROJ4PortalCache *PROJ4Cache, int srid, int other_srid)
++AddToPROJSRSCache(PROJPortalCache *PROJCache, int srid_from, int srid_to)
+ {
+ 	MemoryContext PJMemoryContext;
+-	projPJ projection = NULL;
+-	char *proj_str = NULL;
++
++	PjStrs from_strs, to_strs;
++	char *pj_from_str, *pj_to_str;
+ 
+ 	/*
+ 	** Turn the SRID number into a proj4 string, by reading from spatial_ref_sys
+ 	** or instantiating a magical value from a negative srid.
+ 	*/
+-	proj_str = GetProj4String(srid);
+-	if ( ! proj_str )
+-	{
+-		elog(ERROR, "GetProj4String returned NULL for SRID (%d)", srid);
+-	}
++	from_strs = GetProjStrings(srid_from);
++	if (!pjstrs_has_entry(&from_strs))
++		elog(ERROR, "got NULL for SRID (%d)", srid_from);
++	to_strs = GetProjStrings(srid_to);
++	if (!pjstrs_has_entry(&to_strs))
++		elog(ERROR, "got NULL for SRID (%d)", srid_to);
++
++#if POSTGIS_PROJ_VERSION < 60
++	PJ* projection = malloc(sizeof(PJ));
++	pj_from_str = from_strs.proj4text;
++	pj_to_str = to_strs.proj4text;
++	projection->pj_from = lwproj_from_string(pj_from_str);
++	projection->pj_to = lwproj_from_string(pj_to_str);
+ 
+-	projection = lwproj_from_string(proj_str);
+-	if ( projection == NULL )
+-	{
+-		char *pj_errstr = pj_strerrno(*pj_get_errno_ref());
+-		if ( ! pj_errstr )
+-			pj_errstr = "";
++	if (!projection->pj_from)
++		elog(ERROR,
++		    "could not form projection from 'srid=%d' to 'srid=%d'",
++		    srid_from, srid_to);
+ 
++	if (!projection->pj_to)
++		elog(ERROR,
++		    "could not form projection from 'srid=%d' to 'srid=%d'",
++		    srid_from, srid_to);
++#else
++	PJ* projection = NULL;
++	/* Try combinations of ESPG/SRTEXT/PROJ4TEXT until we find */
++	/* one that gives us a usable transform. Note that we prefer */
++	/* EPSG numbers over SRTEXT and SRTEXT over PROJ4TEXT */
++	/* (3 entries * 3 entries = 9 combos) */
++	uint32_t i;
++	for (i = 0; i < 9; i++)
++	{
++		pj_from_str = pgstrs_get_entry(&from_strs, i / 3);
++		pj_to_str   = pgstrs_get_entry(&to_strs,   i % 3);
++		if (!(pj_from_str && pj_to_str))
++			continue;
++		projection = proj_create_crs_to_crs(NULL, pj_from_str, pj_to_str, NULL);
++		if (projection && !proj_errno(projection))
++			break;
++	}
++	if (!projection)
++	{
+ 		elog(ERROR,
+-		    "AddToPROJ4SRSCache: could not parse proj4 string '%s' %s",
+-		    proj_str, pj_errstr);
++		    "could not form projection from 'srid=%d' to 'srid=%d'",
++		    srid_from, srid_to);
+ 	}
++#endif
+ 
+ 	/*
+ 	 * If the cache is already full then find the first entry
+-	 * that doesn't contain other_srid and use this as the
+-	 * subsequent value of PROJ4SRSCacheCount
++	 * that doesn't contain our srids and use this as the
++	 * subsequent value of PROJSRSCacheCount
+ 	 */
+-	if (PROJ4Cache->PROJ4SRSCacheCount == PROJ4_CACHE_ITEMS)
++	if (PROJCache->PROJSRSCacheCount == PROJ_CACHE_ITEMS)
+ 	{
+ 		bool found = false;
+-		int i;
+-
+-		for (i = 0; i < PROJ4_CACHE_ITEMS; i++)
++		uint32_t i;
++		for (i = 0; i < PROJ_CACHE_ITEMS; i++)
+ 		{
+-			if (PROJ4Cache->PROJ4SRSCache[i].srid != other_srid && found == false)
++			if (found == false &&
++				(PROJCache->PROJSRSCache[i].srid_from != srid_from ||
++				 PROJCache->PROJSRSCache[i].srid_to != srid_to))
+ 			{
+-				POSTGIS_DEBUGF(3, "choosing to remove item from query cache with SRID %d and index %d", PROJ4Cache->PROJ4SRSCache[i].srid, i);
+-
+-				DeleteFromPROJ4SRSCache(PROJ4Cache, PROJ4Cache->PROJ4SRSCache[i].srid);
+-				PROJ4Cache->PROJ4SRSCacheCount = i;
++				POSTGIS_DEBUGF(3, "choosing to remove item from query cache with SRIDs %d => %d and index %d",
++					PROJCache->PROJSRSCache[i].srid_from,
++					PROJCache->PROJSRSCache[i].srid_to,
++					i);
++
++				DeleteFromPROJSRSCache(PROJCache,
++				    PROJCache->PROJSRSCache[i].srid_from,
++				    PROJCache->PROJSRSCache[i].srid_to);
+ 
++				PROJCache->PROJSRSCacheCount = i;
+ 				found = true;
+ 			}
+ 		}
+@@ -539,16 +716,21 @@ AddToPROJ4SRSCache(PROJ4PortalCache *PRO
+ 	 * Now create a memory context for this projection and
+ 	 * store it in the backend hash
+ 	 */
+-	POSTGIS_DEBUGF(3, "adding SRID %d with proj4text \"%s\" to query cache at index %d", srid, proj_str, PROJ4Cache->PROJ4SRSCacheCount);
++	POSTGIS_DEBUGF(3, "adding transform %d => %d aka \"%s\" => \"%s\" to query cache at index %d",
++		srid_from, srid_to, pj_from_str, pj_to_str, PROJCache->PROJSRSCacheCount);
++
++	/* Free the projection strings */
++	pjstrs_pfree(&from_strs);
++	pjstrs_pfree(&to_strs);
+ 
+ #if POSTGIS_PGSQL_VERSION < 96
+ 	PJMemoryContext = MemoryContextCreate(T_AllocSetContext, 8192,
+-	                                      &PROJ4SRSCacheContextMethods,
+-	                                      PROJ4Cache->PROJ4SRSCacheContext,
+-	                                      "PostGIS PROJ4 PJ Memory Context");
++	                                      &PROJSRSCacheContextMethods,
++	                                      PROJCache->PROJSRSCacheContext,
++	                                      "PostGIS PROJ PJ Memory Context");
+ #else
+-	PJMemoryContext = AllocSetContextCreate(PROJ4Cache->PROJ4SRSCacheContext,
+-	                                        "PostGIS PROJ4 PJ Memory Context",
++	PJMemoryContext = AllocSetContextCreate(PROJCache->PROJSRSCacheContext,
++	                                        "PostGIS PROJ PJ Memory Context",
+ 	                                        ALLOCSET_SMALL_SIZES);
+ 
+ 	/* PgSQL comments suggest allocating callback in the context */
+@@ -557,7 +739,7 @@ AddToPROJ4SRSCache(PROJ4PortalCache *PRO
+ 	{
+ 		MemoryContextCallback *callback = MemoryContextAlloc(PJMemoryContext, sizeof(MemoryContextCallback));
+ 		callback->arg = (void*)PJMemoryContext;
+-		callback->func = PROJ4SRSCacheDelete;
++		callback->func = PROJSRSCacheDelete;
+ 		MemoryContextRegisterResetCallback(PJMemoryContext, callback);
+ 	}
+ #endif
+@@ -574,43 +756,37 @@ AddToPROJ4SRSCache(PROJ4PortalCache *PRO
+ 
+ 	AddPJHashEntry(PJMemoryContext, projection);
+ 
+-	PROJ4Cache->PROJ4SRSCache[PROJ4Cache->PROJ4SRSCacheCount].srid = srid;
+-	PROJ4Cache->PROJ4SRSCache[PROJ4Cache->PROJ4SRSCacheCount].projection = projection;
+-	PROJ4Cache->PROJ4SRSCache[PROJ4Cache->PROJ4SRSCacheCount].projection_mcxt = PJMemoryContext;
+-	PROJ4Cache->PROJ4SRSCacheCount++;
+-
+-	/* Free the projection string */
+-	pfree(proj_str);
+-
+-}
+-
+-void DeleteFromPROJ4Cache(Proj4Cache cache, int srid) {
+-	DeleteFromPROJ4SRSCache((PROJ4PortalCache *)cache, srid) ;
++	PROJCache->PROJSRSCache[PROJCache->PROJSRSCacheCount].srid_from = srid_from;
++	PROJCache->PROJSRSCache[PROJCache->PROJSRSCacheCount].srid_to = srid_to;
++	PROJCache->PROJSRSCache[PROJCache->PROJSRSCacheCount].projection = projection;
++	PROJCache->PROJSRSCache[PROJCache->PROJSRSCacheCount].projection_mcxt = PJMemoryContext;
++	PROJCache->PROJSRSCacheCount++;
+ }
+ 
+ 
+-static void DeleteFromPROJ4SRSCache(PROJ4PortalCache *PROJ4Cache, int srid)
++static void
++DeleteFromPROJSRSCache(PROJPortalCache *PROJCache, int srid_from, int srid_to)
+ {
+ 	/*
+ 	 * Delete the SRID entry from the cache
+ 	 */
+-
+-	int i;
+-
+-	for (i = 0; i < PROJ4_CACHE_ITEMS; i++)
++	uint32_t i;
++	for (i = 0; i < PROJ_CACHE_ITEMS; i++)
+ 	{
+-		if (PROJ4Cache->PROJ4SRSCache[i].srid == srid)
++		if (PROJCache->PROJSRSCache[i].srid_from == srid_from &&
++			PROJCache->PROJSRSCache[i].srid_to == srid_to)
+ 		{
+-			POSTGIS_DEBUGF(3, "removing query cache entry with SRID %d at index %d", srid, i);
++			POSTGIS_DEBUGF(3, "removing query cache entry with SRIDs %d => %d at index %d", srid_from, srid_to, i);
+ 
+ 			/*
+-			 * Zero out the entries and free the PROJ4 handle
++			 * Zero out the entries and free the PROJ handle
+ 			 * by deleting the memory context
+ 			 */
+-			MemoryContextDelete(PROJ4Cache->PROJ4SRSCache[i].projection_mcxt);
+-			PROJ4Cache->PROJ4SRSCache[i].projection = NULL;
+-			PROJ4Cache->PROJ4SRSCache[i].projection_mcxt = NULL;
+-			PROJ4Cache->PROJ4SRSCache[i].srid = SRID_UNKNOWN;
++			MemoryContextDelete(PROJCache->PROJSRSCache[i].projection_mcxt);
++			PROJCache->PROJSRSCache[i].projection = NULL;
++			PROJCache->PROJSRSCache[i].projection_mcxt = NULL;
++			PROJCache->PROJSRSCache[i].srid_from = SRID_UNKNOWN;
++			PROJCache->PROJSRSCache[i].srid_to = SRID_UNKNOWN;
+ 		}
+ 	}
+ }
+@@ -628,13 +804,13 @@ static void DeleteFromPROJ4SRSCache(PROJ
+  * since the method of determining the current installation
+  * path are different on older PostgreSQL versions.
+  */
+-void SetPROJ4LibPath(void)
++void SetPROJLibPath(void)
+ {
+ 	char *path;
+ 	char *share_path;
+ 	const char **proj_lib_path;
+ 
+-	if (!IsPROJ4LibPathSet) {
++	if (!IsPROJLibPathSet) {
+ 
+ 		/*
+ 		 * Get the sharepath and append /contrib/postgis/proj to form a suitable
+@@ -649,91 +825,74 @@ void SetPROJ4LibPath(void)
+ 		*proj_lib_path = path;
+ 
+ 		snprintf(path, MAXPGPATH - 1, "%s/contrib/postgis-%s.%s/proj", share_path, POSTGIS_MAJOR_VERSION, POSTGIS_MINOR_VERSION);
+-
++#if POSTGIS_PROJ_VERSION < 60
+ 		/* Set the search path for PROJ.4 */
+ 		pj_set_searchpath(1, proj_lib_path);
+-
++#else
++		/* Set the search path for PROJ */
++		proj_context_set_search_paths(NULL, 1, proj_lib_path);
++#endif
+ 		/* Ensure we only do this once... */
+-		IsPROJ4LibPathSet = true;
++		IsPROJLibPathSet = true;
+ 	}
+ }
+ 
+-Proj4Cache GetPROJ4Cache(FunctionCallInfo fcinfo) {
+-	return (Proj4Cache)GetPROJ4SRSCache(fcinfo);
+-}
+ 
+ int
+-GetProjectionsUsingFCInfo(FunctionCallInfo fcinfo, int srid1, int srid2, projPJ *pj1, projPJ *pj2)
++GetPJUsingFCInfo(FunctionCallInfo fcinfo, int srid_from, int srid_to, PJ** pj)
+ {
+-	Proj4Cache *proj_cache = NULL;
++	PROJPortalCache *proj_cache = NULL;
+ 
+ 	/* Set the search path if we haven't already */
+-	SetPROJ4LibPath();
++	SetPROJLibPath();
+ 
+ 	/* Look up the spatial_ref_sys schema if we haven't already */
+-	postgis_initialize_cache(fcinfo);
++	SetSpatialRefSysSchema(fcinfo);
+ 
+ 	/* get or initialize the cache for this round */
+-	proj_cache = GetPROJ4Cache(fcinfo);
+-	if ( !proj_cache )
++	proj_cache = GetPROJSRSCache(fcinfo);
++	if (!proj_cache)
+ 		return LW_FAILURE;
+ 
+ 	/* Add the output srid to the cache if it's not already there */
+-	if (!IsInPROJ4Cache(proj_cache, srid1))
+-		AddToPROJ4Cache(proj_cache, srid1, srid2);
+-
+-	/* Add the input srid to the cache if it's not already there */
+-	if (!IsInPROJ4Cache(proj_cache, srid2))
+-		AddToPROJ4Cache(proj_cache, srid2, srid1);
++	if (!IsInPROJSRSCache(proj_cache, srid_from, srid_to))
++		AddToPROJSRSCache(proj_cache, srid_from, srid_to);
+ 
+ 	/* Get the projections */
+-	*pj1 = GetProjectionFromPROJ4Cache(proj_cache, srid1);
+-	*pj2 = GetProjectionFromPROJ4Cache(proj_cache, srid2);
++	*pj = GetProjectionFromPROJCache(proj_cache, srid_from, srid_to);
+ 
+ 	return LW_SUCCESS;
+ }
+ 
+-int
+-spheroid_init_from_srid(FunctionCallInfo fcinfo, int srid, SPHEROID *s)
+-{
+-	projPJ pj1, pj2;
+-#if POSTGIS_PROJ_VERSION >= 48
+-	double major_axis, minor_axis, eccentricity_squared;
+-#endif
+-
+-	if ( GetProjectionsUsingFCInfo(fcinfo, srid, srid, &pj1, &pj2) == LW_FAILURE)
+-		return LW_FAILURE;
+ 
+-	if ( ! pj_is_latlong(pj1) )
+-		return LW_FAILURE;
+-
+-#if POSTGIS_PROJ_VERSION >= 48
+-	/* For newer versions of Proj we can pull the spheroid paramaeters and initialize */
+-	/* using them */
+-	pj_get_spheroid_defn(pj1, &major_axis, &eccentricity_squared);
+-	minor_axis = major_axis * sqrt(1-eccentricity_squared);
+-	spheroid_init(s, major_axis, minor_axis);
++static int
++proj_pj_is_latlong(const PJ* pj)
++{
++#if POSTGIS_PROJ_VERSION < 60
++	return pj_is_latlong(pj->pj_from);
+ #else
+-	/* For old versions of Proj we cannot lookup the spheroid parameters from the API */
+-	/* So we use the WGS84 parameters (boo!) */
+-	spheroid_init(s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
++	PJ_TYPE pj_type = proj_get_type(proj_get_source_crs(NULL, pj));
++	return (pj_type == PJ_TYPE_GEOGRAPHIC_2D_CRS) ||
++	       (pj_type == PJ_TYPE_GEOGRAPHIC_3D_CRS);
+ #endif
+-
+-	return LW_SUCCESS;
+ }
+ 
+-void srid_is_latlong(FunctionCallInfo fcinfo, int srid)
++static int
++srid_is_latlong(FunctionCallInfo fcinfo, int srid)
+ {
+-	projPJ pj1;
+-	projPJ pj2;
+-
+-	if ( srid == SRID_DEFAULT || srid == SRID_UNKNOWN )
+-		return;
++	PJ* pj;
++	if ( GetPJUsingFCInfo(fcinfo, srid, srid, &pj) == LW_FAILURE)
++		return LW_FALSE;
++	return proj_pj_is_latlong(pj);
++}
+ 
+-	if ( GetProjectionsUsingFCInfo(fcinfo, srid, srid, &pj1, &pj2) == LW_FAILURE)
++void
++srid_check_latlong(FunctionCallInfo fcinfo, int srid)
++{
++	if (srid == SRID_DEFAULT || srid == SRID_UNKNOWN)
+ 		return;
+ 
+-	if ( pj_is_latlong(pj1) )
++	if (srid_is_latlong(fcinfo, srid))
+ 		return;
+ 
+ 	ereport(ERROR, (
+@@ -741,14 +900,10 @@ void srid_is_latlong(FunctionCallInfo fc
+ 	            errmsg("Only lon/lat coordinate systems are supported in geography.")));
+ }
+ 
+-
+-srs_precision srid_axis_precision(FunctionCallInfo fcinfo, int srid, int precision)
++srs_precision
++srid_axis_precision(FunctionCallInfo fcinfo, int srid, int precision)
+ {
+-	projPJ pj1;
+-	projPJ pj2;
+-
+ 	srs_precision sp;
+-
+ 	sp.precision_xy = precision;
+ 	sp.precision_z = precision;
+ 	sp.precision_m = precision;
+@@ -756,10 +911,7 @@ srs_precision srid_axis_precision(Functi
+ 	if ( srid == SRID_UNKNOWN )
+ 		return sp;
+ 
+-	if ( GetProjectionsUsingFCInfo(fcinfo, srid, srid, &pj1, &pj2) == LW_FAILURE)
+-		return sp;
+-
+-	if ( pj_is_latlong(pj1) )
++	if ( srid_is_latlong(fcinfo, srid) )
+ 	{
+ 		sp.precision_xy += 5;
+ 		return sp;
+@@ -767,3 +919,59 @@ srs_precision srid_axis_precision(Functi
+ 
+ 	return sp;
+ }
++
++int
++spheroid_init_from_srid(FunctionCallInfo fcinfo, int srid, SPHEROID *s)
++{
++	PJ* pj;
++#if POSTGIS_PROJ_VERSION >= 60
++	double out_semi_major_metre, out_semi_minor_metre, out_inv_flattening;
++	int out_is_semi_minor_computed;
++	PJ *pj_ellps, *pj_crs;
++#elif POSTGIS_PROJ_VERSION >= 48
++	double major_axis, minor_axis, eccentricity_squared;
++#endif
++
++	if ( GetPJUsingFCInfo(fcinfo, srid, srid, &pj) == LW_FAILURE)
++		return LW_FAILURE;
++
++#if POSTGIS_PROJ_VERSION >= 60
++	if (!proj_pj_is_latlong(pj))
++		return LW_FAILURE;
++	pj_crs = proj_get_source_crs(NULL, pj);
++	if (!pj_crs)
++	{
++		lwerror("%s: proj_get_source_crs returned NULL", __func__);
++	}
++	pj_ellps = proj_get_ellipsoid(NULL, pj_crs);
++	if (!pj_ellps)
++	{
++		proj_destroy(pj_crs);
++		lwerror("%s: proj_get_ellipsoid returned NULL", __func__);
++	}
++	proj_ellipsoid_get_parameters(NULL, pj_ellps,
++		&out_semi_major_metre, &out_semi_minor_metre,
++		&out_is_semi_minor_computed, &out_inv_flattening);
++	proj_destroy(pj_ellps);
++	proj_destroy(pj_crs);
++	spheroid_init(s, out_semi_major_metre, out_semi_minor_metre);
++
++#elif POSTGIS_PROJ_VERSION >= 48
++	if (!pj_is_latlong(pj->pj_from))
++		return LW_FAILURE;
++	/* For newer versions of Proj we can pull the spheroid paramaeters and initialize */
++	/* using them */
++	pj_get_spheroid_defn(pj->pj_from, &major_axis, &eccentricity_squared);
++	minor_axis = major_axis * sqrt(1-eccentricity_squared);
++	spheroid_init(s, major_axis, minor_axis);
++
++#else
++	if (!pj_is_latlong(pj->pj_from))
++		return LW_FAILURE;
++	/* For old versions of Proj we cannot lookup the spheroid parameters from the API */
++	/* So we use the WGS84 parameters (boo!) */
++	spheroid_init(s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
++#endif
++
++	return LW_SUCCESS;
++}
+diff -rupN postgis-2.5.5/libpgcommon/lwgeom_transform.h postgis-2.5.5-new/libpgcommon/lwgeom_transform.h
+--- postgis-2.5.5/libpgcommon/lwgeom_transform.h	2020-08-15 20:43:43.000000000 +0200
++++ postgis-2.5.5-new/libpgcommon/lwgeom_transform.h	2022-08-06 11:48:23.739708197 +0200
+@@ -10,9 +10,10 @@
+  **********************************************************************/
+ 
+ #include "postgres.h"
+-#include "liblwgeom.h"
++#include "liblwgeom_internal.h"
+ #include "lwgeom_pg.h"
+ 
++
+ typedef struct srs_precision
+ {
+ 	int precision_xy;
+@@ -20,23 +21,19 @@ typedef struct srs_precision
+ 	int precision_m;
+ } srs_precision;
+ 
+-char* GetProj4StringSPI(int srid);
+-void SetPROJ4LibPath(void) ;
++char * GetProj4String(int srid);
+ 
+ /**
+  * Opaque type to use in the projection cache API.
+  */
+-typedef void *Proj4Cache ;
++typedef void *ProjCache ;
+ 
+-void SetPROJ4LibPath(void);
+-Proj4Cache GetPROJ4Cache(FunctionCallInfo fcinfo) ;
+-bool IsInPROJ4Cache(Proj4Cache cache, int srid) ;
+-void AddToPROJ4Cache(Proj4Cache cache, int srid, int other_srid);
+-void DeleteFromPROJ4Cache(Proj4Cache cache, int srid) ;
+-projPJ GetProjectionFromPROJ4Cache(Proj4Cache cache, int srid);
+-int GetProjectionsUsingFCInfo(FunctionCallInfo fcinfo, int srid1, int srid2, projPJ *pj1, projPJ *pj2);
++void SetPROJLibPath(void);
++bool IsInPROJCache(ProjCache cache, int srid_from, int srid_to);
++PJ* GetPJFromPROJCache(ProjCache cache, int srid_from, int srid_to);
++int GetPJUsingFCInfo(FunctionCallInfo fcinfo, int srid_from, int srid_to, PJ** pj);
+ int spheroid_init_from_srid(FunctionCallInfo fcinfo, int srid, SPHEROID *s);
+-void srid_is_latlong(FunctionCallInfo fcinfo, int srid);
++void srid_check_latlong(FunctionCallInfo fcinfo, int srid);
+ srs_precision srid_axis_precision(FunctionCallInfo fcinfo, int srid, int precision);
+ 
+ /**
+diff -rupN postgis-2.5.5/macros/ac_proj4_version.m4 postgis-2.5.5-new/macros/ac_proj4_version.m4
+--- postgis-2.5.5/macros/ac_proj4_version.m4	2020-08-15 20:43:44.000000000 +0200
++++ postgis-2.5.5-new/macros/ac_proj4_version.m4	2022-08-06 11:48:23.740708197 +0200
+@@ -14,29 +14,53 @@ dnl Return the PROJ.4 version number
+ dnl
+ 
+ AC_DEFUN([AC_PROJ_VERSION], [
+-	AC_RUN_IFELSE(
+-        	[AC_LANG_PROGRAM([
+-		#ifdef HAVE_STDINT_H
+-        		#include <stdio.h>
+-		#endif
+-		#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
+-		#include "proj_api.h"
+-	],
+-	[
+-		FILE *fp;
+ 
+-		fp = fopen("conftest.out", "w");
+-		fprintf(fp, "%d\n", PJ_VERSION);
+-		fclose(fp)])
+-	],
+-        [
+-		dnl The program ran successfully, so return the version number in the form MAJORMINOR
+-		$1=`cat conftest.out | sed 's/\([[0-9]]\)\([[0-9]]\)\([[0-9]]\)/\1\2/'`
+-	],
+-        [
+-		dnl The program failed so return an empty variable
+-		$1=""
+-	]
+-        )
++	AC_CHECK_HEADER([proj.h], [
++		dnl Proj >= 6 include and version string
++		AC_RUN_IFELSE([
++			AC_LANG_PROGRAM([
++				#ifdef HAVE_STDINT_H
++				#include <stdio.h>
++				#endif
++				#include "proj.h"
++			],[
++				FILE *fp;
++				int vernum;
++
++				fp = fopen("conftest.out", "w");
++				vernum = (100 * PROJ_VERSION_MAJOR) + (10 * PROJ_VERSION_MINOR) + PROJ_VERSION_PATCH;
++				fprintf(fp, "%d\n", vernum);
++				fclose(fp);
++			])
++		],[
++			dnl The program ran successfully, so return the version number in the form MAJORMINOR
++			$1=`cat conftest.out | sed 's/\([[0-9]]\)\([[0-9]]\)\([[0-9]]\)/\1\2/'`
++		],[
++			dnl The program failed so return an empty variable
++			$1=""
++		])
++	],[
++		dnl Proj < 6 include and version string
++		AC_RUN_IFELSE(
++			[AC_LANG_PROGRAM([
++				#ifdef HAVE_STDINT_H
++				#include <stdio.h>
++				#endif
++				#include "proj_api.h"
++			],[
++				FILE *fp;
++
++				fp = fopen("conftest.out", "w");
++				fprintf(fp, "%d\n", PJ_VERSION);
++				fclose(fp);
++			])
++		],[
++			dnl The program ran successfully, so return the version number in the form MAJORMINOR
++			$1=`cat conftest.out | sed 's/\([[0-9]]\)\([[0-9]]\)\([[0-9]]\)/\1\2/'`
++		],[
++			dnl The program failed so return an empty variable
++			$1=""
++		])
++    ])
+ ])
+ 
+diff -rupN postgis-2.5.5/postgis/geography_inout.c postgis-2.5.5-new/postgis/geography_inout.c
+--- postgis-2.5.5/postgis/geography_inout.c	2020-08-15 20:43:44.000000000 +0200
++++ postgis-2.5.5-new/postgis/geography_inout.c	2022-08-06 11:48:23.740708197 +0200
+@@ -172,7 +172,7 @@ Datum geography_in(PG_FUNCTION_ARGS)
+ 	}
+ 
+ 	/* Error on any SRID != default */
+-	srid_is_latlong(fcinfo, lwgeom->srid);
++	srid_check_latlong(fcinfo, lwgeom->srid);
+ 
+ 	/* Convert to gserialized */
+ 	g_ser = gserialized_geography_from_lwgeom(lwgeom, geog_typmod);
+@@ -568,7 +568,7 @@ Datum geography_from_text(PG_FUNCTION_AR
+ 		PG_PARSER_ERROR(lwg_parser_result);
+ 
+ 	/* Error on any SRID != default */
+-	srid_is_latlong(fcinfo, lwg_parser_result.geom->srid);
++	srid_check_latlong(fcinfo, lwg_parser_result.geom->srid);
+ 
+ 	/* Clean up string */
+ 	pfree(wkt);
+@@ -596,7 +596,7 @@ Datum geography_from_binary(PG_FUNCTION_
+ 		lwpgerror("Unable to parse WKB");
+ 
+ 	/* Error on any SRID != default */
+-	srid_is_latlong(fcinfo, lwgeom->srid);
++	srid_check_latlong(fcinfo, lwgeom->srid);
+ 
+ 	gser = gserialized_geography_from_lwgeom(lwgeom, -1);
+ 	lwgeom_free(lwgeom);
+@@ -622,7 +622,7 @@ Datum geography_from_geometry(PG_FUNCTIO
+ 	}
+ 
+ 	/* Error on any SRID != default */
+-	srid_is_latlong(fcinfo, lwgeom->srid);
++	srid_check_latlong(fcinfo, lwgeom->srid);
+ 
+ 	/* Force the geometry to have valid geodetic coordinate range. */
+ 	lwgeom_nudge_geodetic(lwgeom);
+@@ -686,7 +686,7 @@ Datum geography_recv(PG_FUNCTION_ARGS)
+ 	lwgeom = lwgeom_from_wkb((uint8_t*)buf->data, buf->len, LW_PARSER_CHECK_ALL);
+ 
+ 	/* Error on any SRID != default */
+-	srid_is_latlong(fcinfo, lwgeom->srid);
++	srid_check_latlong(fcinfo, lwgeom->srid);
+ 
+ 	g_ser = gserialized_geography_from_lwgeom(lwgeom, geog_typmod);
+ 
+diff -rupN postgis-2.5.5/postgis/geography_measurement.c postgis-2.5.5-new/postgis/geography_measurement.c
+--- postgis-2.5.5/postgis/geography_measurement.c	2020-08-15 20:43:44.000000000 +0200
++++ postgis-2.5.5-new/postgis/geography_measurement.c	2022-08-06 11:48:23.741708197 +0200
+@@ -40,7 +40,7 @@
+ #include "geography_measurement_trees.h" /* For circ_tree caching */
+ #include "lwgeom_transform.h" /* For SRID functions */
+ 
+-#if PROJ_GEODESIC
++#ifdef PROJ_GEODESIC
+ /* round to 10 nm precision */
+ #define INVMINDIST 1.0e8
+ #else
+@@ -532,7 +532,7 @@ Datum geography_area(PG_FUNCTION_ARGS)
+ 	else
+ 		lwgeom_calculate_gbox_geodetic(lwgeom, &gbox);
+ 
+-#if ! PROJ_GEODESIC
++#ifndef PROJ_GEODESIC
+ 	/* Test for cases that are currently not handled by spheroid code */
+ 	if ( use_spheroid )
+ 	{
+@@ -543,7 +543,7 @@ Datum geography_area(PG_FUNCTION_ARGS)
+ 		if ( gbox.zmax > 0.0 && gbox.zmin < 0.0 )
+ 			use_spheroid = LW_FALSE;
+ 	}
+-#endif /* if ! PROJ_GEODESIC */
++#endif /* ifndef PROJ_GEODESIC */
+ 
+ 	/* User requests spherical calculation, turn our spheroid into a sphere */
+ 	if ( ! use_spheroid )
+diff -rupN postgis-2.5.5/postgis/gserialized_gist_2d.c postgis-2.5.5-new/postgis/gserialized_gist_2d.c
+--- postgis-2.5.5/postgis/gserialized_gist_2d.c	2020-08-15 20:43:44.000000000 +0200
++++ postgis-2.5.5-new/postgis/gserialized_gist_2d.c	2022-08-06 11:48:23.742708197 +0200
+@@ -60,6 +60,7 @@
+ #endif
+ 
+ #include <float.h> /* For FLT_MAX */
++#include <math.h>
+ 
+ /*
+ ** When is a node split not so good? If more than 90% of the entries
+diff -rupN postgis-2.5.5/postgis/gserialized_gist_nd.c postgis-2.5.5-new/postgis/gserialized_gist_nd.c
+--- postgis-2.5.5/postgis/gserialized_gist_nd.c	2020-08-15 20:43:44.000000000 +0200
++++ postgis-2.5.5-new/postgis/gserialized_gist_nd.c	2022-08-06 11:48:23.743708197 +0200
+@@ -52,6 +52,7 @@
+ #include "geography.h"
+ 
+ #include <assert.h>
++#include <math.h>
+ 
+ 
+ /* Fall back to older finite() if necessary */
+diff -rupN postgis-2.5.5/postgis/gserialized_spgist_2d.c postgis-2.5.5-new/postgis/gserialized_spgist_2d.c
+--- postgis-2.5.5/postgis/gserialized_spgist_2d.c	2020-08-15 20:43:44.000000000 +0200
++++ postgis-2.5.5-new/postgis/gserialized_spgist_2d.c	2022-08-06 11:48:23.744708197 +0200
+@@ -81,6 +81,7 @@
+ #include "lwgeom_pg.h"        /* For debugging macros. */
+ #include <gserialized_gist.h> /* For utility functions. */
+ #include <lwgeom_pg.h>        /* For debugging macros. */
++#include <math.h>
+ 
+ /*
+ ** SP-GiST 2D index function prototypes
+diff -rupN postgis-2.5.5/postgis/gserialized_typmod.c postgis-2.5.5-new/postgis/gserialized_typmod.c
+--- postgis-2.5.5/postgis/gserialized_typmod.c	2020-08-15 20:43:44.000000000 +0200
++++ postgis-2.5.5-new/postgis/gserialized_typmod.c	2022-08-06 11:48:23.744708197 +0200
+@@ -295,7 +295,7 @@ Datum geography_typmod_in(PG_FUNCTION_AR
+ 	int32 typmod = gserialized_typmod_in(arr, LW_TRUE);
+ 	int srid = TYPMOD_GET_SRID(typmod);
+ 	/* Check the SRID is legal (geographic coordinates) */
+-	srid_is_latlong(fcinfo, srid);
++	srid_check_latlong(fcinfo, srid);
+ 
+ 	PG_RETURN_INT32(typmod);
+ }
+diff -rupN postgis-2.5.5/postgis/lwgeom_in_gml.c postgis-2.5.5-new/postgis/lwgeom_in_gml.c
+--- postgis-2.5.5/postgis/lwgeom_in_gml.c	2020-08-15 20:43:44.000000000 +0200
++++ postgis-2.5.5-new/postgis/lwgeom_in_gml.c	2022-08-06 11:48:23.745708197 +0200
+@@ -297,36 +297,68 @@ static xmlNodePtr get_xlink_node(xmlNode
+ }
+ 
+ 
++
+ /**
+- * Use Proj4 to reproject a given POINTARRAY
++ * Use Proj to reproject a given POINTARRAY
+  */
++
++#if POSTGIS_PROJ_VERSION < 60
++
+ static POINTARRAY* gml_reproject_pa(POINTARRAY *pa, int srid_in, int srid_out)
+ {
+-	projPJ in_pj, out_pj;
++	PJ pj;
+ 	char *text_in, *text_out;
+ 
+ 	if (srid_in == SRID_UNKNOWN) return pa; /* nothing to do */
+ 	if (srid_out == SRID_UNKNOWN) gml_lwpgerror("invalid GML representation", 3);
+ 
+-	text_in = GetProj4StringSPI(srid_in);
+-	text_out = GetProj4StringSPI(srid_out);
++	text_in = GetProj4String(srid_in);
++	text_out = GetProj4String(srid_out);
+ 
+-	in_pj = lwproj_from_string(text_in);
+-	out_pj = lwproj_from_string(text_out);
++	pj.pj_from = lwproj_from_string(text_in);
++	pj.pj_to = lwproj_from_string(text_out);
+ 
+ 	lwfree(text_in);
+ 	lwfree(text_out);
+ 
+-	if ( ptarray_transform(pa, in_pj, out_pj) == LW_FAILURE )
++	if ( ptarray_transform(pa, &pj) == LW_FAILURE )
+ 	{
+ 		elog(ERROR, "gml_reproject_pa: reprojection failed");
+ 	}
+ 
+-	pj_free(in_pj);
+-	pj_free(out_pj);
++	pj_free(pj.pj_from);
++	pj_free(pj.pj_to);
++
++	return pa;
++}
++#else
++/*
++ * TODO: rework GML projection handling to skip the spatial_ref_sys
++ * lookups, and use the Proj 6+ EPSG catalogue and built-in SRID
++ * lookups directly. Drop this ugly hack.
++ */
++static POINTARRAY* gml_reproject_pa(POINTARRAY *pa, int srid_in, int srid_out)
++{
++	PJ *pj;
++	char text_in[32];
++	char text_out[32];
++
++	if (srid_in == SRID_UNKNOWN) return pa; /* nothing to do */
++	if (srid_out == SRID_UNKNOWN) gml_lwpgerror("invalid GML representation", 3);
++
++	snprintf(text_in, 32, "EPSG:%d", srid_in);
++	snprintf(text_out, 32, "EPSG:%d", srid_out);
++	pj = proj_create_crs_to_crs(NULL, text_in, text_out, NULL);
++
++	if (ptarray_transform(pa, pj) == LW_FAILURE)
++	{
++		elog(ERROR, "gml_reproject_pa: reprojection failed");
++	}
++	proj_destroy(pj);
+ 
+ 	return pa;
+ }
++#endif /* POSTGIS_PROJ_VERSION */
+ 
+ 
+ /**
+diff -rupN postgis-2.5.5/postgis/lwgeom_spheroid.c postgis-2.5.5-new/postgis/lwgeom_spheroid.c
+--- postgis-2.5.5/postgis/lwgeom_spheroid.c	2020-08-15 20:43:44.000000000 +0200
++++ postgis-2.5.5-new/postgis/lwgeom_spheroid.c	2022-08-06 11:48:23.745708197 +0200
+@@ -440,7 +440,7 @@ Datum LWGEOM_length_ellipsoid_linestring
+  *    (if deltaX is 1 degrees, then that distance represents 1/360 of a circle of radius S.)
+  *
+  *
+- *  Parts taken from PROJ4 - geodetic_to_geocentric() (for calculating Rn)
++ *  Parts taken from PROJ - geodetic_to_geocentric() (for calculating Rn)
+  *
+  *  remember that lat1/long1/lat2/long2 are comming in a *RADIANS* not degrees.
+  *
+diff -rupN postgis-2.5.5/postgis/lwgeom_transform.c postgis-2.5.5-new/postgis/lwgeom_transform.c
+--- postgis-2.5.5/postgis/lwgeom_transform.c	2020-08-15 20:43:44.000000000 +0200
++++ postgis-2.5.5-new/postgis/lwgeom_transform.c	2022-08-06 11:48:23.746708197 +0200
+@@ -47,23 +47,23 @@ Datum postgis_proj_version(PG_FUNCTION_A
+ PG_FUNCTION_INFO_V1(transform);
+ Datum transform(PG_FUNCTION_ARGS)
+ {
+-	GSERIALIZED *geom;
+-	GSERIALIZED *result=NULL;
+-	LWGEOM *lwgeom;
+-	projPJ input_pj, output_pj;
+-	int32 output_srid, input_srid;
++	GSERIALIZED* geom;
++	GSERIALIZED* result=NULL;
++	LWGEOM* lwgeom;
++	PJ* pj;
++	int32 srid_to, srid_from;
+ 
+-	output_srid = PG_GETARG_INT32(1);
+-	if (output_srid == SRID_UNKNOWN)
++	srid_to = PG_GETARG_INT32(1);
++	if (srid_to == SRID_UNKNOWN)
+ 	{
+ 		elog(ERROR, "%d is an invalid target SRID", SRID_UNKNOWN);
+ 		PG_RETURN_NULL();
+ 	}
+ 
+ 	geom = PG_GETARG_GSERIALIZED_P_COPY(0);
+-	input_srid = gserialized_get_srid(geom);
++	srid_from = gserialized_get_srid(geom);
+ 
+-	if ( input_srid == SRID_UNKNOWN )
++	if ( srid_from == SRID_UNKNOWN )
+ 	{
+ 		PG_FREE_IF_COPY(geom, 0);
+ 		elog(ERROR, "Input geometry has unknown (%d) SRID", SRID_UNKNOWN);
+@@ -71,10 +71,10 @@ Datum transform(PG_FUNCTION_ARGS)
+ 	}
+ 
+ 	/* Input SRID and output SRID are equal, noop */
+-	if ( input_srid == output_srid )
++	if ( srid_from == srid_to )
+ 		PG_RETURN_POINTER(geom);
+ 
+-	if ( GetProjectionsUsingFCInfo(fcinfo, input_srid, output_srid, &input_pj, &output_pj) == LW_FAILURE )
++	if ( GetPJUsingFCInfo(fcinfo, srid_from, srid_to, &pj) == LW_FAILURE )
+ 	{
+ 		PG_FREE_IF_COPY(geom, 0);
+ 		elog(ERROR, "Failure reading projections from spatial_ref_sys.");
+@@ -83,8 +83,8 @@ Datum transform(PG_FUNCTION_ARGS)
+ 
+ 	/* now we have a geometry, and input/output PJ structs. */
+ 	lwgeom = lwgeom_from_gserialized(geom);
+-	lwgeom_transform(lwgeom, input_pj, output_pj);
+-	lwgeom->srid = output_srid;
++	lwgeom_transform(lwgeom, pj);
++	lwgeom->srid = srid_to;
+ 
+ 	/* Re-compute bbox if input had one (COMPUTE_BBOX TAINTING) */
+ 	if ( lwgeom->bbox )
+@@ -110,96 +110,57 @@ Datum transform(PG_FUNCTION_ARGS)
+ PG_FUNCTION_INFO_V1(transform_geom);
+ Datum transform_geom(PG_FUNCTION_ARGS)
+ {
+-	GSERIALIZED *geom;
+-	GSERIALIZED *result=NULL;
+-	LWGEOM *lwgeom;
+-	projPJ input_pj, output_pj;
+-	char *input_proj4, *output_proj4;
+-	text *input_proj4_text;
+-	text *output_proj4_text;
+-	int32 result_srid ;
+-	char *pj_errstr;
++	GSERIALIZED *gser, *gser_result=NULL;
++	LWGEOM *geom;
++	char *input_srs, *output_srs;
++	int32 result_srid;
++	int rv;
+ 
+-	result_srid = PG_GETARG_INT32(3);
+-	geom = PG_GETARG_GSERIALIZED_P_COPY(0);
++	/* Take a copy, since we will be altering the coordinates */
++	gser = PG_GETARG_GSERIALIZED_P_COPY(0);
+ 
+ 	/* Set the search path if we haven't already */
+-	SetPROJ4LibPath();
+-
+-	/* Read the arguments */
+-	input_proj4_text  = (PG_GETARG_TEXT_P(1));
+-	output_proj4_text = (PG_GETARG_TEXT_P(2));
++	SetPROJLibPath();
+ 
+ 	/* Convert from text to cstring for libproj */
+-	input_proj4 = text_to_cstring(input_proj4_text);
+-	output_proj4 = text_to_cstring(output_proj4_text);
+-
+-	/* make input and output projection objects */
+-	input_pj = lwproj_from_string(input_proj4);
+-	if ( input_pj == NULL )
+-	{
+-		pj_errstr = pj_strerrno(*pj_get_errno_ref());
+-		if ( ! pj_errstr ) pj_errstr = "";
+-
+-		/* we need this for error reporting */
+-		/* pfree(input_proj4); */
+-		pfree(output_proj4);
+-		pfree(geom);
+-
+-		elog(ERROR,
+-		    "transform_geom: could not parse proj4 string '%s' %s",
+-		    input_proj4, pj_errstr);
+-		PG_RETURN_NULL();
+-	}
+-	pfree(input_proj4);
++	input_srs = text_to_cstring(PG_GETARG_TEXT_P(1));
++	output_srs = text_to_cstring(PG_GETARG_TEXT_P(2));
++	result_srid = PG_GETARG_INT32(3);
+ 
+-	output_pj = lwproj_from_string(output_proj4);
++	/* now we have a geometry, and input/output PJ structs. */
++	geom = lwgeom_from_gserialized(gser);
++	rv = lwgeom_transform_from_str(geom, input_srs, output_srs);
++	pfree(input_srs);
++	pfree(output_srs);
+ 
+-	if ( output_pj == NULL )
++	if (rv == LW_FAILURE)
+ 	{
+-		pj_errstr = pj_strerrno(*pj_get_errno_ref());
+-		if ( ! pj_errstr ) pj_errstr = "";
+-
+-		/* we need this for error reporting */
+-		/* pfree(output_proj4); */
+-		pj_free(input_pj);
+-		pfree(geom);
+-
+-		elog(ERROR,
+-			"transform_geom: couldn't parse proj4 output string: '%s': %s",
+-			output_proj4, pj_errstr);
++		elog(ERROR, "coordinate transformation failed");
+ 		PG_RETURN_NULL();
+ 	}
+-	pfree(output_proj4);
+-
+-	/* now we have a geometry, and input/output PJ structs. */
+-	lwgeom = lwgeom_from_gserialized(geom);
+-	lwgeom_transform(lwgeom, input_pj, output_pj);
+-	lwgeom->srid = result_srid;
+-
+-	/* clean up */
+-	pj_free(input_pj);
+-	pj_free(output_pj);
+ 
+ 	/* Re-compute bbox if input had one (COMPUTE_BBOX TAINTING) */
+-	if ( lwgeom->bbox )
+-	{
+-		lwgeom_refresh_bbox(lwgeom);
+-	}
++	geom->srid = result_srid;
++	if (geom->bbox)
++		lwgeom_refresh_bbox(geom);
++
++	gser_result = geometry_serialize(geom);
++	lwgeom_free(geom);
++	PG_FREE_IF_COPY(gser, 0);
+ 
+-	result = geometry_serialize(lwgeom);
+-
+-	lwgeom_free(lwgeom);
+-	PG_FREE_IF_COPY(geom, 0);
+-
+-	PG_RETURN_POINTER(result); /* new geometry */
++	PG_RETURN_POINTER(gser_result); /* new geometry */
+ }
+ 
+ 
+ PG_FUNCTION_INFO_V1(postgis_proj_version);
+ Datum postgis_proj_version(PG_FUNCTION_ARGS)
+ {
++#if POSTGIS_PROJ_VERSION < 60
+ 	const char *ver = pj_get_release();
+ 	text *result = cstring_to_text(ver);
++#else
++	PJ_INFO pji = proj_info();
++	text *result = 	cstring_to_text(pji.version);
++#endif
+ 	PG_RETURN_POINTER(result);
+ }
