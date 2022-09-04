@@ -1,5 +1,5 @@
 %global proj_version 9.0.0
-%global data_version 1.9
+%global data_version 1.11
 
 # The name is special so that rpmdev-bumpspec will bump this rather than adding .1 to the end
 %global baserelease 3
@@ -12,7 +12,7 @@
 
 Name:           proj
 # Also check whether there is a new proj-data release when upgrading!
-Version:        9.0.1
+Version:        9.1.0
 Release:        1%{?dist}
 Summary:        Cartographic projection software (PROJ)
 
@@ -306,7 +306,7 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 %files -n mingw32-%{name}
 %license COPYING
-%{mingw32_bindir}/libproj_9_0.dll
+%{mingw32_bindir}/libproj_9_1.dll
 %{mingw32_bindir}/*.exe
 %{mingw32_libdir}/libproj.dll.a
 %{mingw32_libdir}/cmake/proj/
@@ -318,7 +318,7 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 %files -n mingw64-%{name}
 %license COPYING
-%{mingw64_bindir}/libproj_9_0.dll
+%{mingw64_bindir}/libproj_9_1.dll
 %{mingw64_bindir}/*.exe
 %{mingw64_libdir}/libproj.dll.a
 %{mingw64_libdir}/cmake/proj/
@@ -330,6 +330,9 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 
 %changelog
+* Sun Sep 04 2022 Sandro Mani <manisandro@gmail.com> - 9.1.0-1
+- Update to 9.1.0
+
 * Fri Jul 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 9.0.1-1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
 
