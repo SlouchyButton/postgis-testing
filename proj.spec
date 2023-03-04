@@ -89,6 +89,7 @@ Requires:       proj-data-nl
 Requires:       proj-data-pl
 Requires:       proj-data-pt
 Requires:       proj-data-se
+Requires:       proj-data-si
 Requires:       proj-data-sk
 Requires:       proj-data-uk
 
@@ -192,6 +193,7 @@ Supplements:  proj\
 %data_subpkg -c pt -n Portugal
 %data_subpkg -c se -n Sweden
 %data_subpkg -c sk -n Slovakia
+%data_subpkg -c si -n Slovenia
 %data_subpkg -c uk -n %{quote:United Kingdom}
 %data_subpkg -c us -n %{quote:United States}
 %data_subpkg -c za -n %{quote:South Africa}
