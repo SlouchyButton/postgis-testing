@@ -1,7 +1,7 @@
 %{!?javabuild:%global javabuild 0}
 %{!?utils:%global utils 1}
 %{!?gcj_support:%global gcj_support 0}
-%{!?upgrade:%global upgrade 1}
+%{!?upgrade:%global upgrade 0}
 %{!?runselftest:%global runselftest 1}
 
 %global        majorversion 3.3
