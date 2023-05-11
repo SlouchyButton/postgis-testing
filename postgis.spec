@@ -15,7 +15,7 @@
 
 Name:          postgis
 Version:       3.3.2
-Release:       4%{?dist}
+Release:       5%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPLv2+
 
@@ -409,6 +409,9 @@ fi
 
 
 %changelog
+* Thu May 11 2023 Sandro Mani <manisandro@gmail.com> - 3.3.2-5
+- Rebuild (gdal)
+
 * Sun Apr 09 2023 Florian Weimer <fweimer@redhat.com> - 3.3.2-4
 - C99 compatibility fixes
 
