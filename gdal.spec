@@ -51,7 +51,7 @@
 
 Name:          gdal
 Version:       3.8.3
-Release:       3%{?dist}
+Release:       4%{?dist}
 Summary:       GIS file format library
 License:       MIT
 URL:           http://www.gdal.org
@@ -574,6 +574,9 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 
 %changelog
+* Sat Jan 27 2024 Sandro Mani <manisandro@gmail.com> - 3.8.3-4
+- Enable libarrow, libdeflate
+
 * Wed Jan 24 2024 Fedora Release Engineering <releng@fedoraproject.org> - 3.8.3-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
 
