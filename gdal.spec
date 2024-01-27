@@ -88,7 +88,9 @@ BuildRequires: gtest-devel
 BuildRequires: hdf-devel
 BuildRequires: hdf5-devel
 BuildRequires: json-c-devel
+%ifnarch %{ix86} %{arm}
 BuildRequires: libarrow-devel
+%endif
 BuildRequires: libdap-devel
 BuildRequires: libdeflate-devel
 BuildRequires: libgeotiff-devel
