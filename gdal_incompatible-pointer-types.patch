@@ -1,0 +1,12 @@
+diff -rupN gdal-3.8.3-fedora/port/cpl_vsil_win32.cpp gdal-3.8.3-fedora-new/port/cpl_vsil_win32.cpp
+--- gdal-3.8.3-fedora/port/cpl_vsil_win32.cpp	2024-01-04 19:08:58.000000000 +0100
++++ gdal-3.8.3-fedora-new/port/cpl_vsil_win32.cpp	2024-02-15 10:00:46.920595081 +0100
+@@ -812,7 +812,7 @@ int VSIWin32FilesystemHandler::Stat(cons
+         }
+         else
+         {
+-            nResult = _wstat64(pwszFilename, pStatBuf);
++            nResult = _wstat64(pwszFilename, reinterpret_cast<struct _stat64 *>(pStatBuf));
+             if (nResult < 0)
+             {
+                 DWORD nLastError = GetLastError();
