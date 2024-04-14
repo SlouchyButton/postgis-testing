@@ -51,7 +51,7 @@
 
 Name:          gdal
 Version:       3.8.5
-Release:       1%{?dist}
+Release:       2%{?dist}
 Summary:       GIS file format library
 License:       MIT
 URL:           http://www.gdal.org
@@ -120,6 +120,9 @@ BuildRequires: netcdf-devel
 BuildRequires: ogdi-devel
 BuildRequires: openexr-devel
 BuildRequires: openjpeg2-devel
+%ifnarch %{ix86} %{arm}
+BuildRequires: parquet-libs-devel
+%endif
 BuildRequires: pcre2-devel
 %if 0%{?with_poppler}
 BuildRequires: poppler-devel
@@ -584,6 +587,9 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 
 %changelog
+* Sun Apr 14 2024 Sandro Mani <manisandro@gmail.com> - 3.8.5-2
+- BR: parquet-libs-devel
+
 * Mon Apr 08 2024 Sandro Mani <manisandro@gmail.com> - 3.8.5-1
 - Update to 3.8.5
 
