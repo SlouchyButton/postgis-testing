@@ -51,7 +51,7 @@
 
 Name:          gdal
 Version:       3.8.5
-Release:       2%{?dist}
+Release:       3%{?dist}
 Summary:       GIS file format library
 License:       MIT
 URL:           http://www.gdal.org
@@ -587,6 +587,9 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 
 %changelog
+* Tue Apr 23 2024 Sandro Mani <manisandro@gmail.com> - 3.8.5-3
+- Rebuild (libarrow)
+
 * Sun Apr 14 2024 Sandro Mani <manisandro@gmail.com> - 3.8.5-2
 - BR: parquet-libs-devel
 
