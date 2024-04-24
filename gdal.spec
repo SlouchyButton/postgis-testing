@@ -51,7 +51,7 @@
 
 Name:          gdal
 Version:       3.8.5
-Release:       3%{?dist}
+Release:       4%{?dist}
 Summary:       GIS file format library
 License:       MIT
 URL:           http://www.gdal.org
@@ -587,6 +587,9 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 
 %changelog
+* Wed Apr 24 2024 Benjamin A. Beasley <code@musicinmybrain.net> - 3.8.5-4
+- Rebuilt for openexr 3.2.4
+
 * Tue Apr 23 2024 Sandro Mani <manisandro@gmail.com> - 3.8.5-3
 - Rebuild (libarrow)
 
