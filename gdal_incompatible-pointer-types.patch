@@ -1,12 +1,21 @@
-diff -rupN --no-dereference gdal-3.8.5-fedora/port/cpl_vsil_win32.cpp gdal-3.8.5-fedora-new/port/cpl_vsil_win32.cpp
---- gdal-3.8.5-fedora/port/cpl_vsil_win32.cpp	2024-04-02 12:05:54.000000000 +0200
-+++ gdal-3.8.5-fedora-new/port/cpl_vsil_win32.cpp	2024-04-08 09:44:28.226414023 +0200
-@@ -812,7 +812,7 @@ int VSIWin32FilesystemHandler::Stat(cons
+diff -rupN --no-dereference gdal-3.9.0-fedora/port/cpl_vsil_win32.cpp gdal-3.9.0-fedora-new/port/cpl_vsil_win32.cpp
+--- gdal-3.9.0-fedora/port/cpl_vsil_win32.cpp	2024-05-07 14:53:29.000000000 +0200
++++ gdal-3.9.0-fedora-new/port/cpl_vsil_win32.cpp	2024-05-11 23:30:58.675477427 +0200
+@@ -859,7 +859,7 @@ int VSIWin32FilesystemHandler::Stat(cons
+             return nResult;
          }
-         else
-         {
--            nResult = _wstat64(pwszFilename, pStatBuf);
-+            nResult = _wstat64(pwszFilename, reinterpret_cast<struct _stat64 *>(pStatBuf));
-             if (nResult < 0)
+ 
+-        int nResult = _wstat64(pwszFilename, pStatBuf);
++        int nResult = _wstat64(pwszFilename, reinterpret_cast<struct _stat64 *>(pStatBuf));
+ 
+         // If _wstat64() fails and the original name is not an extended one,
+         // then retry with an extended filename
+@@ -870,7 +870,7 @@ int VSIWin32FilesystemHandler::Stat(cons
+                 nLastError == ERROR_FILENAME_EXCED_RANGE)
              {
-                 DWORD nLastError = GetLastError();
+                 VSIWin32TryLongFilename(pwszFilename);
+-                nResult = _wstat64(pwszFilename, pStatBuf);
++                nResult = _wstat64(pwszFilename, reinterpret_cast<struct _stat64 *>(pStatBuf));
+             }
+         }
+ 

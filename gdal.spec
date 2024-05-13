@@ -50,8 +50,8 @@
 
 
 Name:          gdal
-Version:       3.8.5
-Release:       4%{?dist}
+Version:       3.9.0
+Release:       1%{?dist}
 Summary:       GIS file format library
 License:       MIT
 URL:           http://www.gdal.org
@@ -73,9 +73,6 @@ Source5:       %{name}-cleaner.sh
 Patch0:        gdal_utils.patch
 # Fix passing incompatible pointer type
 Patch1:        gdal_incompatible-pointer-types.patch
-# Increase javac source/target to 8
-# [javac] error: Source option 7 is no longer supported. Use 8 or later.
-Patch2:        gdal_java8.patch
 
 BuildRequires: cmake
 BuildRequires: gcc-c++
@@ -451,33 +448,51 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 %files -f gdal_python_manpages_excludes.txt
 %{_bindir}/8211*
+%{_bindir}/gdal2tiles
+%{_bindir}/gdal2xyz
+%{_bindir}/gdaladdo
+%{_bindir}/gdalattachpct
+%{_bindir}/gdalbuildvrt
+%{_bindir}/gdal_calc
+%{_bindir}/gdalcompare
 %{_bindir}/gdal_contour
 %{_bindir}/gdal_create
-%{_bindir}/gdal_grid
-%{_bindir}/gdal_rasterize
-%{_bindir}/gdal_translate
-%{_bindir}/gdal_viewshed
-%{_bindir}/gdaladdo
-%{_bindir}/gdalbuildvrt
 %{_bindir}/gdaldem
+%{_bindir}/gdal_edit
 %{_bindir}/gdalenhance
+%{_bindir}/gdal_fillnodata
 %{_bindir}/gdal_footprint
+%{_bindir}/gdal_grid
 %{_bindir}/gdalinfo
 %{_bindir}/gdallocationinfo
 %{_bindir}/gdalmanage
 %{_bindir}/gdalmdiminfo
 %{_bindir}/gdalmdimtranslate
+%{_bindir}/gdal_merge
+%{_bindir}/gdalmove
+%{_bindir}/gdal_pansharpen
+%{_bindir}/gdal_polygonize
+%{_bindir}/gdal_proximity
+%{_bindir}/gdal_rasterize
+%{_bindir}/gdal_retile
+%{_bindir}/gdal_sieve
 %{_bindir}/gdalsrsinfo
 %{_bindir}/gdaltindex
 %{_bindir}/gdaltransform
+%{_bindir}/gdal_translate
+%{_bindir}/gdal_viewshed
 %{_bindir}/gdalwarp
 %{_bindir}/gnmanalyse
 %{_bindir}/gnmmanage
 %{_bindir}/nearblack
 %{_bindir}/ogr2ogr
 %{_bindir}/ogrinfo
+%{_bindir}/ogr_layer_algebra
 %{_bindir}/ogrlineref
+%{_bindir}/ogrmerge
 %{_bindir}/ogrtindex
+%{_bindir}/pct2rgb
+%{_bindir}/rgb2pct
 %{_bindir}/s57dump
 %{_bindir}/sozip
 %{_datadir}/bash-completion/completions/*
@@ -489,8 +504,8 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 %files libs
 %license LICENSE.TXT
 %doc NEWS.md PROVENANCE.TXT COMMITTERS PROVENANCE.TXT-fedora
-%{_libdir}/libgdal.so.34
-%{_libdir}/libgdal.so.34.*
+%{_libdir}/libgdal.so.35
+%{_libdir}/libgdal.so.35.*
 %{_datadir}/%{name}/
 %{_libdir}/gdalplugins/
 
@@ -506,7 +521,7 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 %if %{with mingw}
 %files -n mingw32-%{name}
 %license LICENSE.TXT
-%{mingw32_bindir}/libgdal-34.dll
+%{mingw32_bindir}/libgdal-35.dll
 %{mingw32_bindir}/gdal-config
 %{mingw32_libdir}/libgdal.dll.a
 %{mingw32_libdir}/cmake/gdal/
@@ -516,10 +531,28 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 %files -n mingw32-%{name}-tools
 %{mingw32_bindir}/*.exe
+%{mingw32_bindir}/gdal2tiles
+%{mingw32_bindir}/gdal2xyz
+%{mingw32_bindir}/gdal_calc
+%{mingw32_bindir}/gdal_edit
+%{mingw32_bindir}/gdal_fillnodata
+%{mingw32_bindir}/gdal_merge
+%{mingw32_bindir}/gdal_pansharpen
+%{mingw32_bindir}/gdal_polygonize
+%{mingw32_bindir}/gdal_proximity
+%{mingw32_bindir}/gdal_retile
+%{mingw32_bindir}/gdal_sieve
+%{mingw32_bindir}/gdalattachpct
+%{mingw32_bindir}/gdalcompare
+%{mingw32_bindir}/gdalmove
+%{mingw32_bindir}/ogr_layer_algebra
+%{mingw32_bindir}/ogrmerge
+%{mingw32_bindir}/pct2rgb
+%{mingw32_bindir}/rgb2pct
 
 %files -n mingw64-%{name}
 %license LICENSE.TXT
-%{mingw64_bindir}/libgdal-34.dll
+%{mingw64_bindir}/libgdal-35.dll
 %{mingw64_bindir}/gdal-config
 %{mingw64_libdir}/libgdal.dll.a
 %{mingw64_libdir}/cmake/gdal/
@@ -529,6 +562,24 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 %files -n mingw64-%{name}-tools
 %{mingw64_bindir}/*.exe
+%{mingw64_bindir}/gdal2tiles
+%{mingw64_bindir}/gdal2xyz
+%{mingw64_bindir}/gdal_calc
+%{mingw64_bindir}/gdal_edit
+%{mingw64_bindir}/gdal_fillnodata
+%{mingw64_bindir}/gdal_merge
+%{mingw64_bindir}/gdal_pansharpen
+%{mingw64_bindir}/gdal_polygonize
+%{mingw64_bindir}/gdal_proximity
+%{mingw64_bindir}/gdal_retile
+%{mingw64_bindir}/gdal_sieve
+%{mingw64_bindir}/gdalattachpct
+%{mingw64_bindir}/gdalcompare
+%{mingw64_bindir}/gdalmove
+%{mingw64_bindir}/ogr_layer_algebra
+%{mingw64_bindir}/ogrmerge
+%{mingw64_bindir}/pct2rgb
+%{mingw64_bindir}/rgb2pct
 %endif
 
 %if %{with python3}
@@ -587,6 +638,9 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 
 %changelog
+* Sat May 11 2024 Sandro Mani <manisandro@gmail.com> - 3.9.0-1
+- Update to 3.9.0
+
 * Wed Apr 24 2024 Benjamin A. Beasley <code@musicinmybrain.net> - 3.8.5-4
 - Rebuilt for openexr 3.2.4
 
