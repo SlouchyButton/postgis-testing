@@ -4,8 +4,8 @@
 
 Name:           proj
 # Also check whether there is a new proj-data release when upgrading!
-Version:        9.4.0
-Release:        2%{?dist}
+Version:        9.4.1
+Release:        1%{?dist}
 Summary:        Cartographic projection software (PROJ)
 
 License:        MIT
@@ -340,6 +340,9 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 
 %changelog
+* Mon Jun 03 2024 Sandro Mani <manisandro@gmail.com> - 9.4.1-1
+- Update to 9.4.1
+
 * Mon May 27 2024 Sandro Mani <manisandro@gmail.com> - 9.4.0-2
 - Fix doc dir ownership
 
