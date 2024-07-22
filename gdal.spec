@@ -118,7 +118,7 @@ BuildRequires: netcdf-devel
 BuildRequires: ogdi-devel
 BuildRequires: openexr-devel
 BuildRequires: openjpeg2-devel
-BuildRequires: openssl-engine-devel
+BuildRequires: openssl-devel-engine
 %ifnarch %{ix86} %{arm}
 BuildRequires: parquet-libs-devel
 %endif
