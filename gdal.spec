@@ -51,7 +51,7 @@
 
 Name:          gdal
 Version:       3.9.2
-Release:       2%{?dist}
+Release:       3%{?dist}
 Summary:       GIS file format library
 License:       MIT
 URL:           http://www.gdal.org
@@ -640,6 +640,9 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 
 %changelog
+* Fri Aug 23 2024 Sandro Mani <manisandro@gmail.com> - 3.9.2-3
+- Rebuild (mingw-poppler)
+
 * Thu Aug 22 2024 Marek Kasik <mkasik@redhat.com> - 3.9.2-2
 - Rebuild for poppler 24.08.0
 
