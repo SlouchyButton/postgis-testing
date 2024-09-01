@@ -5,7 +5,7 @@
 Name:           proj
 # Also check whether there is a new proj-data release when upgrading!
 Version:        9.4.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Cartographic projection software (PROJ)
 
 License:        MIT
@@ -152,7 +152,7 @@ Please do not depend on this package, it will get removed!
 Summary:      %{countryname} datum grids for Proj\
 BuildArch:    noarch\
 # See README.DATA \
-License:      CC-BY and MIT and BSD and Public Domain \
+License:      CC-BY-4.0 OR CC-BY-SA-4.0 OR MIT OR BSD-2-Clause OR CC0-1.0\
 Requires:     proj-data = %{version}-%{release} \
 Supplements:  proj\
 \
@@ -340,6 +340,9 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 
 %changelog
+* Sun Sep 01 2024 Markus Neteler <neteler@mundialis.de> - 9.4.1-3
+- SPDX migration of proj-data
+
 * Fri Jul 19 2024 Fedora Release Engineering <releng@fedoraproject.org> - 9.4.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
 
