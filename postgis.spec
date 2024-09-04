@@ -17,8 +17,9 @@
 
 Name:          postgis
 Version:       3.4.2
-Release:       3%{?dist}
+Release:       4%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
+# Automatically converted from old format: GPL-2.0-or-later - review is highly recommended.
 License:       GPL-2.0-or-later
 
 URL:           https://www.postgis.net
@@ -96,7 +97,8 @@ The postgis-docs package includes PDF documentation of PostGIS.
 %if %javabuild
 %package jdbc
 Summary:       The JDBC driver for PostGIS
-License:       LGPLv2+
+# Automatically converted from old format: LGPLv2+ - review is highly recommended.
+License:       LicenseRef-Callaway-LGPLv2+
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 Requires:      postgresql-jdbc
 BuildRequires: ant >= 0:1.6.2
@@ -449,6 +451,9 @@ fi
 
 
 %changelog
+* Wed Sep 04 2024 Miroslav Suchý <msuchy@redhat.com> - 3.4.2-4
+- convert license to SPDX
+
 * Fri Jul 19 2024 Fedora Release Engineering <releng@fedoraproject.org> - 3.4.2-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
 
