@@ -16,8 +16,8 @@
 %global        __provides_exclude_from %{_libdir}/pgsql
 
 Name:          postgis
-Version:       3.4.2
-Release:       4%{?dist}
+Version:       3.4.3
+Release:       1%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 # Automatically converted from old format: GPL-2.0-or-later - review is highly recommended.
 License:       GPL-2.0-or-later
@@ -451,6 +451,9 @@ fi
 
 
 %changelog
+* Thu Sep 05 2024 Sandro Mani <manisandro@gmail.com> - 3.4.3-1
+- Update to 3.4.3
+
 * Wed Sep 04 2024 Miroslav Suchý <msuchy@redhat.com> - 3.4.2-4
 - convert license to SPDX
 
