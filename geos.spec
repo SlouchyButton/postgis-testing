@@ -10,8 +10,8 @@
 %endif
 
 Name:          geos
-Version:       3.12.2
-Release:       2%{?dist}
+Version:       3.13.0
+Release:       1%{?dist}
 Summary:       GEOS is a C++ port of the Java Topology Suite
 
 License:       LGPL-2.1-only
@@ -119,7 +119,7 @@ rm -f %{buildroot}%{mingw64_bindir}/geos-config
 %doc AUTHORS NEWS.md README.md
 %license COPYING
 %{_bindir}/geosop
-%{_libdir}/libgeos.so.3.12.2
+%{_libdir}/libgeos.so.3.13.0
 %{_libdir}/libgeos_c.so.1*
 
 %files devel
@@ -137,7 +137,7 @@ rm -f %{buildroot}%{mingw64_bindir}/geos-config
 %files -n mingw32-%{name}
 %license COPYING
 %{mingw32_bindir}/geosop.exe
-%{mingw32_bindir}/libgeos-3.12.2.dll
+%{mingw32_bindir}/libgeos-3.13.0.dll
 %{mingw32_bindir}/libgeos_c-1.dll
 %{mingw32_includedir}/geos/
 %{mingw32_includedir}/geos_c.h
@@ -150,7 +150,7 @@ rm -f %{buildroot}%{mingw64_bindir}/geos-config
 %files -n mingw64-%{name}
 %license COPYING
 %{mingw64_bindir}/geosop.exe
-%{mingw64_bindir}/libgeos-3.12.2.dll
+%{mingw64_bindir}/libgeos-3.13.0.dll
 %{mingw64_bindir}/libgeos_c-1.dll
 %{mingw64_includedir}/geos/
 %{mingw64_includedir}/geos_c.h
@@ -163,6 +163,9 @@ rm -f %{buildroot}%{mingw64_bindir}/geos-config
 
 
 %changelog
+* Mon Sep 09 2024 Sandro Mani <manisandro@gmail.com> - 3.13.0-1
+- Update to 3.13.0
+
 * Thu Jul 18 2024 Fedora Release Engineering <releng@fedoraproject.org> - 3.12.2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
 
