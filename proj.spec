@@ -1,11 +1,11 @@
 %bcond_without mingw
 
-%global data_version 1.17
+%global data_version 1.19
 
 Name:           proj
 # Also check whether there is a new proj-data release when upgrading!
-Version:        9.4.1
-Release:        3%{?dist}
+Version:        9.5.0
+Release:        1%{?dist}
 Summary:        Cartographic projection software (PROJ)
 
 License:        MIT
@@ -289,8 +289,8 @@ rm -rf %{buildroot}%{mingw64_mandir}
 %files data
 %doc README.md
 %dir %{_docdir}/%{name}/
-%doc %{_docdir}/%{name}/AUTHORS
-%doc %{_docdir}/%{name}/NEWS
+%doc %{_docdir}/%{name}/AUTHORS.md
+%doc %{_docdir}/%{name}/NEWS.md
 %license %{_docdir}/%{name}/COPYING
 %dir %{_datadir}/%{name}
 %{_datadir}/%{name}/CH
@@ -298,6 +298,7 @@ rm -rf %{buildroot}%{mingw64_mandir}
 %{_datadir}/%{name}/ITRF2000
 %{_datadir}/%{name}/ITRF2008
 %{_datadir}/%{name}/ITRF2014
+%{_datadir}/%{name}/ITRF2020
 %{_datadir}/%{name}/nad.lst
 %{_datadir}/%{name}/nad27
 %{_datadir}/%{name}/nad83
@@ -315,7 +316,7 @@ rm -rf %{buildroot}%{mingw64_mandir}
 %if %{with mingw}
 %files -n mingw32-%{name}
 %license COPYING
-%{mingw32_bindir}/libproj_9_4.dll
+%{mingw32_bindir}/libproj_9.dll
 %{mingw32_bindir}/*.exe
 %{mingw32_libdir}/libproj.dll.a
 %{mingw32_libdir}/cmake/proj/
@@ -327,7 +328,7 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 %files -n mingw64-%{name}
 %license COPYING
-%{mingw64_bindir}/libproj_9_4.dll
+%{mingw64_bindir}/libproj_9.dll
 %{mingw64_bindir}/*.exe
 %{mingw64_libdir}/libproj.dll.a
 %{mingw64_libdir}/cmake/proj/
@@ -340,6 +341,9 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 
 %changelog
+* Mon Sep 16 2024 Sandro Mani <manisandro@gmail.com> - 9.5.0-1
+- Update to 9.5.0
+
 * Sun Sep 01 2024 Markus Neteler <neteler@mundialis.de> - 9.4.1-3
 - SPDX migration of proj-data
 
