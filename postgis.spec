@@ -6,7 +6,7 @@
 %{!?runselftest:%global runselftest 1}
 %{!?llvmjit:%global llvmjit 0}
 
-%global        majorversion 3.4
+%global        majorversion 3.5
 %global        soversion 3
 %global        prevmajorversion 2.5
 %global        prevversion %{prevmajorversion}.5
@@ -16,7 +16,7 @@
 %global        __provides_exclude_from %{_libdir}/pgsql
 
 Name:          postgis
-Version:       3.4.3
+Version:       3.5.0
 Release:       1%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 # Automatically converted from old format: GPL-2.0-or-later - review is highly recommended.
@@ -451,6 +451,9 @@ fi
 
 
 %changelog
+* Sun Sep 29 2024 Sandro Mani <manisandro@gmail.com> - 3.5.0-1
+- Update to 3.5.0
+
 * Thu Sep 05 2024 Sandro Mani <manisandro@gmail.com> - 3.4.3-1
 - Update to 3.4.3
 
