@@ -1,4 +1,8 @@
+%if 0%{?fedora}
 %bcond_without mingw
+%else
+%bcond_with mingw
+%endif
 
 %global data_version 1.19
 
