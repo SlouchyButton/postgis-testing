@@ -50,8 +50,8 @@
 
 
 Name:          gdal
-Version:       3.9.2
-Release:       4%{?dist}
+Version:       3.9.3
+Release:       1%{?dist}
 Summary:       GIS file format library
 License:       MIT
 URL:           http://www.gdal.org
@@ -202,6 +202,7 @@ BuildRequires: mingw64-zstd
 # Python
 %if %{with python3}
 BuildRequires: python3-devel
+BuildRequires: python3-filelock
 BuildRequires: python3-numpy
 BuildRequires: python3-setuptools
 BuildRequires: python3dist(pytest) >= 3.6
@@ -640,6 +641,9 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 
 %changelog
+* Tue Oct 15 2024 Sandro Mani <manisandro@gmail.com> - 3.9.3-1
+- Update to 3.9.3
+
 * Mon Sep 16 2024 Sandro Mani <manisandro@gmail.com> - 3.9.2-4
 - Rebuild (proj)
 
