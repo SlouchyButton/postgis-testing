@@ -51,7 +51,7 @@
 
 Name:          gdal
 Version:       3.9.3
-Release:       2%{?dist}
+Release:       3%{?dist}
 Summary:       GIS file format library
 License:       MIT
 URL:           http://www.gdal.org
@@ -641,6 +641,9 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 
 %changelog
+* Mon Oct 21 2024 Pete Walter <pwalter@fedoraproject.org> - 3.9.3-3
+- Rebuild for xerces-c 3.3
+
 * Fri Oct 18 2024 Pete Walter <pwalter@fedoraproject.org> - 3.9.3-2
 - Rebuild for xerces-c 3.3
 
