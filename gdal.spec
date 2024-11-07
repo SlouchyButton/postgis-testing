@@ -50,8 +50,8 @@
 
 
 Name:          gdal
-Version:       3.9.3
-Release:       5%{?dist}
+Version:       3.10.0
+Release:       1%{?dist}
 Summary:       GIS file format library
 License:       MIT
 URL:           http://www.gdal.org
@@ -118,7 +118,11 @@ BuildRequires: netcdf-devel
 BuildRequires: ogdi-devel
 BuildRequires: openexr-devel
 BuildRequires: openjpeg2-devel
+%if 0%{?fedora}
 BuildRequires: openssl-devel-engine
+%else
+BuildRequires: openssl-devel
+%endif
 %ifnarch %{ix86} %{arm}
 BuildRequires: parquet-libs-devel
 %endif
@@ -507,8 +511,8 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 %files libs
 %license LICENSE.TXT
 %doc NEWS.md PROVENANCE.TXT COMMITTERS PROVENANCE.TXT-fedora
-%{_libdir}/libgdal.so.35
-%{_libdir}/libgdal.so.35.*
+%{_libdir}/libgdal.so.36
+%{_libdir}/libgdal.so.36.*
 %{_datadir}/%{name}/
 %{_libdir}/gdalplugins/
 
@@ -524,7 +528,7 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 %if %{with mingw}
 %files -n mingw32-%{name}
 %license LICENSE.TXT
-%{mingw32_bindir}/libgdal-35.dll
+%{mingw32_bindir}/libgdal-36.dll
 %{mingw32_bindir}/gdal-config
 %{mingw32_libdir}/libgdal.dll.a
 %{mingw32_libdir}/cmake/gdal/
@@ -555,7 +559,7 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 %files -n mingw64-%{name}
 %license LICENSE.TXT
-%{mingw64_bindir}/libgdal-35.dll
+%{mingw64_bindir}/libgdal-36.dll
 %{mingw64_bindir}/gdal-config
 %{mingw64_libdir}/libgdal.dll.a
 %{mingw64_libdir}/cmake/gdal/
@@ -641,6 +645,9 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 
 %changelog
+* Wed Nov 06 2024 Sandro Mani <manisandro@gmail.com> - 3.10.0-1
+- Update to 3.10.0
+
 * Fri Oct 25 2024 Orion Poplawski <orion@nwra.com> - 3.9.3-5
 - Rebuild for hdf5 1.14.5
 
