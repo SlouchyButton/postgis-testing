@@ -17,7 +17,7 @@
 
 Name:          postgis
 Version:       3.5.0
-Release:       2%{?dist}
+Release:       3%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 # Automatically converted from old format: GPL-2.0-or-later - review is highly recommended.
 License:       GPL-2.0-or-later
@@ -451,6 +451,9 @@ fi
 
 
 %changelog
+* Sat Nov 09 2024 Sandro Mani <manisandro@gmail.com> - 3.5.0-3
+- Rebuild (GDAL)
+
 * Fri Nov 08 2024 Sandro Mani <manisandro@gmail.com> - 3.5.0-2
 - Rebuild (gdal)
 
