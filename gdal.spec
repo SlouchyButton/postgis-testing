@@ -51,7 +51,7 @@
 
 Name:          gdal
 Version:       3.10.0
-Release:       1%{?dist}
+Release:       2%{?dist}
 Summary:       GIS file format library
 License:       MIT
 URL:           http://www.gdal.org
@@ -233,7 +233,10 @@ BuildRequires: jpackage-utils
 %endif
 
 # Run time dependency for gpsbabel driver
+# FIXME: Not package for EPEL currently
+%if %{?fedora}
 Requires:      gpsbabel
+%endif
 Requires:      %{name}-libs%{?_isa} = %{version}-%{release}
 
 
@@ -645,6 +648,9 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 
 %changelog
+* Tue Nov 19 2024 Sandro Mani <manisandro@gmail.com> - 3.10.0-2
+- Require gpsbabel only on Fedora
+
 * Wed Nov 06 2024 Sandro Mani <manisandro@gmail.com> - 3.10.0-1
 - Update to 3.10.0
 
