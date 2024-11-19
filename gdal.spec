@@ -234,7 +234,7 @@ BuildRequires: jpackage-utils
 
 # Run time dependency for gpsbabel driver
 # FIXME: Not package for EPEL currently
-%if %{?fedora}
+%if 0%{?fedora}
 Requires:      gpsbabel
 %endif
 Requires:      %{name}-libs%{?_isa} = %{version}-%{release}
