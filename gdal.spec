@@ -51,7 +51,7 @@
 
 Name:          gdal
 Version:       3.10.0
-Release:       3%{?dist}
+Release:       4%{?dist}
 Summary:       GIS file format library
 License:       MIT
 URL:           http://www.gdal.org
@@ -645,6 +645,9 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 
 %changelog
+* Wed Nov 27 2024 Richard W.M. Jones <rjones@redhat.com> - 3.10.0-4
+- Rebuild for libarrow 18
+
 * Wed Nov 20 2024 Sandro Mani <manisandro@gmail.com> - 3.10.0-3
 - Drop fedora conditional for gpsbabel requires
 
