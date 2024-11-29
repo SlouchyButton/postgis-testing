@@ -267,7 +267,7 @@ rm -rf %{buildroot}%{mingw64_mandir}
 
 %check
 # nkg test requires internet connection
-%ctest -- -E nkg
+%ctest -E nkg
 
 
 %files
