@@ -82,6 +82,7 @@ Requires:       proj-data-eur
 Requires:       proj-data-fi
 Requires:       proj-data-fo
 Requires:       proj-data-fr
+Requires:       proj-data-hu
 Requires:       proj-data-is
 Requires:       proj-data-nl
 Requires:       proj-data-pl
@@ -182,6 +183,7 @@ Supplements:  proj\
 %data_subpkg -c fi -n Finland
 %data_subpkg -c fo -n %{quote:Faroe Island} -e FO -s 1
 %data_subpkg -c fr -n France
+%data_subpkg -c hu -n Hungary
 %data_subpkg -c is -n Island -e ISL
 %data_subpkg -c jp -n Japan
 %data_subpkg -c mx -n Mexico
