@@ -4,8 +4,7 @@
 %bcond_with mingw
 %endif
 
-%global data_version 1.19
-
+%global data_version 1.20
 Name:           proj
 # Also check whether there is a new proj-data release when upgrading!
 Version:        9.5.1
