@@ -1,6 +1,6 @@
-diff -rupN --no-dereference gdal-3.10.0-fedora/frmts/iso8211/CMakeLists.txt gdal-3.10.0-fedora-new/frmts/iso8211/CMakeLists.txt
---- gdal-3.10.0-fedora/frmts/iso8211/CMakeLists.txt	2024-11-01 16:47:25.000000000 +0100
-+++ gdal-3.10.0-fedora-new/frmts/iso8211/CMakeLists.txt	2024-11-06 16:50:12.603332820 +0100
+diff -rupN --no-dereference gdal-3.10.1-fedora/frmts/iso8211/CMakeLists.txt gdal-3.10.1-fedora-new/frmts/iso8211/CMakeLists.txt
+--- gdal-3.10.1-fedora/frmts/iso8211/CMakeLists.txt	2025-01-08 15:54:06.000000000 +0100
++++ gdal-3.10.1-fedora-new/frmts/iso8211/CMakeLists.txt	2025-01-14 22:27:26.561168120 +0100
 @@ -14,14 +14,17 @@ target_sources(${GDAL_LIB_TARGET_NAME} P
  gdal_standard_includes(gdal_iso8211)
  
@@ -22,9 +22,9 @@ diff -rupN --no-dereference gdal-3.10.0-fedora/frmts/iso8211/CMakeLists.txt gdal
  target_include_directories(8211createfromxml PRIVATE $<TARGET_PROPERTY:gdal_iso8211,SOURCE_DIR>)
  target_link_libraries(8211createfromxml PRIVATE $<TARGET_NAME:${GDAL_LIB_TARGET_NAME}> gdal_iso8211)
 +install(TARGETS 8211createfromxml RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-diff -rupN --no-dereference gdal-3.10.0-fedora/ogr/ogrsf_frmts/s57/CMakeLists.txt gdal-3.10.0-fedora-new/ogr/ogrsf_frmts/s57/CMakeLists.txt
---- gdal-3.10.0-fedora/ogr/ogrsf_frmts/s57/CMakeLists.txt	2024-11-01 16:47:26.000000000 +0100
-+++ gdal-3.10.0-fedora-new/ogr/ogrsf_frmts/s57/CMakeLists.txt	2024-11-06 16:50:12.604332900 +0100
+diff -rupN --no-dereference gdal-3.10.1-fedora/ogr/ogrsf_frmts/s57/CMakeLists.txt gdal-3.10.1-fedora-new/ogr/ogrsf_frmts/s57/CMakeLists.txt
+--- gdal-3.10.1-fedora/ogr/ogrsf_frmts/s57/CMakeLists.txt	2025-01-08 15:54:06.000000000 +0100
++++ gdal-3.10.1-fedora-new/ogr/ogrsf_frmts/s57/CMakeLists.txt	2025-01-14 22:27:26.561517435 +0100
 @@ -27,7 +27,8 @@ set_property(
    APPEND
    PROPERTY RESOURCE "${GDAL_DATA_FILES}")
