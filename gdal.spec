@@ -178,19 +178,12 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 
 %files
-%{_bindir}/gdal2tiles
-%{_bindir}/gdal2xyz
 %{_bindir}/gdaladdo
-%{_bindir}/gdalattachpct
 %{_bindir}/gdalbuildvrt
-%{_bindir}/gdal_calc
-%{_bindir}/gdalcompare
 %{_bindir}/gdal_contour
 %{_bindir}/gdal_create
 %{_bindir}/gdaldem
-%{_bindir}/gdal_edit
 %{_bindir}/gdalenhance
-%{_bindir}/gdal_fillnodata
 %{_bindir}/gdal_footprint
 %{_bindir}/gdal_grid
 %{_bindir}/gdalinfo
@@ -198,14 +191,7 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 %{_bindir}/gdalmanage
 %{_bindir}/gdalmdiminfo
 %{_bindir}/gdalmdimtranslate
-%{_bindir}/gdal_merge
-%{_bindir}/gdalmove
-%{_bindir}/gdal_pansharpen
-%{_bindir}/gdal_polygonize
-%{_bindir}/gdal_proximity
 %{_bindir}/gdal_rasterize
-%{_bindir}/gdal_retile
-%{_bindir}/gdal_sieve
 %{_bindir}/gdalsrsinfo
 %{_bindir}/gdaltindex
 %{_bindir}/gdaltransform
@@ -217,12 +203,8 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 %{_bindir}/nearblack
 %{_bindir}/ogr2ogr
 %{_bindir}/ogrinfo
-%{_bindir}/ogr_layer_algebra
 %{_bindir}/ogrlineref
-%{_bindir}/ogrmerge
 %{_bindir}/ogrtindex
-%{_bindir}/pct2rgb
-%{_bindir}/rgb2pct
 %{_bindir}/sozip
 %{_datadir}/bash-completion/completions/*
 %exclude %{_datadir}/bash-completion/completions/*.py
