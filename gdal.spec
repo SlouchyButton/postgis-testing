@@ -5,24 +5,6 @@
 %global cpuarch 64
 
 
-%if 0%{?bootstrap}
-%global with_mysql 0
-%global mysql --without-mysql
-%global with_poppler 0
-%global poppler --without-poppler
-%global with_spatialite 0
-%global spatialite --without-spatialite
-%else
-# https://bugzilla.redhat.com/show_bug.cgi?id=1490492
-%global with_mysql 1
-%global mysql --with-mysql
-# https://bugzilla.redhat.com/show_bug.cgi?id=1490492
-%global with_poppler 1
-%global poppler --with-poppler
-%global with_spatialite 1
-%global spatialite "--with-spatialite"
-%endif
-
 %bcond_without python3
 # No complete java yet in EL8
 %if 0%{?rhel} == 8
@@ -356,6 +338,7 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 %{_bindir}/pct2rgb.py
 %{_bindir}/rgb2pct.py
 %{_datadir}/bash-completion/completions/*.py
+%endif
 
 %if %{with java}
 %files java
