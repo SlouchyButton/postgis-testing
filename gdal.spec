@@ -182,7 +182,6 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 
 
 %files -f gdal_python_manpages_excludes.txt
-%{_bindir}/8211*
 %{_bindir}/gdal2tiles
 %{_bindir}/gdal2xyz
 %{_bindir}/gdaladdo
@@ -228,7 +227,6 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 %{_bindir}/ogrtindex
 %{_bindir}/pct2rgb
 %{_bindir}/rgb2pct
-%{_bindir}/s57dump
 %{_bindir}/sozip
 %{_datadir}/bash-completion/completions/*
 %exclude %{_datadir}/bash-completion/completions/*.py
