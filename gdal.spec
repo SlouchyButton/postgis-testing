@@ -76,30 +76,6 @@ BuildRequires: xz-devel
 BuildRequires: zlib-devel
 
 
-# Python
-%if %{with python3}
-BuildRequires: python3-devel
-BuildRequires: python3-numpy
-BuildRequires: python3-setuptools
-BuildRequires: python3dist(pytest) >= 3.6
-BuildRequires: python3dist(lxml) >= 4.5.1
-
-%endif
-
-# Java
-%if %{with java}
-# For 'mvn_artifact' and 'mvn_install'
-BuildRequires: ant
-BuildRequires: java-devel >= 1:1.6.0
-BuildRequires: javapackages-local
-BuildRequires: jpackage-utils
-%endif
-
-# Run time dependency for gpsbabel driver
-Requires:      gpsbabel
-Requires:      %{name}-libs%{?_isa} = %{version}-%{release}
-
-
 %description
 Geospatial Data Abstraction Library (GDAL/OGR) is a cross platform
 C++ translator library for raster and vector geospatial data formats.
@@ -127,52 +103,6 @@ Provides:      bundled(degrib) = 2.14
 
 %description libs
 This package contains the GDAL file format library.
-
-
-# No complete java yet in EL8
-%if %{with java}
-%package java
-Summary:        Java modules for the GDAL file format library
-Requires:       jpackage-utils
-Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
-
-%description java
-The GDAL Java modules provide support to handle multiple GIS file formats.
-
-
-%package javadoc
-Summary:        Javadocs for %{name}
-Requires:       jpackage-utils
-BuildArch:      noarch
-
-%description javadoc
-This package contains the API documentation for %{name}.
-%endif
-
-
-%if %{with python3}
-%package -n python3-gdal
-%{?python_provide:%python_provide python3-gdal}
-Summary:        Python modules for the GDAL file format library
-Requires:       python3-numpy
-Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
-
-%description -n python3-gdal
-The GDAL Python 3 modules provide support to handle multiple GIS file formats.
-
-
-%package python-tools
-Summary:        Python tools for the GDAL file format library
-Requires:       python3-gdal
-
-%description python-tools
-The GDAL Python package provides number of tools for programming and
-manipulating GDAL file format library
-
-
-# We don't want to provide private Python extension libs
-%global __provides_exclude_from ^%{python3_sitearch}/.*\.so$
-%endif
 
 
 %prep
@@ -203,8 +133,6 @@ cp -a %{SOURCE4} .
 %build
 %cmake \
   -DCMAKE_INSTALL_INCLUDEDIR=include/gdal \
-  -DGDAL_JAVA_INSTALL_DIR=%{_jnidir}/%{name} \
-  -DGDAL_JAVA_JNI_INSTALL_DIR=%{_jnidir}/%{name} \
   -DGDAL_USE_JPEG12_INTERNAL=OFF \
   -DENABLE_DEFLATE64=OFF
 %cmake_build
@@ -310,45 +238,6 @@ cp -a %{SOURCE3} %{buildroot}%{_bindir}/%{name}-config
 %{_libdir}/pkgconfig/%{name}.pc
 %{_mandir}/man1/gdal-config.1*
 
-%if %{with python3}
-%files -n python3-gdal
-%doc swig/python/README.rst
-%{python3_sitearch}/GDAL-%{version}-py*.egg-info/
-%{python3_sitearch}/osgeo/
-%{python3_sitearch}/osgeo_utils/
-
-%files python-tools -f gdal_python_manpages.txt
-%{_bindir}/gdal_calc.py
-%{_bindir}/gdal_edit.py
-%{_bindir}/gdal_fillnodata.py
-%{_bindir}/gdal_merge.py
-%{_bindir}/gdal_pansharpen.py
-%{_bindir}/gdal_polygonize.py
-%{_bindir}/gdal_proximity.py
-%{_bindir}/gdal_retile.py
-%{_bindir}/gdal_sieve.py
-%{_bindir}/gdal2tiles.py
-%{_bindir}/gdal2xyz.py
-%{_bindir}/gdalattachpct.py
-%{_bindir}/gdalcompare.py
-%{_bindir}/gdalmove.py
-%{_bindir}/ogr_layer_algebra.py
-%{_bindir}/ogrmerge.py
-%{_bindir}/pct2rgb.py
-%{_bindir}/rgb2pct.py
-%{_datadir}/bash-completion/completions/*.py
-%endif
-
-%if %{with java}
-%files java
-%{_jnidir}/%{name}/gdal-%{version}-sources.jar
-%{_jnidir}/%{name}/gdal-%{version}.jar
-%{_jnidir}/%{name}/gdal-%{version}.pom
-%{_jnidir}/%{name}/libgdalalljni.so
-
-%files javadoc
-%{_jnidir}/%{name}/gdal-%{version}-javadoc.jar
-%endif
 
 
 %changelog
