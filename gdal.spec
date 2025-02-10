@@ -76,9 +76,9 @@ BuildRequires: unixODBC-devel
 BuildRequires: xz-devel
 BuildRequires: zlib-devel
 
-BuildRequires: python3-setuptools
-BuildRequires: python3-numpy
-BuildRequires: python3-devel
+#BuildRequires: python3-setuptools
+#BuildRequires: python3-numpy
+#BuildRequires: python3-devel
 
 
 %description
@@ -148,6 +148,7 @@ cp -a %{SOURCE4} .
   -DGDAL_USE_LERC_INTERNAL=OFF \
   -DGDAL_USE_GEOTIFF=OFF \
   -DGDAL_USE_GEOTIFF_INTERNAL=OFF \
+  -DBUILD_PYTHON_BINDINGS=OFF \
   -DBUILD_TESTING=OFF \
   -DENABLE_DEFLATE64=OFF \
 
