@@ -131,17 +131,17 @@ cp -a %{SOURCE4} .
 
 
 %build
-%cmake \
-  -DCMAKE_INSTALL_INCLUDEDIR=include/gdal \
-  -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
-  -DOGR_BUILD_OPTIONAL_DRIVERS=OFF \
-  -DGDAL_USE_GOOGLETEST=OFF \
-  -DBUILD_TESTING=OFF \
-  -DENABLE_DEFLATE64=OFF \
+#%cmake \
+#  -DCMAKE_INSTALL_INCLUDEDIR=include/gdal \
+#  -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
+#  -DOGR_BUILD_OPTIONAL_DRIVERS=OFF \
+#  -DGDAL_USE_GOOGLETEST=OFF \
+#  -DBUILD_TESTING=OFF \
+#  -DENABLE_DEFLATE64=OFF \
 
-%cmake_build
-#cmake ..
-#cmake --build .
+#%cmake_build
+cmake .. -DGDAL_USE_GOOGLETEST=OFF -DBUILD_TESTING=OFF
+cmake --build .
 
 %install
 %cmake_install
