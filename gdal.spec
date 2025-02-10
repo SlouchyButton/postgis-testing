@@ -76,6 +76,8 @@ BuildRequires: unixODBC-devel
 BuildRequires: xz-devel
 BuildRequires: zlib-devel
 
+BuildRequires: python3-setuptools
+
 
 %description
 Geospatial Data Abstraction Library (GDAL/OGR) is a cross platform
