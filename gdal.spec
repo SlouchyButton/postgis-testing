@@ -62,6 +62,7 @@ BuildRequires: json-c-devel
 BuildRequires: libarchive-devel
 BuildRequires: libpng-devel
 BuildRequires: libpq-devel
+BuildRequires: libjpeg-turbo-devel
 BuildRequires: libtiff-devel
 BuildRequires: libtirpc-devel
 BuildRequires: mariadb-connector-c-devel
@@ -135,9 +136,9 @@ cp -a %{SOURCE4} .
   -DCMAKE_INSTALL_INCLUDEDIR=include/gdal \
   -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF \
   -DOGR_BUILD_OPTIONAL_DRIVERS=OFF \
-  -DGDAL_ENABLE_DRIVER_JPEG=OFF \
-  -DGDAL_USE_LIBJPEG=OFF \
-  -DBUILD_JPEG=OFF \
+  -DGDAL_USE_JPEG=ON \
+  -GDAL_USE_JPEG_INTERNAL=OFF \
+  -DGDAL_USE_JPEG12_INTERNAL=OFF \
   -DGDAL_USE_GOOGLETEST=OFF \
   -DBUILD_TESTING=OFF \
   -DENABLE_DEFLATE64=OFF \
