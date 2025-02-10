@@ -79,7 +79,6 @@ BuildRequires: zlib-devel
 # Python
 %if %{with python3}
 BuildRequires: python3-devel
-BuildRequires: python3-filelock
 BuildRequires: python3-numpy
 BuildRequires: python3-setuptools
 BuildRequires: python3dist(pytest) >= 3.6
