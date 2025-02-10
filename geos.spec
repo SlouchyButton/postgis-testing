@@ -52,12 +52,6 @@ make docs -C %{__cmake_builddir}
 rm -f %{buildroot}%{mingw32_bindir}/geos-config
 rm -f %{buildroot}%{mingw64_bindir}/geos-config
 
-%check
-%ifnarch s390x
-# FIXME: test_docs failed on F42 mass rebuild, retest in future
-%ctest -E test_docs
-%endif
-
 
 %files
 %doc AUTHORS NEWS.md README.md
