@@ -73,6 +73,8 @@ Source5:       %{name}-cleaner.sh
 Patch0:        gdal_utils.patch
 # Fix passing incompatible pointer type
 Patch1:        gdal_incompatible-pointer-types.patch
+# Fix build against Poppler 25.02.00
+Patch2:        https://github.com/OSGeo/gdal/commit/9b99975d327d67394b6be03b22bd40c7e83db0cb.patch
 
 BuildRequires: cmake
 BuildRequires: gcc-c++
