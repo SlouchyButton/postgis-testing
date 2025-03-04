@@ -429,7 +429,7 @@ cp -a %{SOURCE4} .
   -DBUILD_TESTING=OFF \
 %endif
   -DGDAL_USE_JPEG12_INTERNAL=OFF \
-  -DENABLE_DEFLATE64=OFF \
+  -DENABLE_DEFLATE64=OFF
 %cmake_build
 
 %if %{with mingw}
