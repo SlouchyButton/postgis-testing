@@ -34,6 +34,11 @@ Patch2:	       postgis-c99.patch
 Patch3:	       postgis-c99-2.patch
 %endif
 
+%if 0%{?fedora}
+%ifnarch armv7hl
+BuildRequires: SFCGAL-devel
+%endif
+%endif
 BuildRequires: make
 BuildRequires: autoconf
 BuildRequires: automake
@@ -184,6 +189,11 @@ cp -p %{SOURCE2} .
 
 %build
 %configure %configure_opts --with-pgconfig=%{_bindir}/pg_server_config \
+%if 0%{?fedora}
+%ifnarch armv7hl
+	--with-sfcgal \
+%endif
+%endif
 %if %llvmjit
 	--with-llvm \
 %endif
@@ -343,9 +353,19 @@ fi
 %{_datadir}/pgsql/extension/address_standardizer*.control
 %{_datadir}/pgsql/extension/postgis-*.sql
 %{_datadir}/pgsql/extension/postgis_raster*.sql
+%if 0%{?fedora}
+%ifnarch armv7hl
+%{_datadir}/pgsql/extension/postgis_sfcgal*.sql
+%endif
+%endif
 %{_datadir}/pgsql/extension/postgis_topology*.sql
 %{_datadir}/pgsql/extension/postgis.control
 %{_datadir}/pgsql/extension/postgis_raster.control
+%if 0%{?fedora}
+%ifnarch armv7hl
+%{_datadir}/pgsql/extension/postgis_sfcgal.control
+%endif
+%endif
 %{_datadir}/pgsql/extension/postgis_topology.control
 %{_datadir}/pgsql/extension/postgis_tiger_geocoder*.sql
 %{_datadir}/pgsql/extension/postgis_tiger_geocoder.control
@@ -356,6 +376,11 @@ fi
 %{_datadir}/postgis/repo_revision.pl
 %{_libdir}/pgsql/address_standardizer-%{soversion}.so
 %{_libdir}/pgsql/postgis_raster-%{soversion}.so
+%if 0%{?fedora}
+%ifnarch armv7hl
+%{_libdir}/pgsql/postgis_sfcgal-%{soversion}.so
+%endif
+%endif
 %{_libdir}/pgsql/postgis_topology-%{soversion}.so
 
 %files client
@@ -384,6 +409,11 @@ fi
 %{_libdir}/pgsql/bitcode/address_standardizer-*
 %{_libdir}/pgsql/bitcode/postgis-*
 %{_libdir}/pgsql/bitcode/postgis_raster-*
+%if 0%{?fedora}
+%ifnarch armv7hl
+%{_libdir}/pgsql/bitcode/postgis_sfcgal-*
+%endif
+%endif
 %{_libdir}/pgsql/bitcode/postgis_topology-*
 %endif
 
