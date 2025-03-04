@@ -1,9 +1,9 @@
 # When distributed in RHEL, EPEL shouldn't be used. Mingw shouldn't be in RHEL,
 # so it shouldn't be used anywhere, but in fedora.
-%if 0%{?rhel} >= 9        
-%bcond_with mingw  
-%else   
-%bcond_without mingw   
+%if 0%{?fedora}
+%bcond_without mingw
+%else
+%bcond_with mingw
 %endif
 
 Name:          geos
