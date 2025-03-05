@@ -19,8 +19,10 @@ Source1:        https://download.osgeo.org/%{name}/%{name}-data-%{data_version}.
 BuildRequires:  cmake
 BuildRequires:  curl-devel
 BuildRequires:  gcc-c++
+%if 0%{?fedora}
 BuildRequires:  gmock-devel
 BuildRequires:  gtest-devel >= 1.8.0
+%endif
 BuildRequires:  make
 BuildRequires:  libtiff-devel
 BuildRequires:  sqlite-devel
@@ -39,7 +41,9 @@ BuildRequires: mingw64-libtiff
 BuildRequires: mingw64-sqlite
 %endif
 
+%if 0%{?fedora}
 Obsoletes:      proj-datumgrid < 1.8-6.3.2.6
+%endif
 
 Requires:       proj-data = %{version}-%{release}
 
@@ -52,7 +56,9 @@ projection functions.
 %package devel
 Summary:        Development files for PROJ
 Requires:       %{name}%{?_isa} = %{version}-%{release}
+%if 0%{?fedora}
 Obsoletes:      %{name}-static < 7.2.0
+%endif
 
 %description devel
 This package contains libproj and the appropriate header files and man pages.
@@ -66,6 +72,7 @@ BuildArch:      noarch
 Proj arch independent data files.
 
 
+%if 0%{?fedora}
 %package data-europe
 Summary:        Compat package for old proj-datumgrid-europe
 BuildArch:      noarch
@@ -143,6 +150,7 @@ Compat package for old proj-datumgrid-world.
 Please do not depend on this package, it will get removed!
 
 %files data-world
+%endif
 
 
 # TODO: why the \ cruft in this section?
@@ -235,7 +243,11 @@ projection functions. Proj docs: http://www.remotesensing.org/dl/new_docs/
 
 %build
 # Native build
+%if 0%{?fedora}
 %cmake -DUSE_EXTERNAL_GTEST=ON
+%else
+%cmake -DBUILD_TESTING=OFF
+%endif
 %cmake_build
 
 %if %{with mingw}
@@ -266,9 +278,11 @@ rm -rf %{buildroot}%{mingw64_mandir}
 %endif
 
 
+%if 0%{?fedora}
 %check
 # nkg test requires internet connection
 %ctest -E nkg
+%endif
 
 
 %files
