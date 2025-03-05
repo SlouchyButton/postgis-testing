@@ -80,9 +80,6 @@ BuildRequires: cmake
 BuildRequires: gcc-c++
 
 BuildRequires: bison
-BuildRequires: blosc-devel
-BuildRequires: cfitsio-devel
-BuildRequires: CharLS-devel
 BuildRequires: curl-devel
 BuildRequires: expat-devel
 BuildRequires: geos-devel
@@ -104,6 +101,7 @@ BuildRequires: zlib-devel
 
 %if 0%{?fedora}
 BuildRequires: armadillo-devel
+BuildRequires: blosc-devel
 BuildRequires: cfitsio-devel
 BuildRequires: CharLS-devel
 BuildRequires: freexl-devel
