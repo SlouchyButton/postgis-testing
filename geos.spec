@@ -1,12 +1,9 @@
-# mingw is x86_64 only on EL9
-%if 0%{?rhel} >= 9
-%ifarch x86_64
+# When distributed in RHEL, EPEL shouldn't be used. Mingw shouldn't be in RHEL,
+# so it shouldn't be used anywhere, but in fedora.
+%if 0%{?fedora}
 %bcond_without mingw
 %else
 %bcond_with mingw
-%endif
-%else
-%bcond_without mingw
 %endif
 
 Name:          geos
@@ -108,11 +105,12 @@ rm -f %{buildroot}%{mingw64_bindir}/geos-config
 %mingw_debug_install_post
 %endif
 
-
+%if 0%{?fedora}
 %check
 %ifnarch s390x
 # FIXME: test_docs failed on F42 mass rebuild, retest in future
 %ctest -E test_docs
+%endif
 %endif
 
 
