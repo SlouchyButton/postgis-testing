@@ -154,12 +154,14 @@ version of PostgreSQL.
 %endif
 %endif
 
+%if 0%{?fedora}
 %package gui
 Summary:       The shp2pgsql-gui utility for PostGIS
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 
 %description gui
 The gui package provides shp2pgsql-gui for PostGIS.
+%endif
 
 %package client
 Summary:       The CLI clients for PostGIS
@@ -326,7 +328,9 @@ find %buildroot \( -name '*.la' -or -name '*.a' \) -delete
 
 
 %check
+%if 0%{?fedora}
 desktop-file-validate %{buildroot}/%{_datadir}/applications/shp2pgsql-gui.desktop
+%endif
 %if %runselftest
 %postgresql_tests_run
 export PGIS_REG_TMPDIR=`mktemp -d`
@@ -402,10 +406,12 @@ fi
 %{_mandir}/man1/postgis_restore.1*
 %{_mandir}/man1/shp2pgsql.1*
 
+%if 0%{?fedora}
 %files gui
 %{_bindir}/shp2pgsql-gui
 %{_datadir}/applications/shp2pgsql-gui.desktop
 %{_datadir}/icons/hicolor/*/apps/shp2pgsql-gui.png
+%endif
 
 
 %if %llvmjit
