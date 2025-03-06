@@ -38,7 +38,9 @@ Patch3:	       postgis-c99-2.patch
 %ifnarch armv7hl
 BuildRequires: SFCGAL-devel
 %endif
+BuildRequires: gtk2-devel
 %endif
+
 BuildRequires: make
 BuildRequires: autoconf
 BuildRequires: automake
@@ -50,7 +52,6 @@ BuildRequires: flex
 BuildRequires: gcc-c++
 BuildRequires: gdal-devel >= 1.10.0
 BuildRequires: geos-devel >= 3.7.1
-BuildRequires: gtk2-devel
 BuildRequires: json-c-devel
 BuildRequires: libtool
 BuildRequires: libxml2-devel
@@ -61,12 +62,15 @@ BuildRequires: perl-generators
 BuildRequires: postgresql-server-devel
 BuildRequires: proj-devel >= 5.2.0
 BuildRequires: protobuf-c-devel
+
 %if %upgrade
 BuildRequires: postgresql-upgrade-devel
 %endif
+
 %if %runselftest
 BuildRequires: postgresql-test-rpm-macros
 %endif
+
 %if %llvmjit
 Requires: clang-devel llvm-devel
 %endif
@@ -189,15 +193,15 @@ cp -p %{SOURCE2} .
 
 %build
 %configure %configure_opts --with-pgconfig=%{_bindir}/pg_server_config \
+%if %llvmjit
+	--with-llvm \
+%endif
 %if 0%{?fedora}
 %ifnarch armv7hl
 	--with-sfcgal \
 %endif
-%endif
-%if %llvmjit
-	--with-llvm \
-%endif
 	--with-gui
+%endif
 
 sed -i 's| -fstack-clash-protection | |' postgis/Makefile
 sed -i 's| -fstack-clash-protection | |' raster/rt_pg/Makefile
