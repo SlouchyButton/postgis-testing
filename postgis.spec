@@ -1,3 +1,8 @@
+%{!?postgresql_default:%global postgresql_default 1}
+
+%global sname postgis
+%global pgversion 16
+
 %{!?javabuild:%global javabuild 0}
 %{!?utils:%global utils 1}
 %{!?gcj_support:%global gcj_support 0}
@@ -15,7 +20,7 @@
 
 %global        __provides_exclude_from %{_libdir}/pgsql
 
-Name:          postgis
+Name:          postgresql%{pgversion}-%{sname}
 Version:       3.5.2
 Release:       2%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
@@ -23,15 +28,23 @@ Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPL-2.0-or-later
 
 URL:           https://www.postgis.net
-Source0:       https://download.osgeo.org/%{name}/source/%{name}-%{version}.tar.gz
-Source2:       https://download.osgeo.org/%{name}/docs/%{name}-%{version}-en.pdf
+Source0:       https://download.osgeo.org/%{sname}/source/%{sname}-%{version}.tar.gz
+Source2:       https://download.osgeo.org/%{sname}/docs/%{sname}-%{version}-en.pdf
 %if %upgrade_prev
-Source3:       https://download.osgeo.org/%{name}/source/%{name}-%{prevversion}.tar.gz
+Source3:       https://download.osgeo.org/%{sname}/source/%{sname}-%{prevversion}.tar.gz
 
 # Add proj8 compatibility to postgis-2.x (needed for upgrade package)
 Patch1:        postgis2-proj8.patch
 Patch2:	       postgis-c99.patch
 Patch3:	       postgis-c99-2.patch
+%endif
+
+%if %?postgresql_default
+%global pkgname %{sname}
+%package -n %{pkgname}
+Summary: Geographic Information Systems Extensions to PostgreSQL
+%else
+%global pkgname %name
 %endif
 
 %if 0%{?fedora}
@@ -59,12 +72,13 @@ BuildRequires: libxslt
 BuildRequires: llvm
 BuildRequires: pcre2-devel
 BuildRequires: perl-generators
-BuildRequires: postgresql-server-devel
 BuildRequires: proj-devel >= 5.2.0
 BuildRequires: protobuf-c-devel
 
+BuildRequires: postgresql%{pgversion}-server-devel
+
 %if %upgrade
-BuildRequires: postgresql-upgrade-devel
+BuildRequires: postgresql%{pgversion}-upgrade-devel
 %endif
 
 %if %runselftest
@@ -75,6 +89,16 @@ BuildRequires: postgresql-test-rpm-macros
 Requires: clang-devel llvm-devel
 %endif
 
+%global precise_version %{?epoch:%epoch:}%version-%release
+
+%if %?postgresql_default
+Provides: postgresql-%{sname} = %precise_version
+Provides: %name = %precise_version
+%endif
+Provides: %{pkgname}%{?_isa} = %precise_version
+Provides: %{pkgname} = %precise_version
+Provides: %{sname}-any
+Conflicts: %{sname}-any
 
 %description
 PostGIS adds support for geographic objects to the PostgreSQL object-relational
@@ -84,24 +108,32 @@ systems (GIS), much like ESRI's SDE or Oracle's Spatial extension. PostGIS
 follows the OpenGIS "Simple Features Specification for SQL" and has been
 certified as compliant with the "Types and Functions" profile.
 
+%description -n %{pkgname}
+PostGIS adds support for geographic objects to the PostgreSQL object-relational
+database. In effect, PostGIS "spatially enables" the PostgreSQL server,
+allowing it to be used as a backend spatial database for geographic information
+systems (GIS), much like ESRI's SDE or Oracle's Spatial extension. PostGIS
+follows the OpenGIS "Simple Features Specification for SQL" and has been
+certified as compliant with the "Types and Functions" profile.
+
 %if %llvmjit
-%package llvmjit
+%package -n %{pkgname}-llvmjit
 Summary:       Just-in-time compilation support for PostGIS
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 
-%description llvmjit
+%description -n %{pkgname}-llvmjit
 Just-in-time compilation support for PostGIS.
 %endif
 
-%package docs
+%package -n %{pkgname}-docs
 Summary:       Extra documentation for PostGIS
 
-%description docs
+%description -n %{pkgname}-docs
 The postgis-docs package includes PDF documentation of PostGIS.
 
 
 %if %javabuild
-%package jdbc
+%package -n %{pkgname}-jdbc
 Summary:       The JDBC driver for PostGIS
 # Automatically converted from old format: LGPLv2+ - review is highly recommended.
 License:       LicenseRef-Callaway-LGPLv2+
@@ -119,30 +151,30 @@ Requires(post): %{_bindir}/rebuild-gcj-db
 Requires(postun): %{_bindir}/rebuild-gcj-db
 %endif
 
-%description jdbc
+%description -n %{pkgname}-jdbc
 The postgis-jdbc package provides the essential jdbc driver for PostGIS.
 %endif
 
 
 %if %utils
-%package utils
+%package -n %{pkgname}-utils
 Summary:       The utils for PostGIS
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 Requires:      perl-DBD-Pg
 
-%description utils
+%description -n %{pkgname}-utils
 The postgis-utils package provides the utilities for PostGIS.
 %endif
 
 
 %if %upgrade
-%package upgrade
+%package -n %{pkgname}-upgrade
 Summary:       Support for upgrading Postgis
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 Requires:      postgresql-upgrade
 Provides:      bundled(postgis) = %prevversion
 
-%description upgrade
+%description -n %{pkgname}-upgrade
 %if %upgrade_prev
 The postgis-upgrade package contains the previous version of Postgis as well as
 the current version of Postgis built against the previous version of PostgreSQL
@@ -155,26 +187,26 @@ version of PostgreSQL.
 %endif
 
 %if 0%{?fedora}
-%package gui
+%package -n %{pkgname}-gui
 Summary:       The shp2pgsql-gui utility for PostGIS
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 
-%description gui
+%description -n %{pkgname}-gui
 The gui package provides shp2pgsql-gui for PostGIS.
 %endif
 
-%package client
+%package -n %{pkgname}-client
 Summary:       The CLI clients for PostGIS
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 
-%description client
+%description -n %{pkgname}-client
 The client package provides shp2pgsql, raster2pgsql and pgsql2shp for PostGIS.
 
 %prep
 %if %upgrade_prev
-%setup -q -n %{name}-%{version} -a 3
+%setup -q -n %{sname}-%{version} -a 3
 %else
-%setup -q -n %{name}-%{version}
+%setup -q -n %{sname}-%{version}
 %endif
 
 %if %upgrade
@@ -182,7 +214,7 @@ The client package provides shp2pgsql, raster2pgsql and pgsql2shp for PostGIS.
 tar xf %{SOURCE0}
 
 %if %upgrade_prev
-cd %{name}-%{prevversion}
+cd %{sname}-%{prevversion}
 %patch -P 1 -p1
 %patch -P 2 -p2
 %patch -P 3 -p1
@@ -214,7 +246,7 @@ sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
 %make_build
 
 %if %javabuild
-export BUILDXML_DIR=%{_builddir}/%{name}-%{version}/java/jdbc
+export BUILDXML_DIR=%{_builddir}/%{sname}-%{version}/java/jdbc
 JDBC_VERSION_RPM=`rpm -ql postgresql-jdbc| grep 'jdbc2.jar$'|awk -F '/' '{print $5}'`
 sed 's/postgresql.jar/'${JDBC_VERSION_RPM}'/g' $BUILDXML_DIR/build.xml > $BUILDXML_DIR/build.xml.new
 mv -f $BUILDXML_DIR/build.xml.new $BUILDXML_DIR/build.xml
@@ -229,7 +261,7 @@ popd
 
 %if %upgrade
 (
-cd %{name}-%{version}
+cd %{sname}-%{version}
 
 # Build current Postgis version against the previous PostgreSQL version.  We need only the so names.
 # We intentionally don't use %%configure here since there is too many
@@ -251,7 +283,7 @@ sed -i 's| -fstack-clash-protection | |' extensions/address_standardizer/Makefil
 
 %if %upgrade_prev
 (
-cd %{name}-%{prevversion}
+cd %{sname}-%{prevversion}
 
 # Build previous Postgis version against the current PostgreSQL version.  We need only the so names.
 %configure %configure_opts
@@ -290,9 +322,9 @@ sed -i 's| -fstack-clash-protection | |' extensions/address_standardizer/Makefil
 %make_install -C extensions
 
 %if %upgrade
-(cd %{name}-%{version} && %make_install)
+(cd %{sname}-%{version} && %make_install)
 %if %upgrade_prev
-(cd %{name}-%{prevversion} && %make_install)
+(cd %{sname}-%{prevversion} && %make_install)
 %endif
 
 # drop unused stuff from upgrade-only installation
@@ -312,16 +344,16 @@ rm -f  %{buildroot}%{_datadir}/*.sql
 
 %if %javabuild
 install -d %{buildroot}%{_javadir}
-install -m 755 java/jdbc/%{name}-%{version}.jar %{buildroot}%{_javadir}/%{name}.jar
+install -m 755 java/jdbc/%{sname}-%{version}.jar %{buildroot}%{_javadir}/%{sname}.jar
 %if %{gcj_support}
 aot-compile-rpm
 %endif
-strip %{buildroot}/%{_libdir}/gcj/%{name}/*.jar.so
+strip %{buildroot}/%{_libdir}/gcj/%{sname}/*.jar.so
 %endif
 
 %if %utils
-install -d %{buildroot}%{_datadir}/%{name}
-install -m 755 utils/*.pl %{buildroot}%{_datadir}/%{name}
+install -d %{buildroot}%{_datadir}/%{sname}
+install -m 755 utils/*.pl %{buildroot}%{_datadir}/%{sname}
 %endif
 
 find %buildroot \( -name '*.la' -or -name '*.a' \) -delete
@@ -351,11 +383,11 @@ fi
 %endif
 
 
-%files
+%files -n %{pkgname}
 %license COPYING
-%doc CREDITS NEWS TODO README.%{name} loader/README.* doc/%{name}.xml doc/ZMSgeoms.txt
+%doc CREDITS NEWS TODO README.%{sname} loader/README.* doc/%{sname}.xml doc/ZMSgeoms.txt
 
-%{_libdir}/pgsql/%{name}-%{soversion}.so
+%{_libdir}/pgsql/%{sname}-%{soversion}.so
 %{_datadir}/pgsql/contrib/postgis-%{majorversion}/*.sql
 %{_datadir}/pgsql/extension/address_standardizer*.sql
 %{_datadir}/pgsql/extension/address_standardizer*.control
@@ -391,7 +423,7 @@ fi
 %endif
 %{_libdir}/pgsql/postgis_topology-%{soversion}.so
 
-%files client
+%files -n %{pkgname}-client
 %{_bindir}/postgis
 %{_bindir}/postgis_restore
 %{_bindir}/pgsql2shp
@@ -407,7 +439,7 @@ fi
 %{_mandir}/man1/shp2pgsql.1*
 
 %if 0%{?fedora}
-%files gui
+%files -n %{pkgname}-gui
 %{_bindir}/shp2pgsql-gui
 %{_datadir}/applications/shp2pgsql-gui.desktop
 %{_datadir}/icons/hicolor/*/apps/shp2pgsql-gui.png
@@ -415,7 +447,7 @@ fi
 
 
 %if %llvmjit
-%files llvmjit
+%files -n %{pkgname}-llvmjit
 %{_libdir}/pgsql/bitcode/address_standardizer-*
 %{_libdir}/pgsql/bitcode/postgis-*
 %{_libdir}/pgsql/bitcode/postgis_raster-*
@@ -429,20 +461,20 @@ fi
 
 
 %if %javabuild
-%files jdbc
+%files -n %{pkgname}-jdbc
 %license java/jdbc/COPYING_LGPL
 %doc java/jdbc/README
-%{_javadir}/%{name}.jar
+%{_javadir}/%{sname}.jar
 %if %{gcj_support}
-%dir %{_libdir}/gcj/%{name}
-%{_libdir}/gcj/%{name}/*.jar.so
-%{_libdir}/gcj/%{name}/*.jar.db
+%dir %{_libdir}/gcj/%{sname}
+%{_libdir}/gcj/%{sname}/*.jar.so
+%{_libdir}/gcj/%{sname}/*.jar.db
 %endif
 %endif
 
 
 %if %upgrade
-%files upgrade
+%files -n %{pkgname}-upgrade
 %postgresql_upgrade_prefix/*
 %if %upgrade_prev
 %{_libdir}/pgsql/*-%{prevmajorversion}.so
@@ -451,24 +483,24 @@ fi
 
 
 %if %utils
-%files utils
+%files -n %{pkgname}-utils
 %doc utils/README
-%dir %{_datadir}/%{name}/
+%dir %{_datadir}/%{sname}/
 %doc %{_datadir}/doc/pgsql/extension/README.address_standardizer
-%{_datadir}/%{name}/test_estimation.pl
-%{_datadir}/%{name}/profile_intersects.pl
-%{_datadir}/%{name}/test_joinestimation.pl
-%{_datadir}/%{name}/create_extension_unpackage.pl
-%{_datadir}/%{name}/%{name}_restore.pl
-%{_datadir}/%{name}/read_scripts_version.pl
-%{_datadir}/%{name}/test_geography_estimation.pl
-%{_datadir}/%{name}/test_geography_joinestimation.pl
-%{_datadir}/%{name}/create_or_replace_to_create.pl
-%{_datadir}/%{name}/create_upgrade.pl
+%{_datadir}/%{sname}/test_estimation.pl
+%{_datadir}/%{sname}/profile_intersects.pl
+%{_datadir}/%{sname}/test_joinestimation.pl
+%{_datadir}/%{sname}/create_extension_unpackage.pl
+%{_datadir}/%{sname}/%{sname}_restore.pl
+%{_datadir}/%{sname}/read_scripts_version.pl
+%{_datadir}/%{sname}/test_geography_estimation.pl
+%{_datadir}/%{sname}/test_geography_joinestimation.pl
+%{_datadir}/%{sname}/create_or_replace_to_create.pl
+%{_datadir}/%{sname}/create_upgrade.pl
 %endif
 
 
-%files docs
+%files -n %{pkgname}-docs
 %doc postgis*.pdf
 
 
