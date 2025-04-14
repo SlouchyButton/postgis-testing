@@ -89,16 +89,33 @@ BuildRequires: postgresql-test-rpm-macros
 Requires: clang-devel llvm-devel
 %endif
 
-%global precise_version %{?epoch:%epoch:}%version-%release
 
 %if %?postgresql_default
-Provides: postgresql-%{sname} = %precise_version
-Provides: %name = %precise_version
+%define postgresqlXX_if_default() %{expand:\
+Provides: postgresql%{pgversion}-%{sname}%{?1:-%{1}} = %precise_version\
+Provides: postgresql%{pgversion}-%{sname}%{?1:-%{1}}%{?_isa} = %precise_version\
+Obsoletes: postgresql%{pgversion}-%{sname}%{?1:-%{1}}\
+}
+%else
+%define postgresqlXX_if_default() %{nil}
 %endif
+
+%define conflict_with_other_streams() %{expand:\
+Provides: %{sname}%{?1:-%{1}}-any\
+Conflicts: %{sname}%{?1:-%{1}}-any\
+}
+
+%define virtual_conflicts_and_provides() %{expand:\
+%conflict_with_other_streams %{**}\
+%postgresqlXX_if_default %{**}\
+}
+
+%global precise_version %{?epoch:%epoch:}%version-%release
+
 Provides: %{pkgname}%{?_isa} = %precise_version
 Provides: %{pkgname} = %precise_version
-Provides: %{sname}-any
-Conflicts: %{sname}-any
+
+%virtual_conflicts_and_provides
 
 %description
 PostGIS adds support for geographic objects to the PostgreSQL object-relational
@@ -121,12 +138,16 @@ certified as compliant with the "Types and Functions" profile.
 Summary:       Just-in-time compilation support for PostGIS
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 
+%virtual_conflicts_and_provides llvmjit
+
 %description -n %{pkgname}-llvmjit
 Just-in-time compilation support for PostGIS.
 %endif
 
 %package -n %{pkgname}-docs
 Summary:       Extra documentation for PostGIS
+
+%virtual_conflicts_and_provides docs
 
 %description -n %{pkgname}-docs
 The postgis-docs package includes PDF documentation of PostGIS.
@@ -151,6 +172,8 @@ Requires(post): %{_bindir}/rebuild-gcj-db
 Requires(postun): %{_bindir}/rebuild-gcj-db
 %endif
 
+%virtual_conflicts_and_provides jdbc
+
 %description -n %{pkgname}-jdbc
 The postgis-jdbc package provides the essential jdbc driver for PostGIS.
 %endif
@@ -161,6 +184,8 @@ The postgis-jdbc package provides the essential jdbc driver for PostGIS.
 Summary:       The utils for PostGIS
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 Requires:      perl-DBD-Pg
+
+%virtual_conflicts_and_provides utils
 
 %description -n %{pkgname}-utils
 The postgis-utils package provides the utilities for PostGIS.
@@ -173,6 +198,8 @@ Summary:       Support for upgrading Postgis
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 Requires:      postgresql-upgrade
 Provides:      bundled(postgis) = %prevversion
+
+%virtual_conflicts_and_provides upgrade
 
 %description -n %{pkgname}-upgrade
 %if %upgrade_prev
@@ -191,6 +218,8 @@ version of PostgreSQL.
 Summary:       The shp2pgsql-gui utility for PostGIS
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 
+%virtual_conflicts_and_provides gui
+
 %description -n %{pkgname}-gui
 The gui package provides shp2pgsql-gui for PostGIS.
 %endif
@@ -198,6 +227,8 @@ The gui package provides shp2pgsql-gui for PostGIS.
 %package -n %{pkgname}-client
 Summary:       The CLI clients for PostGIS
 Requires:      %{name}%{?_isa} = %{version}-%{release}
+
+%virtual_conflicts_and_provides client
 
 %description -n %{pkgname}-client
 The client package provides shp2pgsql, raster2pgsql and pgsql2shp for PostGIS.
